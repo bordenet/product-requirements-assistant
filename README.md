@@ -67,6 +67,27 @@ product-requirements-assistant/
 └── README.md        # This file
 ```
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <a href="./Welcome_Screen.png">
+        <img src="./Welcome_Screen.png" alt="Off to the races" style="width: 100%; max-width: 100%;">
+      </a>
+       <br>
+      <em>Starting page</em>
+    </td>
+    <td align="center" width="50%">
+      <a href="./First_Step.png">
+        <img src="./First_Step.png" alt="Starting page" style="width: 100%; max-width: 100%;">
+      </a>
+      <br>
+      <em>Off to the races</em>
+    </td>
+  </tr>
+</table>
+
 ## Future Enhancements
 
 - Direct API integration with Claude and Gemini
