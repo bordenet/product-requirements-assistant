@@ -22,6 +22,20 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Input validation
+	if req.Title == "" {
+		http.Error(w, "Title is required", http.StatusBadRequest)
+		return
+	}
+	if req.Problems == "" {
+		http.Error(w, "Problems description is required", http.StatusBadRequest)
+		return
+	}
+	if len(req.Title) > 200 {
+		http.Error(w, "Title must be less than 200 characters", http.StatusBadRequest)
+		return
+	}
+
 	project := &Project{
 		ID:          uuid.New().String(),
 		Title:       req.Title,
@@ -37,7 +51,11 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load initial prompt
-	prompt, _ := loadPrompt("claude_initial")
+	prompt, err := loadPrompt("claude_initial")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error loading prompt: %v", err), http.StatusInternalServerError)
+		return
+	}
 	project.Phases[0].Prompt = fmt.Sprintf(prompt, req.Title, req.Problems, req.Context)
 
 	projects[project.ID] = project
@@ -76,13 +94,24 @@ func updatePhase(w http.ResponseWriter, r *http.Request) {
 
 	project, exists := projects[projectID]
 	if !exists {
-		http.Error(w, "Project not found", http.StatusNotFound)
-		return
+		// Try to load from disk
+		project = loadProject(projectID)
+		if project == nil {
+			http.Error(w, "Project not found", http.StatusNotFound)
+			return
+		}
+		projects[projectID] = project
 	}
 
 	var req UpdatePhaseRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Input validation
+	if req.Content == "" {
+		http.Error(w, "Content is required", http.StatusBadRequest)
 		return
 	}
 
@@ -106,12 +135,22 @@ func updatePhase(w http.ResponseWriter, r *http.Request) {
 	// Prepare next phase prompt when current phase is completed
 	if phaseNum == 0 && project.Phases[0].Content != "" {
 		// Phase 1 completed, prepare Phase 2 prompt
-		prompt, _ := loadPrompt("gemini_review")
+		prompt, err := loadPrompt("gemini_review")
+		if err != nil {
+			// Log error but continue with default prompt
+			fmt.Printf("Warning: Error loading gemini_review prompt: %v\n", err)
+			prompt = getDefaultPrompt("gemini_review")
+		}
 		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
 		project.Phases[1].Prompt = prompt
 	} else if phaseNum == 1 && project.Phases[1].Content != "" {
 		// Phase 2 completed, prepare Phase 3 prompt
-		prompt, _ := loadPrompt("claude_compare")
+		prompt, err := loadPrompt("claude_compare")
+		if err != nil {
+			// Log error but continue with default prompt
+			fmt.Printf("Warning: Error loading claude_compare prompt: %v\n", err)
+			prompt = getDefaultPrompt("claude_compare")
+		}
 		if project.Phases[0].Content != "" {
 			prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
 		}
@@ -202,20 +241,29 @@ func listProjects(w http.ResponseWriter, r *http.Request) {
 func ensurePromptsPopulated(project *Project) {
 	// Phase 1: Initial prompt (should always be populated at creation)
 	if project.Phases[0].Prompt == "" {
-		prompt, _ := loadPrompt("claude_initial")
+		prompt, err := loadPrompt("claude_initial")
+		if err != nil {
+			prompt = getDefaultPrompt("claude_initial")
+		}
 		project.Phases[0].Prompt = fmt.Sprintf(prompt, project.Title, project.Description, "")
 	}
 
 	// Phase 2: Gemini review prompt (populate if Phase 1 is complete)
 	if project.Phases[1].Prompt == "" && project.Phases[0].Content != "" {
-		prompt, _ := loadPrompt("gemini_review")
+		prompt, err := loadPrompt("gemini_review")
+		if err != nil {
+			prompt = getDefaultPrompt("gemini_review")
+		}
 		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
 		project.Phases[1].Prompt = prompt
 	}
 
 	// Phase 3: Comparison prompt (populate if Phases 1 and 2 are complete)
 	if project.Phases[2].Prompt == "" && project.Phases[0].Content != "" && project.Phases[1].Content != "" {
-		prompt, _ := loadPrompt("claude_compare")
+		prompt, err := loadPrompt("claude_compare")
+		if err != nil {
+			prompt = getDefaultPrompt("claude_compare")
+		}
 		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
 		prompt = strings.Replace(prompt, "[PASTE GEMINI'S PRD RENDITION HERE]", project.Phases[1].Content, 1)
 		project.Phases[2].Prompt = prompt

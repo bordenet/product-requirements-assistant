@@ -34,6 +34,9 @@ inputs/*
 !inputs/.gitkeep
 !outputs/.gitkeep
 
+# Keep testdata for end-to-end tests
+!testdata/
+
 # OS
 .DS_Store
 Thumbs.db
