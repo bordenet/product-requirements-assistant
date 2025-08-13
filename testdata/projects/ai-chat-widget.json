@@ -1,0 +1,5 @@
+{
+  "title": "AI Chat Widget Integration",
+  "problems": "Our customers frequently need help understanding our complex product features, leading to increased support tickets and user frustration. They often struggle to find relevant information in our documentation and need real-time assistance. Additionally, our support team is overwhelmed with repetitive questions that could be automated.",
+  "context": "We have an existing React-based web application with a modern tech stack. The solution should integrate seamlessly with our current design system and not require users to leave the current page. We want to start with a simple implementation and iterate based on user feedback. The widget should be lightweight and not impact page load times."
+}
