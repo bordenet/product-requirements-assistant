@@ -1,12 +1,13 @@
 package main
 
 import (
+    "context"
     "encoding/json"
     "log"
     "net/http"
     "os"
-    "path/filepath"
-    "strings"
+    "os/signal"
+    "syscall"
     "time"
 
     "github.com/gorilla/mux"
@@ -14,26 +15,38 @@ import (
 )
 
 func main() {
-    // Get absolute paths for directories
-    workDir, err := os.Getwd()
+    // Load and validate configuration
+    config, err := LoadConfig()
     if err != nil {
-        log.Fatal("Failed to get working directory:", err)
+        log.Fatalf("Configuration error: %v", err)
     }
     
-    projectRoot := filepath.Dir(workDir)
-    inputsDir := filepath.Join(projectRoot, "inputs")
-    outputsDir := filepath.Join(projectRoot, "outputs")
-    promptsDir := filepath.Join(projectRoot, "prompts")
+    // Print configuration
+    PrintConfiguration(config)
     
-    // Ensure directories exist with absolute paths
-    os.MkdirAll(inputsDir, 0755)
-    os.MkdirAll(outputsDir, 0755)
-    os.MkdirAll(promptsDir, 0755)
+    // Validate directory structure
+    if err := ValidateDirectoryStructure(); err != nil {
+        log.Fatalf("Directory validation error: %v", err)
+    }
     
-    log.Printf("Using directories: inputs=%s, outputs=%s, prompts=%s", inputsDir, outputsDir, promptsDir)
+    // Validate prompt files
+    if err := ValidatePromptFiles(); err != nil {
+        log.Fatalf("Prompt files validation error: %v", err)
+    }
+    
+    // Validate system resources
+    if err := ValidateSystemResources(); err != nil {
+        log.Fatalf("System resources validation error: %v", err)
+    }
+    
+    // Initialize file manager for performance optimization
+    InitFileManager()
+    
+    // Initialize metrics collector
+    InitMetrics()
 
-    // Create rate limiter (100 requests per minute per IP)
-    rateLimiter := NewRateLimiter(100, time.Minute)
+    // Create rate limiter with config
+    rateLimiter := NewRateLimiter(config.RateLimit, time.Minute)
     
     router := mux.NewRouter()
     
@@ -46,14 +59,13 @@ func main() {
     router.HandleFunc("/api/prompts/{phase}", updatePrompt).Methods("POST")
     router.HandleFunc("/api/projects", listProjects).Methods("GET")
     
-    // Get allowed origins from environment or use defaults
-    allowedOrigins := []string{"http://localhost:8501"}
-    if origins := os.Getenv("ALLOWED_ORIGINS"); origins != "" {
-        allowedOrigins = strings.Split(origins, ",")
-        for i, origin := range allowedOrigins {
-            allowedOrigins[i] = strings.TrimSpace(origin)
-        }
-    }
+    // Monitoring routes
+    router.HandleFunc("/api/metrics", metricsHandler).Methods("GET")
+    router.HandleFunc("/api/healthz", healthzHandler).Methods("GET")
+    router.HandleFunc("/api/readiness", readinessHandler).Methods("GET")
+    
+    // Use config for allowed origins
+    allowedOrigins := config.AllowedOrigins
     
     // Enable CORS with proper validation
     c := cors.New(cors.Options{
@@ -63,20 +75,58 @@ func main() {
         AllowCredentials: false,
     })
     
-    // Apply middleware stack
+    // Apply middleware stack (order matters!)
     handler := c.Handler(router)
     handler = LoggingMiddleware(handler)
-    handler = RequestSizeLimit(10 * 1024 * 1024)(handler) // 10MB limit
+    handler = MetricsMiddleware(handler)
+    handler = CompressionMiddleware(handler)
+    handler = DecompressionMiddleware(handler)
+    handler = RequestSizeLimit(config.MaxRequestSize)(handler)
     handler = rateLimiter.Middleware()(handler)
     
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080"
-    }
+    port := config.Port
     
-    log.Printf("Product Requirements Assistant Backend starting on port %s", port)
-    log.Printf("Allowed CORS origins: %v", allowedOrigins)
-    log.Fatal(http.ListenAndServe(":"+port, handler))
+    // Create HTTP server with timeouts
+    server := &http.Server{
+        Addr:         ":" + port,
+        Handler:      handler,
+        ReadTimeout:  15 * time.Second,
+        WriteTimeout: 15 * time.Second,
+        IdleTimeout:  60 * time.Second,
+    }
+
+    // Start server in a goroutine
+    go func() {
+        log.Printf("Product Requirements Assistant Backend starting on port %s", port)
+        log.Printf("Allowed CORS origins: %v", allowedOrigins)
+        
+        if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+            log.Fatalf("Server failed to start: %v", err)
+        }
+    }()
+
+    // Wait for interrupt signal to gracefully shutdown the server
+    quit := make(chan os.Signal, 1)
+    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+    <-quit
+    log.Println("Shutting down server...")
+
+    // Give outstanding requests 30 seconds to complete
+    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+    defer cancel()
+
+    // Shutdown file manager
+    if globalFileManager != nil {
+        globalFileManager.Stop()
+        log.Println("File manager stopped")
+    }
+
+    // Shutdown server
+    if err := server.Shutdown(ctx); err != nil {
+        log.Printf("Server forced to shutdown: %v", err)
+    } else {
+        log.Println("Server gracefully stopped")
+    }
 }
 
 func healthCheck(w http.ResponseWriter, r *http.Request) {

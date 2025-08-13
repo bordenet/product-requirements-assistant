@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -16,12 +15,14 @@ func saveProject(project *Project) error {
 	}
 
 	filename := filepath.Join(getOutputsDir(), fmt.Sprintf("%s.json", project.ID))
-	return os.WriteFile(filename, data, 0644)
+	fm := GetFileManager()
+	return fm.WriteFile(filename, data, 0644)
 }
 
 func loadProject(id string) *Project {
 	filename := filepath.Join(getOutputsDir(), fmt.Sprintf("%s.json", id))
-	data, err := os.ReadFile(filename)
+	fm := GetFileManager()
+	data, err := fm.ReadFile(filename)
 	if err != nil {
 		return nil
 	}
@@ -62,7 +63,8 @@ func savePhaseOutput(project *Project, phaseNum int) error {
 	filename := filepath.Join(getOutputsDir(),
 		fmt.Sprintf("%s_phase%d_%s.md", project.ID, phaseNum+1, timestamp))
 
-	return os.WriteFile(filename, []byte(markdown.String()), 0644)
+	fm := GetFileManager()
+	return fm.WriteFile(filename, []byte(markdown.String()), 0644)
 }
 
 func saveFinalPRD(project *Project) error {
@@ -123,12 +125,14 @@ func saveFinalPRD(project *Project) error {
 	filename := filepath.Join(getOutputsDir(),
 		fmt.Sprintf("%s_FINAL_%s.md", project.ID, timestamp))
 
-	return os.WriteFile(filename, []byte(markdown.String()), 0644)
+	fm := GetFileManager()
+	return fm.WriteFile(filename, []byte(markdown.String()), 0644)
 }
 
 func loadPrompt(phase string) (string, error) {
 	filename := filepath.Join(getPromptsDir(), fmt.Sprintf("%s.txt", phase))
-	data, err := os.ReadFile(filename)
+	fm := GetFileManager()
+	data, err := fm.ReadFile(filename)
 	if err != nil {
 		// Return default prompt if file doesn't exist
 		return getDefaultPrompt(phase), nil
@@ -138,7 +142,8 @@ func loadPrompt(phase string) (string, error) {
 
 func savePromptTemplate(phase string, content string) error {
 	filename := filepath.Join(getPromptsDir(), fmt.Sprintf("%s.txt", phase))
-	return os.WriteFile(filename, []byte(content), 0644)
+	fm := GetFileManager()
+	return fm.WriteFile(filename, []byte(content), 0644)
 }
 
 func getDefaultPrompt(phase string) string {

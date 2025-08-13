@@ -22,17 +22,10 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Input validation
-	if req.Title == "" {
-		http.Error(w, "Title is required", http.StatusBadRequest)
-		return
-	}
-	if req.Problems == "" {
-		http.Error(w, "Problems description is required", http.StatusBadRequest)
-		return
-	}
-	if len(req.Title) > 200 {
-		http.Error(w, "Title must be less than 200 characters", http.StatusBadRequest)
+	// Input validation and sanitization
+	validator := GetValidator()
+	if err := validator.ValidateCreateProjectRequest(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -61,6 +54,9 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	projects[project.ID] = project
 	saveProject(project)
 
+	// Track business metric
+	GetMetrics().IncrementProjectsCreated()
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(project)
 }
@@ -68,6 +64,13 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 func getProject(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	projectID := vars["id"]
+
+	// Validate project ID
+	validator := GetValidator()
+	if err := validator.ValidateProjectID(projectID); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	project, exists := projects[projectID]
 	if !exists {
@@ -92,6 +95,19 @@ func updatePhase(w http.ResponseWriter, r *http.Request) {
 	projectID := vars["id"]
 	phase := vars["phase"]
 
+	// Validate inputs
+	validator := GetValidator()
+	if err := validator.ValidateProjectID(projectID); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	phaseNum, err := validator.ValidatePhaseNumber(phase)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	project, exists := projects[projectID]
 	if !exists {
 		// Try to load from disk
@@ -109,31 +125,21 @@ func updatePhase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Input validation
-	if req.Content == "" {
-		http.Error(w, "Content is required", http.StatusBadRequest)
+	// Input validation and sanitization
+	if err := validator.ValidateUpdatePhaseRequest(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	phaseNum := 0
-	switch phase {
-	case "1":
-		phaseNum = 0
-	case "2":
-		phaseNum = 1
-	case "3":
-		phaseNum = 2
-	default:
-		http.Error(w, "Invalid phase", http.StatusBadRequest)
-		return
-	}
+	// Convert phase number to array index
+	phaseIndex := phaseNum - 1
 
-	project.Phases[phaseNum].Content = req.Content
-	project.Phases[phaseNum].CompletedAt = time.Now()
+	project.Phases[phaseIndex].Content = req.Content
+	project.Phases[phaseIndex].CompletedAt = time.Now()
 	project.UpdatedAt = time.Now()
 
 	// Prepare next phase prompt when current phase is completed
-	if phaseNum == 0 && project.Phases[0].Content != "" {
+	if phaseIndex == 0 && project.Phases[0].Content != "" {
 		// Phase 1 completed, prepare Phase 2 prompt
 		prompt, err := loadPrompt("gemini_review")
 		if err != nil {
@@ -143,7 +149,7 @@ func updatePhase(w http.ResponseWriter, r *http.Request) {
 		}
 		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
 		project.Phases[1].Prompt = prompt
-	} else if phaseNum == 1 && project.Phases[1].Content != "" {
+	} else if phaseIndex == 1 && project.Phases[1].Content != "" {
 		// Phase 2 completed, prepare Phase 3 prompt
 		prompt, err := loadPrompt("claude_compare")
 		if err != nil {
@@ -159,15 +165,18 @@ func updatePhase(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Advance to next phase if not final
-	if phaseNum < 2 {
-		project.Phase = phaseNum + 2
+	if phaseIndex < 2 {
+		project.Phase = phaseIndex + 2
 	}
 
 	saveProject(project)
-	savePhaseOutput(project, phaseNum)
+	savePhaseOutput(project, phaseIndex)
+
+	// Track business metric
+	GetMetrics().IncrementPhasesUpdated()
 
 	// Save final comprehensive PRD when phase 3 is complete
-	if phaseNum == 2 && project.Phases[2].Content != "" {
+	if phaseIndex == 2 && project.Phases[2].Content != "" {
 		saveFinalPRD(project)
 	}
 
@@ -178,6 +187,13 @@ func updatePhase(w http.ResponseWriter, r *http.Request) {
 func getPrompt(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	phase := vars["phase"]
+
+	// Validate phase name
+	validator := GetValidator()
+	if err := validator.ValidatePromptPhase(phase); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	content, err := loadPrompt(phase)
 	if err != nil {
@@ -193,8 +209,21 @@ func updatePrompt(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	phase := vars["phase"]
 
+	// Validate phase name
+	validator := GetValidator()
+	if err := validator.ValidatePromptPhase(phase); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	var req PromptUpdate
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validate and sanitize prompt content
+	if err := validator.ValidatePromptUpdate(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
