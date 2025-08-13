@@ -209,7 +209,7 @@ func updatePrompt(w http.ResponseWriter, r *http.Request) {
 
 func listProjects(w http.ResponseWriter, r *http.Request) {
 	// First, try to load any projects from disk that aren't in memory
-	files, err := os.ReadDir("../outputs")
+	files, err := os.ReadDir(getOutputsDir())
 	if err == nil {
 		for _, file := range files {
 			if strings.HasSuffix(file.Name(), ".json") {
