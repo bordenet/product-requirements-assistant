@@ -3,11 +3,13 @@ import requests
 import json
 import time
 import re
+import os
 from datetime import datetime
 from api_client import APIClient
 
-# Initialize API client
-api = APIClient("http://localhost:8080")
+# Initialize API client with environment variable support
+backend_url = os.getenv("BACKEND_URL", "http://localhost:8080")
+api = APIClient(backend_url)
 
 # Page config
 st.set_page_config(
@@ -22,9 +24,54 @@ if 'current_project' not in st.session_state:
 if 'phase' not in st.session_state:
     st.session_state.phase = 1
 
+def handle_api_error(error_msg: str, operation: str = "operation"):
+    """Handle API errors with user-friendly messages and recovery options."""
+    if "Could not connect" in error_msg:
+        st.error("❌ Cannot connect to backend. Please check that the backend server is running.")
+        if st.button("🔄 Retry Connection", key=f"retry_{operation}"):
+            st.rerun()
+    elif "timed out" in error_msg:
+        st.error("⏱️ Request timed out. The server may be overloaded.")
+        if st.button("🔄 Try Again", key=f"retry_{operation}"):
+            st.rerun()
+    elif "Rate limit exceeded" in error_msg:
+        st.error("🚦 Rate limit exceeded. Please wait a moment before trying again.")
+        st.info("The server is temporarily limiting requests to prevent overload.")
+    elif "400" in error_msg:
+        st.error("❌ Invalid request. Please check your input data.")
+        with st.expander("💡 Common Issues"):
+            st.markdown("""
+            **Check for these issues:**
+            - Empty or missing required fields
+            - Content may be too large
+            - Invalid characters in the input
+            """)
+    else:
+        st.error(f"❌ Error during {operation}: {error_msg}")
+        with st.expander("💡 Troubleshooting Tips"):
+            st.markdown("""
+            **Try these steps:**
+            1. Check your internet connection
+            2. Ensure the backend server is running
+            3. Verify the content isn't too large
+            4. Try refreshing the page and re-entering data
+            """)
+
 def main():
     st.title("📋 Product Requirements Assistant")
     st.markdown("Interactive Product Requirements Document creation with AI assistance")
+    
+    # Connection status indicator
+    try:
+        response = requests.get(f"{backend_url}/api/health", timeout=2)
+        if response.status_code == 200:
+            st.success(f"✅ Connected to backend at {backend_url}")
+        else:
+            st.error(f"❌ Backend responding with status {response.status_code}")
+    except requests.exceptions.ConnectionError:
+        st.error(f"❌ Cannot connect to backend at {backend_url}. Please ensure it's running.")
+    except requests.exceptions.Timeout:
+        st.warning(f"⚠️ Backend at {backend_url} is slow to respond.")
     
     # Add a global tip about copying
     with st.expander("💡 Pro Tip: Preserving Formatting", expanded=False):
@@ -51,11 +98,18 @@ def main():
         
         # Recent projects
         st.subheader("Recent Projects")
-        projects = api.list_projects()
-        for project in projects:
-            if st.button(f"📄 {project['title']}", key=project['id']):
-                st.session_state.current_project = project
-                st.session_state.phase = project['phase']
+        with st.spinner("Loading projects..."):
+            projects = api.list_projects()
+        
+        if not projects:
+            st.info("No projects found. Create your first project!")
+        else:
+            for project in projects:
+                if st.button(f"📄 {project['title']}", key=project['id']):
+                    with st.spinner("Loading project..."):
+                        st.session_state.current_project = project
+                        st.session_state.phase = project['phase']
+                        st.rerun()
     
     # Main content
     if hasattr(st.session_state, 'show_prompts') and st.session_state.show_prompts:
@@ -80,15 +134,16 @@ def show_new_project_form():
         submitted = st.form_submit_button("Start PRD Process")
         
         if submitted and title and problems:
-            try:
-                project = api.create_project(title, problems, context)
-                st.session_state.current_project = project
-                st.session_state.phase = 1
-                st.success("Project created successfully!")
-                time.sleep(1)
-                st.rerun()
-            except Exception as e:
-                st.error(f"Error creating project: {str(e)}")
+            with st.spinner("Creating project..."):
+                try:
+                    project = api.create_project(title, problems, context)
+                    st.session_state.current_project = project
+                    st.session_state.phase = 1
+                    st.success("Project created successfully!")
+                    time.sleep(1)
+                    st.rerun()
+                except Exception as e:
+                    handle_api_error(str(e), "project creation")
 
 def show_project_workflow():
     project = st.session_state.current_project
@@ -190,14 +245,15 @@ def show_phase_1():
     with col1:
         if st.button("💾 Save Phase 1", type="primary"):
             if claude_response:
-                try:
-                    updated_project = api.update_phase(project['id'], 1, claude_response)
-                    st.session_state.current_project = updated_project
-                    st.success("Phase 1 saved! Ready for Gemini review.")
-                    time.sleep(1)  # Brief pause to show success message
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error saving: {str(e)}")
+                with st.spinner("Saving Phase 1 and generating Phase 2 prompt..."):
+                    try:
+                        updated_project = api.update_phase(project['id'], 1, claude_response)
+                        st.session_state.current_project = updated_project
+                        st.success("Phase 1 saved! Ready for Gemini review.")
+                        time.sleep(1)  # Brief pause to show success message
+                        st.rerun()
+                    except Exception as e:
+                        handle_api_error(str(e), "Phase 1 save")
             else:
                 st.warning("Please paste Claude's response before saving")
     
@@ -301,14 +357,15 @@ def show_phase_2():
     with col1:
         if st.button("💾 Save Phase 2", type="primary"):
             if gemini_response:
-                try:
-                    updated_project = api.update_phase(project['id'], 2, gemini_response)
-                    st.session_state.current_project = updated_project
-                    st.success("Phase 2 saved! Ready for final comparison.")
-                    time.sleep(1)  # Brief pause to show success message
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error saving: {str(e)}")
+                with st.spinner("Saving Phase 2 and generating Phase 3 prompt..."):
+                    try:
+                        updated_project = api.update_phase(project['id'], 2, gemini_response)
+                        st.session_state.current_project = updated_project
+                        st.success("Phase 2 saved! Ready for final comparison.")
+                        time.sleep(1)  # Brief pause to show success message
+                        st.rerun()
+                    except Exception as e:
+                        handle_api_error(str(e), "Phase 2 save")
             else:
                 st.warning("Please paste Gemini's response before saving")
     
@@ -387,14 +444,15 @@ def show_phase_3():
     with col1:
         if st.button("💾 Save Final PRD", type="primary"):
             if final_prd:
-                try:
-                    updated_project = api.update_phase(project['id'], 3, final_prd)
-                    st.session_state.current_project = updated_project
-                    st.success("Final PRD saved!")
-                    time.sleep(1)
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error saving: {str(e)}")
+                with st.spinner("Saving Final PRD and generating comprehensive document..."):
+                    try:
+                        updated_project = api.update_phase(project['id'], 3, final_prd)
+                        st.session_state.current_project = updated_project
+                        st.success("Final PRD saved!")
+                        time.sleep(1)
+                        st.rerun()
+                    except Exception as e:
+                        handle_api_error(str(e), "Final PRD save")
             else:
                 st.warning("Please paste the final PRD before saving")
     
