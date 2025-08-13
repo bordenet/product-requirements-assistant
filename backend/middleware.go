@@ -1,8 +1,11 @@
 package main
 
 import (
+	"compress/gzip"
+	"io"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -133,4 +136,59 @@ type LoggingResponseWriter struct {
 func (lrw *LoggingResponseWriter) WriteHeader(code int) {
 	lrw.statusCode = code
 	lrw.ResponseWriter.WriteHeader(code)
+}
+
+// CompressionMiddleware handles gzip compression
+func CompressionMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check if client accepts gzip encoding
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Set compression headers
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Set("Vary", "Accept-Encoding")
+
+		// Create gzip writer
+		gzipWriter := gzip.NewWriter(w)
+		defer gzipWriter.Close()
+
+		// Wrap the response writer
+		gzipResponseWriter := &GzipResponseWriter{
+			ResponseWriter: w,
+			Writer:         gzipWriter,
+		}
+
+		next.ServeHTTP(gzipResponseWriter, r)
+	})
+}
+
+// GzipResponseWriter wraps http.ResponseWriter with gzip compression
+type GzipResponseWriter struct {
+	http.ResponseWriter
+	Writer io.Writer
+}
+
+func (grw *GzipResponseWriter) Write(data []byte) (int, error) {
+	return grw.Writer.Write(data)
+}
+
+// DecompressionMiddleware handles gzip decompression of request bodies
+func DecompressionMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check if request body is gzip compressed
+		if r.Header.Get("Content-Encoding") == "gzip" {
+			gzipReader, err := gzip.NewReader(r.Body)
+			if err != nil {
+				http.Error(w, "Invalid gzip data", http.StatusBadRequest)
+				return
+			}
+			defer gzipReader.Close()
+			r.Body = gzipReader
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

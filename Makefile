@@ -1,4 +1,4 @@
-.PHONY: all backend frontend run-backend run-frontend install clean format lint health-check test-backend test-e2e test-all benchmark
+.PHONY: all backend frontend run-backend run-frontend install clean format lint health-check test-health test-integration validate-setup test-backend test-e2e test-all benchmark
 
 all: install
 
@@ -44,3 +44,28 @@ lint:
 health-check:
 	@echo "Checking backend health..."
 	@curl -s http://localhost:8080/api/health || echo "Backend not responding"
+
+test-health:
+	@echo "Testing health check endpoint..."
+	@response=$$(curl -s -w "%{http_code}" http://localhost:8080/api/health) && \
+	if [ "$${response: -3}" = "200" ]; then \
+		echo "✅ Health check passed"; \
+	else \
+		echo "❌ Health check failed with status: $${response: -3}"; \
+		exit 1; \
+	fi
+
+test-integration:
+	@echo "Starting integration tests..."
+	@echo "Testing all API endpoints..."
+	@./scripts/integration-test.sh
+
+validate-setup:
+	@echo "Validating project setup..."
+	@if [ ! -d "outputs" ]; then echo "❌ outputs directory missing"; exit 1; fi
+	@if [ ! -d "inputs" ]; then echo "❌ inputs directory missing"; exit 1; fi
+	@if [ ! -d "prompts" ]; then echo "❌ prompts directory missing"; exit 1; fi
+	@if [ ! -f "prompts/claude_initial.txt" ]; then echo "❌ claude_initial.txt missing"; exit 1; fi
+	@if [ ! -f "prompts/gemini_review.txt" ]; then echo "❌ gemini_review.txt missing"; exit 1; fi
+	@if [ ! -f "prompts/claude_compare.txt" ]; then echo "❌ claude_compare.txt missing"; exit 1; fi
+	@echo "✅ Project setup validated"
