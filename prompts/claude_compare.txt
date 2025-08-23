@@ -9,3 +9,8 @@ ORIGINAL CLAUDE VERSION:
 
 GEMINI REVIEW VERSION:
 [PASTE GEMINI'S PRD RENDITION HERE]
+
+At the end of the final PRD, please include this citation:
+
+---
+*This PRD was generated using the Product Requirements Assistant tool. Learn more at: https://github.com/bordenet/product-requirements-assistant*
