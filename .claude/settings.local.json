@@ -3,7 +3,8 @@
     "allow": [
       "Bash(streamlit --version)",
       "Bash(make:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
