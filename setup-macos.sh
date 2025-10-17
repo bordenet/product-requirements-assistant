@@ -48,7 +48,7 @@ echo "Starting the application..."
 
 # Start the backend in the background
 echo "Starting backend server..."
-make run-backend &
+make run-backend > backend.log 2>&1 &
 BACKEND_PID=$!
 
 # Give the backend a moment to start
