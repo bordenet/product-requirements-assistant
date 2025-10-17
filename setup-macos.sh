@@ -40,13 +40,8 @@ echo "Setting up the project..."
 make install
 
 # --- Testing ---
-echo "Running tests..."
-
-# Run backend tests
+echo "Running backend unit tests..."
 make test-all
-
-# Run integration tests
-make test-integration
 
 # --- Running the Application ---
 echo "Starting the application..."
@@ -57,8 +52,22 @@ make run-backend &
 BACKEND_PID=$!
 
 # Give the backend a moment to start
+echo "Waiting for backend to start..."
 sleep 5
 
+# --- Integration Testing ---
+echo "Running integration tests..."
+if ! make test-integration; then
+    echo ""
+    echo "========================================"
+    echo "❌ Integration tests failed."
+    echo "The backend server (PID: $BACKEND_PID) is still running."
+    echo "You can stop it with: kill $BACKEND_PID"
+    echo "========================================"
+    exit 1
+fi
+
+# --- Frontend ---
 # Start the frontend
 echo "Starting frontend application..."
 make run-frontend
