@@ -18,14 +18,33 @@ An interactive tool for creating Product Requirements Documents using Claude and
 - **Frontend (Python/Streamlit)**: Interactive web UI for the PRD workflow
 - **Storage**: Local file system for projects and prompts
 
-## Setup
+## Quick Start
+
+### Automated Setup (Recommended)
+
+**macOS:**
+```bash
+./setup-macos.sh
+```
+
+**macOS or Linux (Ubuntu/Debian):**
+```bash
+./setup.sh
+```
+
+This will:
+- Check and install dependencies (Go, Python3)
+- Run tests
+- Start both backend and frontend
+- Open your browser to http://localhost:8501
+
+Press `Ctrl+C` to stop both services.
+
+### Manual Setup
 
 1. Install dependencies:
    ```bash
    make install
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
    ```
 
 2. Start the backend (terminal 1):
