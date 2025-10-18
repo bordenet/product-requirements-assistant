@@ -1,43 +1,29 @@
+# Test artifacts and scaffolding
+setup-test.log
+backend.log
+frontend.log
+git_reset.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
 # Go
-backend/backend
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-*.test
-*.out
-go.work
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-.venv
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-
-# Project specific
-outputs/*.md
-outputs/*.json
-inputs/*
-!inputs/.gitkeep
-!outputs/.gitkeep
-
-# Keep testdata for end-to-end tests
-!testdata/
 
 # OS
 .DS_Store
 Thumbs.db
-backend.log
