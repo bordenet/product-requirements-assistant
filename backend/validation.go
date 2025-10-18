@@ -20,17 +20,15 @@ type InputValidator struct {
 
 // NewInputValidator creates a new input validator with default settings
 func NewInputValidator() *InputValidator {
-	// Compile forbidden patterns (potential security risks)
+	// Compile forbidden patterns (actual security risks only)
+	// These patterns look for HTML tags with specific characters that indicate actual code injection
 	forbiddenPatterns := []*regexp.Regexp{
 		regexp.MustCompile(`<script[^>]*>.*?</script>`),           // Script tags
-		regexp.MustCompile(`javascript:`),                         // JavaScript URLs
-		regexp.MustCompile(`on\w+\s*=`),                          // Event handlers
+		regexp.MustCompile(`javascript:\s*[a-zA-Z]`),              // JavaScript URLs (must have code after)
+		regexp.MustCompile(`<\s*\w+[^>]*\son\w+\s*=\s*["']`),     // Event handlers in actual HTML tags
 		regexp.MustCompile(`<iframe[^>]*>.*?</iframe>`),          // Iframes
 		regexp.MustCompile(`<object[^>]*>.*?</object>`),          // Objects
 		regexp.MustCompile(`<embed[^>]*>`),                       // Embeds
-		regexp.MustCompile(`<link[^>]*>`),                        // Link tags
-		regexp.MustCompile(`<meta[^>]*>`),                        // Meta tags
-		regexp.MustCompile(`<style[^>]*>.*?</style>`),            // Style tags
 	}
 
 	// Allowed HTML tags for content (basic formatting only)
@@ -56,9 +54,9 @@ func NewInputValidator() *InputValidator {
 
 	return &InputValidator{
 		maxTitleLength:    200,
-		maxProblemsLength: 5000,
-		maxContextLength:  5000,
-		maxContentLength:  100000, // 100KB for PRD content
+		maxProblemsLength: 100000, // Increased to 100KB to accommodate large PRD inputs
+		maxContextLength:  50000,  // Increased to 50KB for additional context
+		maxContentLength:  200000, // Increased to 200KB for PRD content
 		forbiddenPatterns: forbiddenPatterns,
 		allowedHTMLTags:   allowedTags,
 	}

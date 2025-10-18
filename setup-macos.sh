@@ -24,7 +24,7 @@ print_error() {
     echo "  ✗ $1"
 }
 
-TOTAL_STEPS=6
+TOTAL_STEPS=7
 CURRENT_STEP=0
 
 # --- Dependency Checks ---
@@ -64,6 +64,74 @@ CURRENT_STEP=$((CURRENT_STEP + 1))
 print_step $CURRENT_STEP $TOTAL_STEPS "Running tests"
 make test-all >/dev/null 2>&1
 print_ok "Unit tests passed"
+
+# --- Clean up existing processes ---
+CURRENT_STEP=$((CURRENT_STEP + 1))
+print_step $CURRENT_STEP $TOTAL_STEPS "Cleaning up existing processes"
+
+# Check if any ports are in use
+PORTS_IN_USE=()
+if lsof -ti:8080 >/dev/null 2>&1; then
+    PORTS_IN_USE+=("8080 (backend)")
+fi
+if lsof -ti:8501 >/dev/null 2>&1; then
+    PORTS_IN_USE+=("8501 (frontend)")
+fi
+if lsof -ti:8502 >/dev/null 2>&1; then
+    PORTS_IN_USE+=("8502 (frontend-alt)")
+fi
+
+# If any ports are in use, warn the user
+if [ ${#PORTS_IN_USE[@]} -gt 0 ]; then
+    echo ""
+    echo "⚠️  WARNING: The following ports are currently in use:"
+    for port in "${PORTS_IN_USE[@]}"; do
+        echo "    - Port $port"
+    done
+    echo ""
+    echo "This script will kill the processes using these ports."
+    echo ""
+
+    # Prompt with 3-second timeout (defaults to Yes)
+    read -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
+    echo ""
+
+    # Default to yes if empty or timeout
+    response=${response:-y}
+
+    if [[ ! "$response" =~ ^[Yy]$ ]]; then
+        echo "Setup cancelled by user."
+        exit 0
+    fi
+fi
+
+# Kill processes on port 8080 (backend)
+if lsof -ti:8080 >/dev/null 2>&1; then
+    echo "  Killing existing process on port 8080..."
+    lsof -ti:8080 | xargs kill -9 2>/dev/null || true
+    sleep 1
+    print_ok "Port 8080 freed"
+else
+    print_ok "Port 8080 available"
+fi
+
+# Kill processes on port 8501 (frontend)
+if lsof -ti:8501 >/dev/null 2>&1; then
+    echo "  Killing existing process on port 8501..."
+    lsof -ti:8501 | xargs kill -9 2>/dev/null || true
+    sleep 1
+    print_ok "Port 8501 freed"
+else
+    print_ok "Port 8501 available"
+fi
+
+# Also check for port 8502 (alternate Streamlit port)
+if lsof -ti:8502 >/dev/null 2>&1; then
+    echo "  Killing existing process on port 8502..."
+    lsof -ti:8502 | xargs kill -9 2>/dev/null || true
+    sleep 1
+    print_ok "Port 8502 freed"
+fi
 
 # --- Running the Application ---
 CURRENT_STEP=$((CURRENT_STEP + 1))

@@ -59,7 +59,7 @@ install_package() {
     esac
 }
 
-TOTAL_STEPS=6
+TOTAL_STEPS=7
 CURRENT_STEP=0
 
 # Detect OS
@@ -134,6 +134,100 @@ CURRENT_STEP=$((CURRENT_STEP + 1))
 print_step $CURRENT_STEP $TOTAL_STEPS "Running tests"
 make test-all >/dev/null 2>&1
 print_ok "Unit tests passed"
+
+# --- Clean up existing processes ---
+CURRENT_STEP=$((CURRENT_STEP + 1))
+print_step $CURRENT_STEP $TOTAL_STEPS "Cleaning up existing processes"
+
+# Function to check if port is in use (cross-platform)
+check_port() {
+    local port=$1
+    if command_exists lsof; then
+        lsof -ti:$port >/dev/null 2>&1
+    elif command_exists fuser; then
+        fuser $port/tcp >/dev/null 2>&1
+    elif command_exists nc; then
+        nc -z localhost $port 2>/dev/null
+    else
+        return 1
+    fi
+}
+
+# Check if any ports are in use
+PORTS_IN_USE=()
+if check_port 8080; then
+    PORTS_IN_USE+=("8080 (backend)")
+fi
+if check_port 8501; then
+    PORTS_IN_USE+=("8501 (frontend)")
+fi
+if check_port 8502; then
+    PORTS_IN_USE+=("8502 (frontend-alt)")
+fi
+
+# If any ports are in use, warn the user
+if [ ${#PORTS_IN_USE[@]} -gt 0 ]; then
+    echo ""
+    echo "⚠️  WARNING: The following ports are currently in use:"
+    for port in "${PORTS_IN_USE[@]}"; do
+        echo "    - Port $port"
+    done
+    echo ""
+    echo "This script will kill the processes using these ports."
+    echo ""
+
+    # Prompt with 3-second timeout (defaults to Yes)
+    read -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
+    echo ""
+
+    # Default to yes if empty or timeout
+    response=${response:-y}
+
+    if [[ ! "$response" =~ ^[Yy]$ ]]; then
+        echo "Setup cancelled by user."
+        exit 0
+    fi
+fi
+
+# Function to kill process on port (cross-platform)
+kill_port() {
+    local port=$1
+    if command_exists lsof; then
+        # macOS and most Linux systems
+        if lsof -ti:$port >/dev/null 2>&1; then
+            echo "  Killing existing process on port $port..."
+            lsof -ti:$port | xargs kill -9 2>/dev/null || true
+            sleep 1
+            print_ok "Port $port freed"
+        else
+            print_ok "Port $port available"
+        fi
+    elif command_exists fuser; then
+        # Linux alternative if lsof not available
+        if fuser $port/tcp >/dev/null 2>&1; then
+            echo "  Killing existing process on port $port..."
+            fuser -k $port/tcp 2>/dev/null || true
+            sleep 1
+            print_ok "Port $port freed"
+        else
+            print_ok "Port $port available"
+        fi
+    else
+        # Fallback: just check if port is available
+        if nc -z localhost $port 2>/dev/null; then
+            print_error "Port $port is in use but cannot kill process (lsof/fuser not available)"
+            echo "  Please manually stop the process using port $port"
+            exit 1
+        else
+            print_ok "Port $port available"
+        fi
+    fi
+}
+
+# Kill processes on required ports
+kill_port 8080  # Backend
+kill_port 8501  # Frontend
+kill_port 8502  # Alternate Streamlit port
 
 # --- Running the Application ---
 CURRENT_STEP=$((CURRENT_STEP + 1))
