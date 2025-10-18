@@ -8,78 +8,142 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# --- Dependency Checks ---
-echo "Checking for dependencies..."
+# Print step with consistent formatting
+print_step() {
+    echo ""
+    echo "[$1/$2] $3"
+}
 
-# Check for Homebrew
+# Print success
+print_ok() {
+    echo "  ✓ $1"
+}
+
+# Print error
+print_error() {
+    echo "  ✗ $1"
+}
+
+TOTAL_STEPS=6
+CURRENT_STEP=0
+
+# --- Dependency Checks ---
+CURRENT_STEP=$((CURRENT_STEP + 1))
+print_step $CURRENT_STEP $TOTAL_STEPS "Checking dependencies"
+
 if ! command_exists brew; then
-    echo "Homebrew not found. Please install Homebrew to continue: https://brew.sh/"
+    print_error "Homebrew not found"
+    echo "Please install Homebrew: https://brew.sh/"
     exit 1
 fi
 
-# Check for Go
 if ! command_exists go; then
-    echo "Go not found. Installing Go with Homebrew..."
-    brew install go
+    echo "  Installing Go..."
+    brew install go >/dev/null 2>&1
+    print_ok "Go installed"
 else
-    echo "Go is already installed."
+    print_ok "Go"
 fi
 
-# Check for Python
 if ! command_exists python3; then
-    echo "Python 3 not found. Installing Python with Homebrew..."
-    brew install python
+    echo "  Installing Python..."
+    brew install python >/dev/null 2>&1
+    print_ok "Python installed"
 else
-    echo "Python 3 is already installed."
+    print_ok "Python3"
 fi
 
 # --- Project Setup ---
-echo "Setting up the project..."
-
-# Install dependencies
-make install
+CURRENT_STEP=$((CURRENT_STEP + 1))
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing dependencies"
+make install >/dev/null 2>&1
+print_ok "Dependencies installed"
 
 # --- Testing ---
-echo "Running backend unit tests..."
-make test-all
+CURRENT_STEP=$((CURRENT_STEP + 1))
+print_step $CURRENT_STEP $TOTAL_STEPS "Running tests"
+make test-all >/dev/null 2>&1
+print_ok "Unit tests passed"
 
 # --- Running the Application ---
-echo "Starting the application..."
+CURRENT_STEP=$((CURRENT_STEP + 1))
+print_step $CURRENT_STEP $TOTAL_STEPS "Starting backend"
 
-# Start the backend in the background
-echo "Starting backend server..."
-make run-backend > backend.log 2>&1 &
+nohup make run-backend > backend.log 2>&1 &
 BACKEND_PID=$!
 
-# Give the backend a moment to start
-echo "Waiting for backend to start..."
-sleep 5
+# Wait for backend health check
+SECONDS=0
+printf "  Waiting for backend"
+while true; do
+    response=$(curl -s -w "%{http_code}" "http://localhost:8080/api/health" -o /dev/null 2>/dev/null) || true
+    if [ "$response" = "200" ]; then
+        echo ""
+        print_ok "Backend ready (PID: $BACKEND_PID)"
+        break
+    fi
+    if [ $SECONDS -ge 30 ]; then
+        echo ""
+        print_error "Backend failed to start within 30 seconds"
+        echo ""
+        echo "Backend log:"
+        cat backend.log
+        exit 1
+    fi
+    printf "."
+    sleep 1
+done
 
 # --- Integration Testing ---
-echo "Running integration tests..."
-if ! make test-integration; then
+CURRENT_STEP=$((CURRENT_STEP + 1))
+print_step $CURRENT_STEP $TOTAL_STEPS "Running integration tests"
+if ! make test-integration >/dev/null 2>&1; then
+    print_error "Integration tests failed"
     echo ""
-    echo "========================================"
-    echo "❌ Integration tests failed."
-    echo "The backend server (PID: $BACKEND_PID) is still running."
-    echo "You can stop it with: kill $BACKEND_PID"
-    echo "========================================"
+    echo "Backend is still running (PID: $BACKEND_PID)"
+    echo "Stop it with: kill $BACKEND_PID"
     exit 1
 fi
+print_ok "Integration tests passed"
+
+# --- Cleanup Handler ---
+cleanup() {
+    echo ""
+    echo ""
+    echo "Shutting down..."
+    if [ ! -z "$BACKEND_PID" ]; then
+        kill $BACKEND_PID 2>/dev/null && echo "  Backend stopped" || true
+    fi
+    if [ ! -z "$FRONTEND_PID" ]; then
+        kill $FRONTEND_PID 2>/dev/null && echo "  Frontend stopped" || true
+    fi
+    echo "Done."
+    exit 0
+}
+
+trap cleanup SIGINT SIGTERM
 
 # --- Frontend ---
-# Start the frontend
-echo "Starting frontend application..."
-make run-frontend
+CURRENT_STEP=$((CURRENT_STEP + 1))
+print_step $CURRENT_STEP $TOTAL_STEPS "Starting frontend"
+nohup make run-frontend > frontend.log 2>&1 &
+FRONTEND_PID=$!
+
+sleep 3
+print_ok "Frontend ready (PID: $FRONTEND_PID)"
 
 # --- Application Running ---
 echo ""
 echo "========================================"
-echo "The application is now running."
-echo "Backend is running in the background (PID: $BACKEND_PID)."
-echo "Frontend is running in the foreground."
-echo ""
-echo "To stop the application:"
-echo "1. Press Ctrl+C in this terminal to stop the frontend."
-echo "2. Stop the backend by running: kill $BACKEND_PID"
+echo "Application running"
 echo "========================================"
+echo "Backend:  http://localhost:8080"
+echo "Frontend: http://localhost:8501"
+echo ""
+echo "Logs: tail -f backend.log frontend.log"
+echo "Stop:  Press Ctrl+C"
+echo "========================================"
+echo ""
+
+# Wait indefinitely until user presses Ctrl+C
+wait

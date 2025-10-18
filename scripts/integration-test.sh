@@ -113,20 +113,22 @@ if [ "${invalid_create: -3}" = "400" ]; then
     echo "✅ Input validation working"
 else
     echo "❌ Input validation failed - should return 400 for invalid input"
+    exit 1
 fi
 
-# Test nonexistent project
-nonexistent_response=$(curl -s -w "%{http_code}" "$BASE_URL/api/projects/nonexistent-id" -o /dev/null)
+# Test nonexistent project (using valid UUID format that doesn't exist)
+nonexistent_response=$(curl -s -w "%{http_code}" "$BASE_URL/api/projects/00000000-0000-0000-0000-000000000000" -o /dev/null)
 if [ "${nonexistent_response: -3}" = "404" ]; then
     echo "✅ 404 handling working"
 else
     echo "❌ 404 handling failed"
+    exit 1
 fi
 
 echo ""
-echo "🎉 All integration tests passed!"
-echo "✅ Backend API is functioning correctly"
-echo "✅ All endpoints responding as expected"
-echo "✅ Error handling working properly"
+echo "All integration tests passed."
+echo "Backend API is functioning correctly"
+echo "All endpoints responding as expected"
+echo "Error handling working properly"
 
 exit 0

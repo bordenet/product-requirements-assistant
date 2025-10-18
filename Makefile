@@ -10,7 +10,7 @@ run-backend:
 	cd backend && go run .
 
 run-frontend:
-	cd frontend && streamlit run app.py
+	cd frontend && python3 -m streamlit run app.py
 
 run: 
 	@echo "Starting Product Requirements Factory..."
