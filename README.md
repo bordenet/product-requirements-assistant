@@ -1,120 +1,130 @@
 # Product Requirements Assistant
 
-An interactive tool for creating Product Requirements Documents using Claude and Gemini AI assistants.
+A tool for creating Product Requirements Documents with AI assistance.
 
-## Features
+## What It Does
 
-- 3-phase PRD creation workflow
-- Customizable prompts for each phase
-- Local storage of all versions
-- Markdown export
-- Interactive Streamlit UI
-- Go backend with REST API
-- Python/Streamlit frontend
+- 3-phase workflow: Initial draft, review, and finalization
+- Uses Claude and Gemini via copy/paste
+- Stores projects locally as JSON files
+- Exports to markdown
 
 ## Architecture
 
-- **Backend (Go)**: REST API server handling project management, file storage, and business logic
-- **Frontend (Python/Streamlit)**: Interactive web UI for the PRD workflow
-- **Storage**: Local file system for projects and prompts
+- **Backend**: Go REST API on port 8080
+- **Frontend**: Streamlit web UI on port 8501
+- **Storage**: Local filesystem
 
-## Quick Start
+## Setup
 
-### Automated Setup (Recommended)
+### Quick Start
 
 **macOS:**
 ```bash
 ./setup-macos.sh
 ```
 
-**macOS or Linux (Ubuntu/Debian):**
+**Linux (Ubuntu/Debian):**
 ```bash
 ./setup.sh
 ```
 
-This will:
-- Check and install dependencies (Go, Python3)
+The setup script will:
+- Install Go and Python3 if needed
+- Install project dependencies
 - Run tests
-- Start both backend and frontend
-- Open your browser to http://localhost:8501
+- Check for processes on ports 8080/8501 and offer to kill them
+- Start backend and frontend
+- Open http://localhost:8501
 
-Press `Ctrl+C` to stop both services.
+Stop with `Ctrl+C`.
 
 ### Manual Setup
 
-1. Install dependencies:
-   ```bash
-   make install
-   ```
+```bash
+# Install dependencies
+make install
 
-2. Start the backend (terminal 1):
-   ```bash
-   make run-backend
-   ```
+# Terminal 1 - Backend
+make run-backend
 
-3. Start the frontend (terminal 2):
-   ```bash
-   make run-frontend
-   ```
+# Terminal 2 - Frontend
+make run-frontend
+```
 
-4. Open http://localhost:8501 in your browser
+Then open http://localhost:8501
 
 ## Usage
 
-1. **Create New Project**: Enter your document title, problems to solve, and context
-2. **Phase 1**: Copy the generated prompt and paste into Claude Opus 4
-3. **Phase 2**: Take Claude's output and have Gemini Pro 2.5 review it
-4. **Phase 3**: Have Claude compare both versions and create the final PRD
-5. **Export**: Download the final PRD as markdown
-
-## Customization
-
-Edit prompt templates through the UI or directly in the `prompts/` directory.
+1. Create a new project with title and description
+2. Copy the Phase 1 prompt and paste into Claude Opus 4
+3. Paste Claude's response back into the tool
+4. Copy the Phase 2 prompt and paste into Gemini Pro 2.5
+5. Paste Gemini's response back
+6. Copy the Phase 3 prompt and paste into Claude for final version
+7. Download the result as markdown
 
 ## Project Structure
 
 ```
 product-requirements-assistant/
-├── backend/          # Go REST API
-├── frontend/         # Python/Streamlit UI
-├── prompts/          # Customizable prompt templates
-├── inputs/           # Input documents
-├── outputs/          # Generated PRDs and project files
-├── go.mod           # Go dependencies
-├── requirements.txt  # Python dependencies
-├── Makefile         # Build and run commands
-└── README.md        # This file
+├── backend/          # Go server (port 8080)
+├── frontend/         # Streamlit app (port 8501)
+├── prompts/          # Prompt templates
+├── outputs/          # Generated PRDs
+├── Makefile         # Common commands
+└── setup-macos.sh   # Automated setup
 ```
 
-## Screenshots
+## Configuration
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <a href="./Welcome_Screen.png">
-        <img src="./Welcome_Screen.png" alt="Off to the races" style="width: 100%; max-width: 100%;">
-      </a>
-       <br>
-      <em>Starting page</em>
-    </td>
-    <td align="center" width="50%">
-      <a href="./First_Step.png">
-        <img src="./First_Step.png" alt="Starting page" style="width: 100%; max-width: 100%;">
-      </a>
-      <br>
-      <em>Off to the races</em>
-    </td>
-  </tr>
-</table>
+Prompt templates can be edited in the UI or in `prompts/`.
 
-## Future Enhancements
+Validation limits:
+- Title: 200 characters
+- Problems/Description: 100KB
+- Context: 50KB
+- PRD Content: 200KB
 
-- Direct API integration with Claude and Gemini
-- LangGraph orchestration for automated workflow
-- Confluence integration
-- Authentication and multi-user support
-- Cloud deployment options
+## Troubleshooting
+
+**Port already in use:**
+```bash
+lsof -ti:8080 | xargs kill -9
+lsof -ti:8501 | xargs kill -9
+```
+
+Or just run the setup script again - it will handle this automatically.
+
+**Logs:**
+```bash
+tail -f backend.log frontend.log
+```
+
+See [LOGGING.md](LOGGING.md) for detailed error documentation.
+
+## Testing
+
+```bash
+# Run all tests
+make test-all
+
+# Backend tests only
+make test-backend
+
+# Integration tests
+make test-integration
+```
+
+## Known Limitations
+
+- No direct API integration (requires manual copy/paste)
+- Single user only
+- Local storage only
+- No real-time collaboration
+- No version history beyond 3 phases
+- Limited to text-based PRDs
 
 ## License
 
-This project is licensed under the MIT License – see the [LICENSE](./LICENSE) file for details.
+MIT License - see [LICENSE](./LICENSE)

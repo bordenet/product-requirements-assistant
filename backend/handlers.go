@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -18,6 +19,7 @@ var projects = make(map[string]*Project)
 func createProject(w http.ResponseWriter, r *http.Request) {
 	var req CreateProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("ERROR: Failed to decode request: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -25,6 +27,8 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	// Input validation and sanitization
 	validator := GetValidator()
 	if err := validator.ValidateCreateProjectRequest(&req); err != nil {
+		log.Printf("ERROR: Validation failed: %v (Title length: %d, Problems length: %d, Context length: %d)",
+			err, len(req.Title), len(req.Problems), len(req.Context))
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
