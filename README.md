@@ -5,7 +5,7 @@ A tool for creating Product Requirements Documents with AI assistance.
 ## What It Does
 
 - 3-phase workflow: Initial draft, review, and finalization
-- Uses Claude and Gemini via copy/paste
+- Uses Claude Sonnet 4.5 and Gemini 2.5 Pro via copy/paste
 - Stores projects locally as JSON files
 - Exports to markdown
 
@@ -71,10 +71,10 @@ Then open http://localhost:8501
 ## Usage
 
 1. Create a new project with title and description
-2. Copy the Phase 1 prompt and paste into Claude Opus 4
-3. Paste Claude's response back into the tool
-4. Copy the Phase 2 prompt and paste into Gemini Pro 2.5
-5. Paste Gemini's response back
+2. Copy the Phase 1 prompt and paste into Claude Sonnet 4.5 (claude.ai)
+3. Use Claude's 'Copy' button to copy the response, then paste back into the tool
+4. Copy the Phase 2 prompt and paste into Gemini 2.5 Pro (gemini.google.com)
+5. Use Gemini's 'Copy' button to copy the response, then paste back
 6. Copy the Phase 3 prompt and paste into Claude for final version
 7. Download the result as markdown
 

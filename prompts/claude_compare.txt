@@ -1,4 +1,4 @@
-Google Gemini Pro 2.5 just reviewed the PRD we wrote and generated a competing version. Work with me to compare Google Gemini's version of the doc with yours and determine where we can make things cleaner/simpler/better. Identify areas of conflict and/or contradiction so we can create a successor version of the document which I can safely share with the engineering team.
+Gemini 2.5 Pro just reviewed the PRD we wrote and generated a competing version. Work with me to compare Gemini's version of the doc with yours and determine where we can make things cleaner/simpler/better. Identify areas of conflict and/or contradiction so we can create a successor version of the document which I can safely share with the engineering team.
 
 Include section numbers, as we did last time. Please DO NOT include a metadata table on top of the document (author, version, date, etc...)
 
