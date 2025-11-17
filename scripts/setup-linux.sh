@@ -126,7 +126,17 @@ fi
 # --- Project Setup ---
 CURRENT_STEP=$((CURRENT_STEP + 1))
 print_step $CURRENT_STEP $TOTAL_STEPS "Installing dependencies"
-make install >/dev/null 2>&1
+
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "  Creating Python virtual environment..."
+    python3 -m venv venv >/dev/null 2>&1
+fi
+
+# Install dependencies
+cd backend && go mod download && go mod tidy >/dev/null 2>&1
+cd ..
+./venv/bin/pip install -r requirements.txt >/dev/null 2>&1
 print_ok "Dependencies installed"
 
 # --- Testing ---
