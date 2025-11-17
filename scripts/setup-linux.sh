@@ -5,6 +5,23 @@
 
 set -e
 
+# Parse command line arguments
+AUTO_YES=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -y|--yes)
+            AUTO_YES=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [-y|--yes]"
+            echo "  -y, --yes    Automatically answer yes to prompts"
+            exit 1
+            ;;
+    esac
+done
+
 # Function to check if a command is available
 command_exists() {
     command -v "$1" >/dev/null 2>&1
@@ -186,9 +203,15 @@ if [ ${#PORTS_IN_USE[@]} -gt 0 ]; then
     echo "This script will kill the processes using these ports."
     echo ""
 
-    # Prompt with 3-second timeout (defaults to Yes)
-    read -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
-    echo ""
+    # Skip prompt if -y flag is set
+    if [ "$AUTO_YES" = true ]; then
+        echo "Auto-confirming (--yes flag set)"
+        response="y"
+    else
+        # Prompt with 3-second timeout (defaults to Yes)
+        read -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
+        echo ""
+    fi
 
     # Default to yes if empty or timeout
     response=${response:-y}
