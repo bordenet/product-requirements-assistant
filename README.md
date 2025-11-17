@@ -26,13 +26,20 @@ A tool for creating Product Requirements Documents with AI assistance.
 
 The script will automatically detect your OS and run the appropriate setup.
 
+**For automated/CI environments (skip prompts):**
+```bash
+./run.sh -y
+# or
+./run.sh --yes
+```
+
 **Or run platform-specific scripts:**
 ```bash
 # macOS
-./scripts/setup-macos.sh
+./scripts/setup-macos.sh [-y|--yes]
 
 # Linux/WSL (Ubuntu/Debian)
-./scripts/setup-linux.sh
+./scripts/setup-linux.sh [-y|--yes]
 ```
 
 The setup script will:
@@ -40,7 +47,7 @@ The setup script will:
 - Create a Python virtual environment (venv)
 - Install project dependencies
 - Run tests
-- Check for processes on ports 8080/8501 and offer to kill them
+- Check for processes on ports 8080/8501 and offer to kill them (or auto-confirm with `-y`)
 - Start backend and frontend
 - Open http://localhost:8501
 
