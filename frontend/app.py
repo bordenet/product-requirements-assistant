@@ -187,7 +187,7 @@ def show_project_workflow():
         show_phase_3()
 
 def show_phase_1():
-    st.subheader("Phase 1: Initial PRD with Claude Opus 4")
+    st.subheader("Phase 1: Initial PRD with Claude Sonnet 4.5")
     
     project = st.session_state.current_project
     phase_data = project['phases'][0]
@@ -207,7 +207,7 @@ def show_phase_1():
             key="phase1_prompt_display"
         )
     
-    st.info("1. Select all text in the box above (Ctrl/Cmd+A)\\n2. Copy it (Ctrl/Cmd+C)\\n3. Paste into Claude Opus 4\\n4. Engage in dialogue to refine the PRD\\n5. **IMPORTANT**: In Claude, use the 'Copy' button at the bottom of Claude's response to copy the raw markdown\\n6. Paste the result below")
+    st.info("1. Select all text in the box above (Ctrl/Cmd+A)\\n2. Copy it (Ctrl/Cmd+C)\\n3. Paste into Claude Sonnet 4.5 (at claude.ai)\\n4. Engage in dialogue to refine the PRD\\n5. **IMPORTANT**: In Claude, use the 'Copy' button at the bottom of Claude's response to copy the raw markdown\\n6. Paste the result below")
     
     # Two-column layout for input and preview
     col1, col2 = st.columns(2)
@@ -291,7 +291,7 @@ def show_phase_1():
         """)
 
 def show_phase_2():
-    st.subheader("Phase 2: Gemini Pro 2.5 Review")
+    st.subheader("Phase 2: Gemini 2.5 Pro Review")
     
     project = st.session_state.current_project
     phase1_content = project['phases'][0].get('content', '')
@@ -321,7 +321,7 @@ def show_phase_2():
             key="phase2_prompt_display"
         )
     
-    st.info("1. Select all text in the box above (Ctrl/Cmd+A)\\n2. Copy it (Ctrl/Cmd+C)\\n3. Paste into Gemini Pro 2.5 (free tier)\\n4. **IMPORTANT**: Copy Gemini's response as markdown (look for a copy option or copy the source)\\n5. Paste below")
+    st.info("1. Select all text in the box above (Ctrl/Cmd+A)\\n2. Copy it (Ctrl/Cmd+C)\\n3. Paste into Gemini 2.5 Pro (at gemini.google.com)\\n4. **IMPORTANT**: Click the 'Copy' button below Gemini's response to copy the markdown\\n5. Paste below")
     
     # Two-column layout for input and preview
     col1, col2 = st.columns(2)
