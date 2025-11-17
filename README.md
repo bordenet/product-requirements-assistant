@@ -19,18 +19,25 @@ A tool for creating Product Requirements Documents with AI assistance.
 
 ### Quick Start
 
-**macOS:**
+**All platforms (macOS, Linux, WSL):**
 ```bash
-./setup-macos.sh
+./run.sh
 ```
 
-**Linux (Ubuntu/Debian):**
+The script will automatically detect your OS and run the appropriate setup.
+
+**Or run platform-specific scripts:**
 ```bash
-./setup.sh
+# macOS
+./scripts/setup-macos.sh
+
+# Linux/WSL (Ubuntu/Debian)
+./scripts/setup-linux.sh
 ```
 
 The setup script will:
 - Install Go and Python3 if needed
+- Create a Python virtual environment (venv)
 - Install project dependencies
 - Run tests
 - Check for processes on ports 8080/8501 and offer to kill them
@@ -70,10 +77,12 @@ Then open http://localhost:8501
 product-requirements-assistant/
 ├── backend/          # Go server (port 8080)
 ├── frontend/         # Streamlit app (port 8501)
+├── scripts/          # Setup and utility scripts
 ├── prompts/          # Prompt templates
 ├── outputs/          # Generated PRDs
+├── venv/            # Python virtual environment
 ├── Makefile         # Common commands
-└── setup-macos.sh   # Automated setup
+└── run.sh           # Unified setup script
 ```
 
 ## Configuration

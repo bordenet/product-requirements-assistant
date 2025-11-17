@@ -4,13 +4,14 @@ all: install
 
 install:
 	cd backend && go mod download && go mod tidy
-	pip install -r requirements.txt
+	python3 -m venv venv
+	./venv/bin/pip install -r requirements.txt
 
 run-backend:
 	cd backend && go run .
 
 run-frontend:
-	cd frontend && python3 -m streamlit run app.py
+	cd frontend && ../venv/bin/python -m streamlit run app.py
 
 run: 
 	@echo "Starting Product Requirements Factory..."
