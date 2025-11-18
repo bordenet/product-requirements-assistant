@@ -4,9 +4,11 @@ backend.log
 frontend.log
 git_reset.log
 
-# Project data directories
-outputs/
-inputs/
+# Project data directories (keep directory structure but ignore contents)
+outputs/*
+!outputs/.gitkeep
+inputs/*
+!inputs/.gitkeep
 
 # Python
 __pycache__/
