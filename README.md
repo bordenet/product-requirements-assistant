@@ -9,6 +9,14 @@ A tool for creating Product Requirements Documents with AI assistance.
 - Stores projects locally as JSON files
 - Exports to markdown
 
+## Screenshots
+
+![Phase 1 Interface](docs/img/Screenshot--Phase1.png)
+*Phase 1: Initial PRD generation with customizable prompts*
+
+![Claude Integration](docs/img/Screenshot--ClaudePhase1.png)
+*Copy/paste workflow with Claude Sonnet 4.5*
+
 ## Architecture
 
 - **Backend**: Go REST API on port 8080
@@ -117,7 +125,7 @@ Or just run the setup script again - it will handle this automatically.
 tail -f backend.log frontend.log
 ```
 
-See [LOGGING.md](LOGGING.md) for detailed error documentation.
+See [LOGGING.md](docs/LOGGING.md) for detailed error documentation.
 
 ## Testing
 
