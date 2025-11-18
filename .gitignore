@@ -4,6 +4,10 @@ backend.log
 frontend.log
 git_reset.log
 
+# Project data directories
+outputs/
+inputs/
+
 # Python
 __pycache__/
 *.pyc
