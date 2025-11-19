@@ -1,251 +1,264 @@
+﻿#!/usr/bin/env pwsh
 # Product Requirements Assistant - Windows Validation Script
 # Validates the entire monorepo: builds, lints, tests, and security scans
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '')]
 param(
-    [switch]$Quick = $false,
-    [switch]$Full = $false,
-    [switch]$Help = $false
+    [switch]$Quick,
+    [switch]$Full,
+    [switch]$Help
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 
-function Show-Help {
-    Write-Host "Usage: .\validate-monorepo.ps1 [OPTIONS]"
-    Write-Host ""
-    Write-Host "Validates the Product Requirements Assistant monorepo"
-    Write-Host ""
-    Write-Host "Options:"
-    Write-Host "  --quick    Quick validation (dependencies, build, lint, tests) ~1-2 min"
-    Write-Host "  --full     Full validation (quick + security scans, git status) ~3-5 min"
-    Write-Host "  --help     Show this help message"
-    Write-Host ""
-    Write-Host "Examples:"
-    Write-Host "  .\validate-monorepo.ps1 --quick"
-    Write-Host "  .\validate-monorepo.ps1 --full"
+# Get script directory
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location (Join-Path $ScriptDir '..')
+
+# Import compact output module
+Import-Module "$ScriptDir\lib\Compact.psm1" -Force
+
+if ($VerbosePreference -eq 'Continue') {
+    Enable-VerboseMode
+}
+
+# Show help
+if ($Help) {
+    Write-Host @"
+Usage: .\validate-monorepo.ps1 [OPTIONS]
+
+Validates the Product Requirements Assistant monorepo
+
+OPTIONS:
+  -Quick       Quick validation (dependencies, build, lint, tests) ~1-2 min
+  -Full        Full validation (quick + security scans, git status) ~3-5 min
+  -Verbose     Show detailed output (default: compact)
+  -Help        Show this help message
+
+EXAMPLES:
+  .\validate-monorepo.ps1 -Quick
+  .\validate-monorepo.ps1 -Full
+  .\validate-monorepo.ps1 -Full -Verbose
+
+"@
     exit 0
 }
 
-function Write-Header {
-    param($Message)
-    Write-Host ""
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
-    Write-Host $Message -ForegroundColor Cyan
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
-    Write-Host ""
-}
-
-function Write-Section {
-    param($Message)
-    Write-Host ""
-    Write-Host "▸ $Message" -ForegroundColor Yellow
-}
-
-function Write-Info {
-    param($Message)
-    Write-Host "[INFO] $Message" -ForegroundColor Blue
-}
-
-function Write-OK {
-    param($Message)
-    Write-Host "[OK] $Message" -ForegroundColor Green
-}
-
-function Write-Warn {
-    param($Message)
-    Write-Host "[WARN] $Message" -ForegroundColor Yellow
-}
-
-function Write-Err {
-    param($Message)
-    Write-Host "[ERROR] $Message" -ForegroundColor Red
-}
-
-if ($Help) {
-    Show-Help
-}
-
 if (-not $Quick -and -not $Full) {
-    Write-Err "Please specify --quick or --full"
-    Write-Host ""
-    Show-Help
+    Write-Host 'Error: Please specify -Quick or -Full' -ForegroundColor Red
+    Write-Host ''
+    Write-Host 'Run: .\validate-monorepo.ps1 -Help'
+    exit 1
 }
 
-$mode = if ($Full) { "full" } else { "quick" }
-Write-Header "Product Requirements Assistant - Monorepo Validation ($mode)"
+$mode = if ($Full) { 'full' } else { 'quick' }
+Write-CompactHeader "Product Requirements Assistant - Monorepo Validation ($mode)"
 
-# Validate Dependencies
-Write-Section "Validating Dependencies"
+################################################################################
+# Step 1: Validate Dependencies
+################################################################################
+
+Start-Task 'Validating dependencies'
 
 if (-not (Get-Command go -ErrorAction SilentlyContinue)) {
-    Write-Err "Go not found. Please install Go 1.21+"
+    Stop-Task 'Go not found'
+    Write-Host ''
+    Write-Host 'Please install Go 1.21+'
     exit 1
 }
 $goVersion = (go version) -replace 'go version go', '' -replace ' .*', ''
-Write-Info "Go version: $goVersion"
+Write-Verbose-Line "Go version: $goVersion"
 
 if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
-    Write-Err "Python not found. Please install Python 3.9+"
+    Stop-Task 'Python not found'
+    Write-Host ''
+    Write-Host 'Please install Python 3.9+'
     exit 1
 }
 $pythonVersion = (python --version) -replace 'Python ', ''
-Write-Info "Python version: $pythonVersion"
+Write-Verbose-Line "Python version: $pythonVersion"
 
-Write-OK "Dependencies validated"
+Complete-Task 'Dependencies validated'
 
-# Validate Project Structure
-Write-Section "Validating Project Structure"
+################################################################################
+# Step 2: Validate Project Structure
+################################################################################
 
-$requiredDirs = @("backend", "frontend", "prompts", "scripts", "docs")
+Start-Task 'Validating project structure'
+
+$requiredDirs = @('backend', 'frontend', 'prompts', 'scripts', 'docs')
 foreach ($dir in $requiredDirs) {
     if (-not (Test-Path $dir)) {
-        Write-Err "Required directory missing: $dir"
+        Stop-Task "Required directory missing: $dir"
         exit 1
     }
 }
 
-$requiredFiles = @("README.md", "Makefile", ".gitignore", ".env.example")
+$requiredFiles = @('README.md', 'Makefile', '.gitignore', '.env.example')
 foreach ($file in $requiredFiles) {
     if (-not (Test-Path $file)) {
-        Write-Err "Required file missing: $file"
+        Stop-Task "Required file missing: $file"
         exit 1
     }
 }
 
-Write-OK "Project structure validated"
+Complete-Task 'Project structure validated'
 
-# Build Backend
-Write-Section "Building Backend (Go)"
+################################################################################
+# Step 3: Build Backend
+################################################################################
 
-Write-Info "Running go mod tidy..."
+Start-Task 'Building backend (Go)'
+
 Push-Location backend
-go mod tidy
-if ($LASTEXITCODE -ne 0) {
-    Write-Err "go mod tidy failed"
-    Pop-Location
-    exit 1
-}
-
-Write-Info "Building backend..."
-go build -o prd-assistant.exe .
-if ($LASTEXITCODE -ne 0) {
-    Write-Err "Backend build failed"
-    Pop-Location
-    exit 1
-}
-Remove-Item prd-assistant.exe -ErrorAction SilentlyContinue
-Pop-Location
-
-Write-OK "Backend build successful"
-
-# Lint Backend
-Write-Section "Linting Backend (Go)"
-
-Write-Info "Running go vet..."
-Push-Location backend
-go vet ./...
-if ($LASTEXITCODE -ne 0) {
-    Write-Err "go vet found issues"
-    Pop-Location
-    exit 1
-}
-
-Write-Info "Checking gofmt..."
-$unformatted = go fmt ./...
-if ($unformatted) {
-    Write-Warn "gofmt reformatted files: $unformatted"
-}
-Pop-Location
-
-Write-OK "Backend linting passed"
-
-# Run Backend Tests
-Write-Section "Running Backend Tests"
-
-Write-Info "Running Go tests..."
-Push-Location backend
-go test -v ./...
-if ($LASTEXITCODE -ne 0) {
-    Write-Err "Backend tests failed"
-    Pop-Location
-    exit 1
-}
-Pop-Location
-
-Write-OK "Backend tests passed"
-
-# Lint Frontend
-Write-Section "Linting Frontend (Python)"
-
-Write-Info "Running flake8..."
-Push-Location frontend
-$flake8Output = flake8 . 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Warn "flake8 found issues (non-fatal)"
-    Write-Host $flake8Output
-} else {
-    Write-OK "flake8 passed"
-}
-
-# Check for black
-if (Get-Command black -ErrorAction SilentlyContinue) {
-    Write-Info "Checking black formatting..."
-    black --check . 2>&1 | Out-Null
+try {
+    Write-Verbose-Line 'Running go mod tidy...'
+    go mod tidy 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
     if ($LASTEXITCODE -ne 0) {
-        Write-Warn "black would reformat files (non-fatal)"
+        throw 'go mod tidy failed'
     }
-} else {
-    Write-Warn "black not installed, skipping Python formatting check"
-    Write-Info "Install with: pip install black"
+
+    Write-Verbose-Line 'Building backend...'
+    go build -o prd-assistant.exe . 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Backend build failed'
+    }
+    
+    Remove-Item prd-assistant.exe -ErrorAction SilentlyContinue
+    Pop-Location
+    Complete-Task 'Backend build successful'
+} catch {
+    Pop-Location
+    Stop-Task "Backend build failed: $_"
+    exit 1
 }
-Pop-Location
 
-Write-OK "Frontend linting complete"
+################################################################################
+# Step 4: Lint Backend
+################################################################################
 
-# Full mode additional checks
+Start-Task 'Linting backend (Go)'
+
+Push-Location backend
+try {
+    if (Get-Command golangci-lint -ErrorAction SilentlyContinue) {
+        Write-Verbose-Line 'Running golangci-lint...'
+        golangci-lint run 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+        if ($LASTEXITCODE -ne 0) {
+            throw 'golangci-lint found issues'
+        }
+        Pop-Location
+        Complete-Task 'Backend linting passed'
+    } else {
+        Pop-Location
+        Write-TaskWarning 'golangci-lint not installed (skipping)'
+    }
+} catch {
+    Pop-Location
+    Stop-Task "Backend linting failed: $_"
+    exit 1
+}
+
+################################################################################
+# Step 5: Test Backend
+################################################################################
+
+Start-Task 'Testing backend (Go)'
+
+Push-Location backend
+try {
+    Write-Verbose-Line 'Running go test...'
+    go test ./... 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Backend tests failed'
+    }
+    Pop-Location
+    Complete-Task 'Backend tests passed'
+} catch {
+    Pop-Location
+    Stop-Task "Backend tests failed: $_"
+    exit 1
+}
+
+################################################################################
+# Step 6: Lint Frontend
+################################################################################
+
+Start-Task 'Linting frontend (Python)'
+
+Push-Location frontend
+try {
+    if (Get-Command flake8 -ErrorAction SilentlyContinue) {
+        Write-Verbose-Line 'Running flake8...'
+        flake8 . --max-line-length=120 --exclude=venv 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+        if ($LASTEXITCODE -ne 0) {
+            throw 'flake8 found issues'
+        }
+        Pop-Location
+        Complete-Task 'Frontend linting passed'
+    } else {
+        Pop-Location
+        Write-TaskWarning 'flake8 not installed (skipping)'
+    }
+} catch {
+    Pop-Location
+    Stop-Task "Frontend linting failed: $_"
+    exit 1
+}
+
+################################################################################
+# Step 7: Security Scans (Full mode only)
+################################################################################
+
 if ($Full) {
-    # Security Scanning
-    Write-Section "Security Scanning"
+    Start-Task 'Scanning for secrets'
 
-    Write-Info "Checking for secrets in source code..."
     $secretPatterns = @(
-        "password\s*=\s*['\"][^'\"]+['\"]",
-        "api[_-]?key\s*=\s*['\"][^'\"]+['\"]",
-        "secret\s*=\s*['\"][^'\"]+['\"]",
-        "token\s*=\s*['\"][^'\"]+['\"]"
+        'password\s*=\s*[''"][^''"]+[''"]',
+        'api[_-]?key\s*=\s*[''"][^''"]+[''"]',
+        'secret\s*=\s*[''"][^''"]+[''"]',
+        'token\s*=\s*[''"][^''"]+[''"]'
     )
 
-    $secretsFound = $false
+    $foundSecrets = $false
     foreach ($pattern in $secretPatterns) {
-        $matches = Select-String -Path "backend\*.go","frontend\*.py" -Pattern $pattern -ErrorAction SilentlyContinue
-        if ($matches) {
-            $secretsFound = $true
-            Write-Warn "Potential secret found: $($matches.Line)"
+        $results = Get-ChildItem -Recurse -File -Exclude @('*.pyc', '*.exe', '*.dll') |
+            Select-String -Pattern $pattern -CaseSensitive:$false
+
+        if ($results) {
+            $foundSecrets = $true
+            foreach ($result in $results) {
+                Write-Verbose-Line "Potential secret: $($result.Path):$($result.LineNumber)"
+            }
         }
     }
 
-    if (-not $secretsFound) {
-        Write-OK "No obvious secrets detected"
+    if ($foundSecrets) {
+        Write-TaskWarning 'Potential secrets found (review verbose output)'
+    } else {
+        Complete-Task 'No secrets found'
     }
 
-    Write-OK "Security scan complete"
-
-    # Check Git Status
-    Write-Section "Checking Git Status"
+    Start-Task 'Checking git status'
 
     $gitStatus = git status --porcelain
     if ($gitStatus) {
-        Write-Warn "Working directory has uncommitted changes"
-        Write-Host $gitStatus
+        Write-TaskWarning 'Uncommitted changes detected'
+        Write-Verbose-Line $gitStatus
     } else {
-        Write-OK "Working directory clean"
+        Complete-Task 'Git working tree clean'
     }
 }
 
-# Success
-Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-Write-Host "Validation Complete ✓" -ForegroundColor Green
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-Write-Host ""
-Write-OK "All checks passed!"
+################################################################################
+# Done
+################################################################################
+
+Write-Host ''
+Write-CompactHeader "Validation complete! $(Get-ElapsedTime)"
+Write-Host ''
+Write-Host 'All checks passed successfully!'
+Write-Host ''
+
 

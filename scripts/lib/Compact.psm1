@@ -1,5 +1,13 @@
+﻿#!/usr/bin/env pwsh
 # Compact Output Module for PowerShell
 # Vertical real estate optimized with running timer
+#
+# PURPOSE: Minimal vertical space usage with in-place updates and timer
+# USAGE: Import-Module "$PSScriptRoot\lib\Compact.psm1" -Force
+#
+# Suppress PSScriptAnalyzer warnings for Write-Host (intentional for terminal UI)
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '')]
+param()
 
 # ANSI escape sequences
 $script:ANSI_CLEAR_LINE = "`e[2K"
@@ -53,13 +61,14 @@ function Write-Timer {
     Write-Host -NoNewline "${ANSI_CURSOR_RESTORE}"
 }
 
-# Update status line in place
+# Update status line in place (internal helper)
 function Update-Status {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     param(
         [string]$Symbol,
         [string]$Message
     )
-    
+
     # Clear line and print status with timer
     Write-Host -NoNewline "`r${ANSI_CLEAR_LINE}"
     Write-Host -NoNewline "$Symbol $Message"
@@ -73,11 +82,12 @@ function Complete-Status {
 
 # Start a task
 function Start-Task {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     param([string]$Message)
-    
+
     $script:CurrentTask = $Message
     Update-Status $script:SYM_RUN "${Message}..."
-    
+
     if ($script:Verbose) {
         Complete-Status
     }
@@ -91,18 +101,19 @@ function Complete-Task {
     Complete-Status
 }
 
-# Task failed
-function Fail-Task {
+# Task failed (using approved verb 'Stop')
+function Stop-Task {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     param([string]$Message = $script:CurrentTask)
-    
+
     Update-Status $script:SYM_FAIL $Message
     Complete-Status
 }
 
-# Task warning
-function Warn-Task {
+# Task warning (using approved verb pattern)
+function Write-TaskWarning {
     param([string]$Message = $script:CurrentTask)
-    
+
     Update-Status $script:SYM_WARN $Message
     Complete-Status
 }
@@ -159,8 +170,8 @@ Export-ModuleMember -Function @(
     'Get-ElapsedTime',
     'Start-Task',
     'Complete-Task',
-    'Fail-Task',
-    'Warn-Task',
+    'Stop-Task',
+    'Write-TaskWarning',
     'Skip-Task',
     'Write-Verbose-Line',
     'Write-CompactHeader',
