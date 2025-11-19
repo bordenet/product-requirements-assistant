@@ -73,6 +73,25 @@ log_section() {
     echo -e "${COLOR_BLUE}▸ $*${COLOR_RESET}"
 }
 
+# Print step progress (e.g., "Step 1/5: Installing dependencies")
+log_step() {
+    local current="$1"
+    local total="$2"
+    local message="$3"
+    echo ""
+    echo -e "${COLOR_CYAN}${COLOR_BOLD}Step $current/$total:${COLOR_RESET} $message"
+}
+
+# Alias for log_success (commonly used as log_ok)
+log_ok() {
+    log_success "$@"
+}
+
+# Alias for log_warning (commonly used as log_warn)
+log_warn() {
+    log_warning "$@"
+}
+
 ################################################################################
 # Error Handling
 ################################################################################
@@ -215,6 +234,11 @@ is_set() {
 # Check if running as root
 is_root() {
     [[ $EUID -eq 0 ]]
+}
+
+# Check if command exists
+command_exists() {
+    command -v "$1" &> /dev/null
 }
 
 ################################################################################
