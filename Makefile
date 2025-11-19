@@ -1,4 +1,4 @@
-.PHONY: all backend frontend run-backend run-frontend install clean format lint health-check test-health test-integration validate-setup test-backend test-e2e test-all benchmark help build
+.PHONY: all backend frontend run-backend run-frontend install clean format lint health-check test-health test-integration validate-setup test-backend test-e2e test-all benchmark help build validate validate-quick validate-full install-hooks
 
 .DEFAULT_GOAL := help
 
@@ -85,3 +85,14 @@ validate-setup: ## Validate project directory structure
 	@if [ ! -f "prompts/gemini_review.txt" ]; then echo "❌ gemini_review.txt missing"; exit 1; fi
 	@if [ ! -f "prompts/claude_compare.txt" ]; then echo "❌ claude_compare.txt missing"; exit 1; fi
 	@echo "✅ Project setup validated"
+
+validate-quick: ## Run quick validation (dependencies, builds, tests)
+	@./scripts/validate-monorepo.sh --quick
+
+validate-full: ## Run full validation (includes security scans)
+	@./scripts/validate-monorepo.sh --full
+
+validate: validate-quick ## Alias for validate-quick
+
+install-hooks: ## Install pre-commit hooks
+	@./scripts/install-hooks.sh
