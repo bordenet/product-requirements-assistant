@@ -87,8 +87,13 @@ echo ""
 if [ "$MODE" = "prod" ] || [ "$MODE" = "build" ]; then
     echo -e "${YELLOW}Building WebView2 client...${NC}"
     cd cmd/webview
-    go mod download
-    
+
+    # Ensure go.sum is up to date
+    go mod tidy
+
+    # Create dist directory if it doesn't exist
+    mkdir -p ../../dist/webview
+
     # Detect platform and build
     if [[ "$OSTYPE" == "darwin"* ]]; then
         CGO_ENABLED=1 go build -o ../../dist/webview/prd-assistant .
@@ -99,7 +104,7 @@ if [ "$MODE" = "prod" ] || [ "$MODE" = "build" ]; then
     else
         echo -e "${YELLOW}⚠ Unsupported platform for WebView2 build${NC}"
     fi
-    
+
     cd "$SCRIPT_DIR"
     echo ""
     

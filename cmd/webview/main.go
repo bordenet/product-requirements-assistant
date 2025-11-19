@@ -82,20 +82,32 @@ func main() {
 
 // findProjectRoot finds the project root directory
 func findProjectRoot() (string, error) {
-	// Get executable directory
+	// First, try to get the current working directory (works for go run)
+	cwd, err := os.Getwd()
+	if err == nil {
+		// Check if we're in cmd/webview (development with go run)
+		if filepath.Base(cwd) == "webview" {
+			return filepath.Abs(filepath.Join(cwd, "../.."))
+		}
+		// Check if backend exists relative to cwd
+		if _, err := os.Stat(filepath.Join(cwd, "backend")); err == nil {
+			return filepath.Abs(cwd)
+		}
+	}
+
+	// Fallback: Get executable directory (for production builds)
 	exePath, err := os.Executable()
 	if err != nil {
 		return "", err
 	}
 	exeDir := filepath.Dir(exePath)
 
-	// Check if we're in development (cmd/webview) or production (dist)
-	if _, err := os.Stat(filepath.Join(exeDir, "../../backend")); err == nil {
-		// Development mode
+	// Check if we're in dist/webview
+	if filepath.Base(exeDir) == "webview" {
 		return filepath.Abs(filepath.Join(exeDir, "../.."))
 	}
 
-	// Production mode - assume executable is in project root or dist/
+	// Production mode - assume executable is in project root
 	return filepath.Abs(exeDir)
 }
 
