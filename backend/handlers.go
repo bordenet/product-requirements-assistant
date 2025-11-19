@@ -302,3 +302,114 @@ func ensurePromptsPopulated(project *Project) {
 		project.Phases[2].Prompt = prompt
 	}
 }
+
+// generateMockResponse generates a mock AI response for testing
+func generateMockResponse(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	projectID := vars["id"]
+	phaseStr := vars["phase"]
+
+	// Check if mock AI is enabled
+	mockAI := GetMockAI()
+	if mockAI == nil || !mockAI.IsEnabled() {
+		http.Error(w, "Mock AI is not enabled. Set MOCK_AI_ENABLED=true to use this feature.", http.StatusForbidden)
+		return
+	}
+
+	// Validate project ID
+	validator := GetValidator()
+	if err := validator.ValidateProjectID(projectID); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validate phase number
+	phaseNum, err := validator.ValidatePhaseNumber(phaseStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Get project
+	project, exists := projects[projectID]
+	if !exists {
+		project = loadProject(projectID)
+		if project == nil {
+			http.Error(w, "Project not found", http.StatusNotFound)
+			return
+		}
+		projects[projectID] = project
+	}
+
+	// Determine which phase we're generating for
+	var mockResponse string
+	switch phaseNum {
+	case 1:
+		// Generate Phase 1 (Claude Initial PRD)
+		mockResponse = mockAI.GeneratePhase1Response(project.Title, project.Description, "")
+		project.Phases[0].Content = mockResponse
+		project.Phases[0].CompletedAt = time.Now()
+		project.Phase = 2
+
+		// Populate Phase 2 prompt
+		prompt, err := loadPrompt("gemini_review")
+		if err != nil {
+			prompt = getDefaultPrompt("gemini_review")
+		}
+		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", mockResponse, 1)
+		project.Phases[1].Prompt = prompt
+
+	case 2:
+		// Generate Phase 2 (Gemini Review)
+		if project.Phases[0].Content == "" {
+			http.Error(w, "Phase 1 must be completed before generating Phase 2", http.StatusBadRequest)
+			return
+		}
+		mockResponse = mockAI.GeneratePhase2Response(project.Title, project.Phases[0].Content)
+		project.Phases[1].Content = mockResponse
+		project.Phases[1].CompletedAt = time.Now()
+		project.Phase = 3
+
+		// Populate Phase 3 prompt
+		prompt, err := loadPrompt("claude_compare")
+		if err != nil {
+			prompt = getDefaultPrompt("claude_compare")
+		}
+		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
+		prompt = strings.Replace(prompt, "[PASTE GEMINI'S PRD RENDITION HERE]", mockResponse, 1)
+		project.Phases[2].Prompt = prompt
+
+	case 3:
+		// Generate Phase 3 (Claude Comparison)
+		if project.Phases[0].Content == "" || project.Phases[1].Content == "" {
+			http.Error(w, "Phases 1 and 2 must be completed before generating Phase 3", http.StatusBadRequest)
+			return
+		}
+		mockResponse = mockAI.GeneratePhase3Response(project.Title, project.Phases[0].Content, project.Phases[1].Content)
+		project.Phases[2].Content = mockResponse
+		project.Phases[2].CompletedAt = time.Now()
+		project.Phase = 3 // Stay at phase 3 (complete)
+
+	default:
+		http.Error(w, "Invalid phase number", http.StatusBadRequest)
+		return
+	}
+
+	// Update project timestamp
+	project.UpdatedAt = time.Now()
+
+	// Save project and phase output
+	saveProject(project)
+	savePhaseOutput(project, phaseNum)
+
+	// If all phases complete, save final PRD
+	if project.Phases[0].Content != "" && project.Phases[1].Content != "" && project.Phases[2].Content != "" {
+		saveFinalPRD(project)
+	}
+
+	log.Printf("Generated mock response for project %s, phase %s", projectID, phaseStr)
+
+	// Return the updated project
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(project)
+}

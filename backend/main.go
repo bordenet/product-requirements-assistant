@@ -45,6 +45,9 @@ func main() {
 	// Initialize metrics collector
 	InitMetrics()
 
+	// Initialize mock AI generator
+	InitMockAI(config.MockAIEnabled)
+
 	// Create rate limiter with config
 	rateLimiter := NewRateLimiter(config.RateLimit, time.Minute)
 
@@ -58,6 +61,7 @@ func main() {
 	router.HandleFunc("/api/prompts/{phase}", getPrompt).Methods("GET")
 	router.HandleFunc("/api/prompts/{phase}", updatePrompt).Methods("POST")
 	router.HandleFunc("/api/projects", listProjects).Methods("GET")
+	router.HandleFunc("/api/projects/{id}/generate/{phase}", generateMockResponse).Methods("POST")
 
 	// Monitoring routes
 	router.HandleFunc("/api/metrics", metricsHandler).Methods("GET")
