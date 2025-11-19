@@ -2,9 +2,48 @@
 
 This document explains how to create a new release with downloadable executables.
 
-## Automated Release Process
+## Quick Start - Automated Release Tool
 
-The GitHub Actions workflow automatically builds executables for all platforms when you create a git tag.
+The easiest way to create a release is using the automated release tool:
+
+```bash
+# Patch release (bug fixes: 1.0.0 → 1.0.1)
+./scripts/release.py patch
+
+# Minor release (new features: 1.0.0 → 1.1.0)
+./scripts/release.py minor -m "Add sidebar navigation improvements"
+
+# Major release (breaking changes: 1.0.0 → 2.0.0)
+./scripts/release.py major -m "Complete UI redesign"
+
+# Preview changes without releasing
+./scripts/release.py minor --dry-run -v
+```
+
+The release tool automatically:
+- ✅ Validates git repository state
+- ✅ Runs comprehensive test suite
+- ✅ Updates documentation
+- ✅ Creates annotated git tags
+- ✅ Pushes to GitHub
+- ✅ Triggers GitHub Actions for binary builds
+
+### Release Tool Options
+
+```bash
+./scripts/release.py --help
+```
+
+**Common Options:**
+- `-v, --verbose` - Enable detailed logging
+- `-d, --dry-run` - Preview changes without making them
+- `-m, --message TEXT` - Custom release message
+- `--skip-tests` - Skip test suite (not recommended)
+- `--no-push` - Create tag locally without pushing
+
+## Manual Release Process
+
+If you prefer to create releases manually:
 
 ### Steps to Create a Release
 
@@ -13,21 +52,26 @@ The GitHub Actions workflow automatically builds executables for all platforms w
    git status  # Should show clean working tree
    ```
 
-2. **Create and push a version tag**
+2. **Run validation tests**
+   ```bash
+   ./scripts/validate-monorepo.sh --quick
+   ```
+
+3. **Create and push a version tag**
    ```bash
    # Create tag (e.g., v1.5.0)
-   git tag v1.5.0
-   
+   git tag -a v1.5.0 -m "Release version 1.5.0"
+
    # Push tag to GitHub
    git push origin v1.5.0
    ```
 
-3. **Wait for GitHub Actions to complete**
+4. **Wait for GitHub Actions to complete**
    - Go to: https://github.com/bordenet/product-requirements-assistant/actions
    - The "Build and Release" workflow will start automatically
    - Wait for all jobs to complete (~10-15 minutes)
 
-4. **Verify the release**
+5. **Verify the release**
    - Go to: https://github.com/bordenet/product-requirements-assistant/releases
    - The new release should be created with all executables attached
 

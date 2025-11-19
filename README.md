@@ -268,6 +268,7 @@ git commit --no-verify -m "Emergency fix"
 - **[Architecture](docs/ARCHITECTURE.md)**: System design and technical details
 - **[API Reference](docs/API.md)**: Complete API endpoint documentation
 - **[Logging](docs/LOGGING.md)**: Logging configuration and troubleshooting
+- **[Releasing](docs/RELEASING.md)**: Creating releases with semantic versioning
 - **[Contributing](CONTRIBUTING.md)**: Development setup and contribution guidelines
 
 ## Development
@@ -287,6 +288,26 @@ make lint
 # Build binary
 make build
 ```
+
+### Creating Releases
+
+Use the automated release tool for semantic versioning:
+
+```bash
+# Patch release (bug fixes)
+./scripts/release.py patch
+
+# Minor release (new features)
+./scripts/release.py minor -m "Add sidebar improvements"
+
+# Major release (breaking changes)
+./scripts/release.py major
+
+# Preview release without changes
+./scripts/release.py minor --dry-run -v
+```
+
+See [docs/RELEASING.md](docs/RELEASING.md) for detailed release documentation.
 
 ## Known Limitations
 

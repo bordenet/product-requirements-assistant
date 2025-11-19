@@ -18,6 +18,67 @@ st.set_page_config(
     layout="wide"
 )
 
+# Global CSS for sidebar styling
+st.markdown("""
+    <style>
+    /* Hide radio button circles completely */
+    section[data-testid="stSidebar"] input[type="radio"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        position: absolute !important;
+    }
+
+    /* Hide the radio circle span */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
+        display: none !important;
+    }
+
+    /* Compact radio buttons for project list - remove all borders and backgrounds */
+    section[data-testid="stSidebar"] div[role="radiogroup"] {
+        gap: 0.1rem !important;
+    }
+
+    section[data-testid="stSidebar"] div[role="radiogroup"] label {
+        padding: 0.4rem 0.75rem !important;
+        margin: 0 !important;
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        background: transparent !important;
+        border: none !important;
+        transition: all 0.15s ease !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+        background-color: rgba(96, 165, 250, 0.08) !important;
+    }
+
+    section[data-testid="stSidebar"] div[role="radiogroup"] label p {
+        font-size: 0.875rem !important;
+        line-height: 1.5 !important;
+        margin: 0 !important;
+        color: #B0B0B0 !important;
+        font-weight: 400 !important;
+    }
+
+    /* Selected state */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input[type="radio"]:checked) {
+        background-color: rgba(96, 165, 250, 0.12) !important;
+        border-left: 3px solid #60A5FA !important;
+        padding-left: calc(0.75rem - 3px) !important;
+    }
+
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input[type="radio"]:checked) p {
+        color: #60A5FA !important;
+        font-weight: 500 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Initialize session state
 if 'current_project' not in st.session_state:
     st.session_state.current_project = None
@@ -60,18 +121,16 @@ def handle_api_error(error_msg: str, operation: str = "operation"):
 def main():
     st.title("📋 Product Requirements Assistant")
     st.markdown("Interactive Product Requirements Document creation with AI assistance")
-    
-    # Connection status indicator
+
+    # Connection status indicator - only show if there's an error
     try:
         response = requests.get(f"{backend_url}/api/health", timeout=2)
-        if response.status_code == 200:
-            st.success(f"✅ Connected to backend at {backend_url}")
-        else:
+        if response.status_code != 200:
             st.error(f"❌ Backend responding with status {response.status_code}")
     except requests.exceptions.ConnectionError:
-        st.error(f"❌ Cannot connect to backend at {backend_url}. Please ensure it's running.")
+        st.error(f"❌ Cannot connect to backend. Please ensure the application is running properly.")
     except requests.exceptions.Timeout:
-        st.warning(f"⚠️ Backend at {backend_url} is slow to respond.")
+        st.warning(f"⚠️ Backend is slow to respond.")
     
     # Add a global tip about copying
     with st.expander("💡 Pro Tip: Preserving Formatting", expanded=False):
@@ -85,72 +144,52 @@ def main():
     
     # Sidebar
     with st.sidebar:
-        st.header("Navigation")
-        
-        if st.button("🆕 New Project"):
+        # Top section: Primary navigation actions
+        st.markdown("### Navigation")
+
+        if st.button("🆕  New Project", use_container_width=True):
             st.session_state.current_project = None
             st.session_state.phase = 1
-            
-        if st.button("📝 Edit Prompts"):
+
+        if st.button("📝  Edit Prompts", use_container_width=True):
             st.session_state.show_prompts = True
-            
-        st.divider()
-        
-        # Recent projects
-        st.markdown("#### Recent Projects")
+
+        # Visual separator
+        st.markdown("---")
+
+        # Bottom section: Project list with distinct styling
+        st.markdown('<div style="margin-top: 1rem;"><p style="font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 0.5rem; color: #888; text-transform: uppercase;">Recent Projects</p></div>', unsafe_allow_html=True)
         with st.spinner("Loading projects..."):
             projects = api.list_projects()
 
         if not projects:
-            st.info("No projects found. Create your first project!")
+            st.caption("No projects found. Create your first project!")
         else:
-            # Add custom CSS for link-style project list
-            st.markdown("""
-                <style>
-                /* Make sidebar project buttons look like links */
-                section[data-testid="stSidebar"] button[kind="secondary"] {
-                    background-color: transparent !important;
-                    border: none !important;
-                    padding: 0.1rem 0 !important;
-                    text-align: left !important;
-                    justify-content: flex-start !important;
-                    font-size: 0.85rem !important;
-                    color: #1E88E5 !important;
-                    box-shadow: none !important;
-                    min-height: auto !important;
-                    width: auto !important;
-                    line-height: 1.2 !important;
-                }
-                section[data-testid="stSidebar"] button[kind="secondary"]:hover {
-                    color: #1565C0 !important;
-                    text-decoration: underline !important;
-                    background-color: transparent !important;
-                    border: none !important;
-                }
-                section[data-testid="stSidebar"] button[kind="secondary"]:focus {
-                    box-shadow: none !important;
-                    background-color: transparent !important;
-                }
-                section[data-testid="stSidebar"] button[kind="secondary"] p {
-                    font-size: 0.85rem !important;
-                    text-align: left !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }
-                section[data-testid="stSidebar"] button[kind="secondary"] div {
-                    text-align: left !important;
-                    justify-content: flex-start !important;
-                    padding: 0 !important;
-                }
-                </style>
-            """, unsafe_allow_html=True)
+            # Render projects as a simple list - use radio for selection
+            project_titles = [p['title'] for p in projects]
 
-            for project in projects:
-                if st.button(project['title'], key=project['id']):
-                    with st.spinner("Loading project..."):
-                        st.session_state.current_project = project
-                        st.session_state.phase = project['phase']
-                        st.rerun()
+            # Find current selection index
+            current_idx = 0
+            if st.session_state.current_project:
+                try:
+                    current_idx = next(i for i, p in enumerate(projects) if p['id'] == st.session_state.current_project['id'])
+                except StopIteration:
+                    current_idx = 0
+
+            selected_title = st.radio(
+                "Select project",
+                project_titles,
+                index=current_idx,
+                key="project_selector",
+                label_visibility="collapsed"
+            )
+
+            # Load selected project
+            selected_project = next(p for p in projects if p['title'] == selected_title)
+            if st.session_state.current_project is None or st.session_state.current_project['id'] != selected_project['id']:
+                st.session_state.current_project = selected_project
+                st.session_state.phase = selected_project['phase']
+                st.rerun()
     
     # Main content
     if hasattr(st.session_state, 'show_prompts') and st.session_state.show_prompts:
