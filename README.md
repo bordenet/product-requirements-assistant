@@ -2,6 +2,26 @@
 
 A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.
 
+## 🚀 Quick Start for Windows Users
+
+**No installation or setup required!** Just download and run:
+
+1. **Go to [Latest Release](https://github.com/bordenet/product-requirements-assistant/releases/latest)**
+2. **Download ONE of these:**
+   - **Electron Installer** (Recommended): `Product-Requirements-Assistant-Setup-X.X.X.exe` (~150MB)
+     - Full installer with desktop shortcut
+     - Double-click to install, launch from Start Menu
+   - **WebView2 Portable**: `prd-assistant-windows-amd64.exe` (~10MB)
+     - No installation needed, just download and run
+     - Requires [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (usually pre-installed on Windows 10/11)
+3. **Run the downloaded file**
+   - Windows may show a security warning - click "More info" → "Run anyway"
+4. **Start creating PRDs!**
+
+📖 **See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions and troubleshooting**
+
+---
+
 ## Features
 
 - **3-Phase Workflow**: Initial draft (Claude), review (Gemini), finalization (Claude)
@@ -23,47 +43,38 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 - **Frontend**: Streamlit web UI on port 8501
 - **Storage**: Local filesystem
 
-## Download Executables
+## Download Pre-Built Applications
 
-Pre-built executables are available from [GitHub Releases](https://github.com/bordenet/product-requirements-assistant/releases):
+**For non-technical users**: Just download and run - no coding required!
 
-### WebView2 Native Client (Lightweight)
-- **macOS (Intel)**: `prd-assistant-macos-amd64` (8.7MB)
-- **macOS (Apple Silicon)**: `prd-assistant-macos-arm64` (8.2MB)
+Pre-built executables available from [GitHub Releases](https://github.com/bordenet/product-requirements-assistant/releases/latest):
+
+### Electron Client (Recommended - Full Installer)
+- **Windows**: `Product-Requirements-Assistant-Setup-X.X.X.exe` (~150MB)
+- **macOS**: `Product-Requirements-Assistant-X.X.X.dmg` (~150MB)
+- **Linux**: `Product-Requirements-Assistant-X.X.X.AppImage` (~150MB)
+
+**Includes**: Desktop shortcut, Start Menu entry, automatic updates
+
+### WebView2 Native Client (Lightweight - Portable)
 - **Windows**: `prd-assistant-windows-amd64.exe` (~10MB)
+- **macOS (Intel)**: `prd-assistant-macos-amd64` (~9MB)
+- **macOS (Apple Silicon)**: `prd-assistant-macos-arm64` (~8MB)
 - **Linux**: `prd-assistant-linux-amd64` (~10MB)
 
-### Electron Client (Full-Featured)
-- **macOS**: `.dmg` installer (~150MB)
-- **Windows**: `.exe` installer (~150MB)
-- **Linux**: `.AppImage` (~150MB)
+**Requires**: OS-native browser engines (WebView2 on Windows, WebKit on macOS, WebKitGTK on Linux)
 
-**Note**: WebView2 requires OS-native browser engines (WebView2 on Windows, WebKit on macOS, WebKitGTK on Linux). Electron bundles Chromium.
+---
 
-## Thick Client Applications (v1.5)
+## For Developers
 
-Two thick client implementations are available for side-by-side evaluation:
+**The sections below are for developers who want to build from source or contribute.**
 
-### Quick Launch (Both Clients)
+If you just want to **use** the application, download the pre-built executable above - no setup required!
 
-**macOS/Linux:**
-```bash
-./run-thick-clients.sh
-```
+---
 
-**Windows:**
-```powershell
-.\run-thick-clients.ps1
-```
-
-### Clients
-
-1. **WebView2 Native** - Lightweight (8.2MB), OS-native browser engine
-2. **Electron** - Cross-platform (150MB), Chromium-based
-
-See [THICK_CLIENT_LAUNCHER.md](THICK_CLIENT_LAUNCHER.md) for details.
-
-## Setup
+## Development Setup (Developers Only)
 
 ### Quick Start
 
