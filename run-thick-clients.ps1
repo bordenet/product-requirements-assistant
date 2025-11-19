@@ -89,13 +89,18 @@ Write-Host ""
 if ($Mode -eq "prod" -or $Mode -eq "build") {
     Write-Warning "Building WebView2 client..."
     Set-Location cmd\webview
-    go mod download
-    
+
+    # Ensure go.sum is up to date
+    go mod tidy
+
+    # Create dist directory if it doesn't exist
+    New-Item -ItemType Directory -Force -Path ..\..\dist\webview | Out-Null
+
     # Build for Windows
     $env:CGO_ENABLED = "1"
     go build -o ..\..\dist\webview\prd-assistant.exe .
     Write-Success "✓ WebView2 built: dist\webview\prd-assistant.exe"
-    
+
     Set-Location $ScriptDir
     Write-Host ""
     

@@ -26,17 +26,15 @@
       "../../venv/**/*",
       "!../../backend/*.test",
       "!../../backend/coverage.out"
-    },
+    ],
     "extraResources": [
       {
         "from": "../../inputs",
-        "to": "inputs",
-        "filter": ["**/*"]
+        "to": "inputs"
       },
       {
         "from": "../../outputs",
-        "to": "outputs",
-        "filter": ["**/*"]
+        "to": "outputs"
       }
     ],
     "win": {
