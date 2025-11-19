@@ -11,11 +11,11 @@ import (
 
 // FileManager handles file operations with connection pooling-like optimizations
 type FileManager struct {
-	mu          sync.RWMutex
-	fileCache   map[string][]byte
-	maxCacheSize int
-	cacheTTL     time.Duration
-	cacheExpiry  map[string]time.Time
+	mu            sync.RWMutex
+	fileCache     map[string][]byte
+	maxCacheSize  int
+	cacheTTL      time.Duration
+	cacheExpiry   map[string]time.Time
 	cleanupTicker *time.Ticker
 	stopCleanup   chan bool
 }
@@ -210,11 +210,11 @@ func GetFileManager() *FileManager {
 
 // FileSystemStats provides information about file system usage
 type FileSystemStats struct {
-	TotalProjects int           `json:"total_projects"`
-	TotalFiles    int           `json:"total_files"`
-	DiskUsage     int64         `json:"disk_usage_bytes"`
-	OldestFile    time.Time     `json:"oldest_file"`
-	NewestFile    time.Time     `json:"newest_file"`
+	TotalProjects int            `json:"total_projects"`
+	TotalFiles    int            `json:"total_files"`
+	DiskUsage     int64          `json:"disk_usage_bytes"`
+	OldestFile    time.Time      `json:"oldest_file"`
+	NewestFile    time.Time      `json:"newest_file"`
 	FilesByType   map[string]int `json:"files_by_type"`
 }
 

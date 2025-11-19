@@ -16,6 +16,7 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+venv/
 
 # Go
 *.exe
@@ -29,11 +30,16 @@ __pycache__/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 
-
-#Ignore vscode AI rules
+# Ignore vscode AI rules
 .github/instructions/codacy.instructions.md

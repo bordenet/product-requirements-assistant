@@ -1,7 +1,8 @@
-# Product Requirements Assistant
+# Architecture Documentation
 
-## Overview
-This is a Product Requirements Document (PRD) creation tool with a 3-phase AI-assisted workflow. The application uses Claude Sonnet 4.5 and Gemini 2.5 Pro to generate comprehensive PRDs through an interactive process.
+## System Overview
+
+Product Requirements Assistant is a PRD creation tool with a 3-phase AI-assisted workflow. The application uses Claude Sonnet 4.5 and Gemini 2.5 Pro to generate comprehensive PRDs through an interactive copy/paste process.
 
 ## Architecture
 - **Backend**: Go REST API server (port 8080)
@@ -36,10 +37,24 @@ make format
 make clean
 ```
 
-## Tech Stack
-- **Backend**: Go 1.21, Gorilla Mux router, CORS enabled
-- **Frontend**: Python, Streamlit 1.28.2, Requests 2.31.0
-- **Dependencies**: UUID generation, JSON storage
+## Technology Stack
+
+### Backend
+- **Language**: Go 1.21+
+- **Router**: Gorilla Mux
+- **CORS**: rs/cors
+- **UUID**: google/uuid
+- **Storage**: Local filesystem (JSON)
+
+### Frontend
+- **Framework**: Streamlit 1.28.2
+- **HTTP Client**: Requests 2.31.0
+- **Language**: Python 3.8+
+
+### Infrastructure
+- **Ports**: 8080 (backend), 8501 (frontend)
+- **Deployment**: Local development, single-user
+- **Data**: JSON files with markdown export
 
 ## Workflow
 1. **Phase 1**: Generate initial prompt for Claude Sonnet 4.5

@@ -51,29 +51,31 @@ tail -f frontend.log
 tail -f backend.log frontend.log
 ```
 
-## Error Locations in Code
+## Error Sources
 
 ### Backend Error Logging
 
-| File | Line(s) | Type | Description |
-|------|---------|------|-------------|
-| `backend/main.go` | 21-40 | FATAL | Configuration and validation errors |
-| `backend/main.go` | 100-105 | FATAL | Server startup errors (e.g., port in use) |
-| `backend/main.go` | 126 | ERROR | Graceful shutdown errors |
-| `backend/handlers.go` | 147, 157 | WARNING | Prompt file loading warnings |
-| `backend/middleware.go` | 108 | INFO | Rate limit exceeded for IP |
-| `backend/middleware.go` | 127 | INFO | All HTTP requests |
+| Component | Type | Description |
+|-----------|------|-------------|
+| `main.go` | FATAL | Configuration and validation errors |
+| `main.go` | FATAL | Server startup errors (e.g., port in use) |
+| `main.go` | ERROR | Graceful shutdown errors |
+| `handlers.go` | WARNING | Prompt file loading warnings |
+| `handlers.go` | ERROR | Project not found, invalid input |
+| `middleware.go` | INFO | Rate limit exceeded for IP |
+| `middleware.go` | INFO | All HTTP requests |
+| `validation.go` | ERROR | Input validation failures |
+| `storage.go` | ERROR | File I/O errors |
 
 ### Frontend Error Handling
 
-| File | Line(s) | Type | Description |
-|------|---------|------|-------------|
-| `frontend/app.py` | 27-58 | ERROR | API error handling with user-friendly messages |
-| `frontend/app.py` | 71-74 | ERROR | Backend connection errors |
-| `frontend/app.py` | 145-146 | ERROR | Project creation errors |
-| `frontend/app.py` | 255-256 | ERROR | Phase 1 save errors |
-| `frontend/app.py` | 367-368 | ERROR | Phase 2 save errors |
-| `frontend/app.py` | 454-455 | ERROR | Phase 3 save errors |
+| Component | Type | Description |
+|-----------|------|-------------|
+| `app.py` | ERROR | API error handling with user-friendly messages |
+| `app.py` | ERROR | Backend connection errors |
+| `app.py` | ERROR | Project creation errors |
+| `app.py` | ERROR | Phase save errors |
+| `api_client.py` | ERROR | HTTP request failures |
 
 ## Common Errors and Solutions
 
@@ -127,14 +129,12 @@ http: request body too large
 - Maximum request size is 10MB (configurable in `backend/config.go`)
 - Or increase `MaxRequestSize` in configuration
 
-**Validation Limits (Updated 2025-10-17):**
+**Validation Limits:**
 - Title: 200 characters
-- Problems/Description: 100,000 characters (~100KB) - supports large PRD inputs
-- Context: 50,000 characters (~50KB)
-- PRD Content: 200,000 characters (~200KB)
+- Problems/Description: 100KB
+- Context: 50KB
+- PRD Content: 200KB
 - HTTP Request Size: 10MB total
-
-These limits now support very large PRD inputs including comprehensive technical specifications.
 
 ### Rate Limit Exceeded
 
@@ -217,32 +217,14 @@ export STREAMLIT_LOG_LEVEL=debug
 cd frontend && python3 -m streamlit run app.py
 ```
 
-## Setup Script Improvements
+## Setup Scripts
 
-The setup scripts (`setup.sh` and `setup-macos.sh`) now automatically:
-1. Check if ports 8080, 8501, and 8502 are in use
-2. **Display a warning** showing which ports are in use
-3. **Prompt for confirmation** with a 3-second timeout (auto-accepts if no response)
+The setup scripts (`scripts/setup-macos.sh` and `scripts/setup-linux.sh`) automatically:
+1. Check if ports 8080 and 8501 are in use
+2. Display a warning showing which ports are in use
+3. Prompt for confirmation with a 3-second timeout (auto-accepts if no response)
 4. Kill any existing processes on those ports
 5. Start fresh instances of backend and frontend
-6. Show clear status messages for each step
+6. Run health checks and integration tests
 
-### Example Warning Prompt
-
-When ports are in use, you'll see:
-
-```
-⚠️  WARNING: The following ports are currently in use:
-    - Port 8080 (backend)
-    - Port 8501 (frontend)
-
-This script will kill the processes using these ports.
-
-Continue? [Y/n] (auto-yes in 3s):
-```
-
-- Press `Y` or `Enter` to continue immediately
-- Press `N` to cancel the setup
-- Wait 3 seconds for automatic acceptance
-
-This prevents the "address already in use" error that was occurring previously while giving you control over whether to kill existing processes.
+This prevents "address already in use" errors while giving you control over whether to kill existing processes.

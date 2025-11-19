@@ -1,13 +1,13 @@
 # Product Requirements Assistant
 
-A tool for creating Product Requirements Documents with AI assistance.
+A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.
 
-## What It Does
+## Features
 
-- 3-phase workflow: Initial draft, review, and finalization
-- Uses Claude Sonnet 4.5 and Gemini 2.5 Pro via copy/paste
-- Stores projects locally as JSON files
-- Exports to markdown
+- **3-Phase Workflow**: Initial draft (Claude), review (Gemini), finalization (Claude)
+- **Copy/Paste Integration**: Works with Claude Sonnet 4.5 and Gemini 2.5 Pro
+- **Local Storage**: Projects stored as JSON with markdown export
+- **Interactive UI**: Streamlit-based web interface with live preview
 
 ## Screenshots
 
@@ -78,13 +78,11 @@ Then open http://localhost:8501
 
 ## Usage
 
-1. Create a new project with title and description
-2. Copy the Phase 1 prompt and paste into Claude Sonnet 4.5 (claude.ai)
-3. Use Claude's 'Copy' button to copy the response, then paste back into the tool
-4. Copy the Phase 2 prompt and paste into Gemini 2.5 Pro (gemini.google.com)
-5. Use Gemini's 'Copy' button to copy the response, then paste back
-6. Copy the Phase 3 prompt and paste into Claude for final version
-7. Download the result as markdown
+1. **Create Project**: Enter title, problems, and context
+2. **Phase 1**: Copy prompt → Claude Sonnet 4.5 → paste response back
+3. **Phase 2**: Copy prompt → Gemini 2.5 Pro → paste response back
+4. **Phase 3**: Copy prompt → Claude → paste final PRD
+5. **Export**: Download as markdown with full revision history
 
 ## Project Structure
 
@@ -102,13 +100,14 @@ product-requirements-assistant/
 
 ## Configuration
 
-Prompt templates can be edited in the UI or in `prompts/`.
+**Prompt Templates**: Edit in UI or directly in `prompts/` directory
 
-Validation limits:
+**Validation Limits**:
 - Title: 200 characters
 - Problems/Description: 100KB
 - Context: 50KB
 - PRD Content: 200KB
+- Max Request Size: 10MB
 
 ## Troubleshooting
 
@@ -138,6 +137,31 @@ make test-backend
 
 # Integration tests
 make test-integration
+```
+
+## Documentation
+
+- **[Architecture](docs/ARCHITECTURE.md)**: System design and technical details
+- **[API Reference](docs/API.md)**: Complete API endpoint documentation
+- **[Logging](docs/LOGGING.md)**: Logging configuration and troubleshooting
+- **[Contributing](CONTRIBUTING.md)**: Development setup and contribution guidelines
+
+## Development
+
+Run `make help` to see all available commands.
+
+```bash
+# Install dependencies
+make install
+
+# Format code
+make format
+
+# Run linters
+make lint
+
+# Build binary
+make build
 ```
 
 ## Known Limitations

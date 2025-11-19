@@ -26,7 +26,7 @@ func LoadConfig() (*AppConfig, error) {
 		Port:           "8080",
 		AllowedOrigins: []string{"http://localhost:8501"},
 		MaxRequestSize: 10 * 1024 * 1024, // 10MB
-		RateLimit:      100,               // requests per minute
+		RateLimit:      100,              // requests per minute
 		LogLevel:       "INFO",
 		Environment:    "development",
 	}

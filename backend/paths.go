@@ -23,7 +23,7 @@ func initializePaths() {
 			// Fallback to current directory if we can't determine working dir
 			workDir = "."
 		}
-		
+
 		projectRoot := filepath.Dir(workDir)
 		projectPaths.inputs = filepath.Join(projectRoot, "inputs")
 		projectPaths.outputs = filepath.Join(projectRoot, "outputs")
@@ -41,10 +41,4 @@ func getOutputsDir() string {
 func getPromptsDir() string {
 	initializePaths()
 	return projectPaths.prompts
-}
-
-// getInputsDir returns the absolute path to the inputs directory
-func getInputsDir() string {
-	initializePaths()
-	return projectPaths.inputs
 }
