@@ -21,38 +21,51 @@
 
 ---
 
-### v1.5 (Planned: Q1 2025)
-**Status**: 🔄 Planning - Path Selected
+### v1.5 (In Progress: Q1 2025)
+**Status**: 🔄 Implementation - Building Both Thick Clients
 
-**Objective**: Transform into self-contained application for non-technical users
+**Objective**: Build TWO thick client implementations for side-by-side evaluation
 
 **Target Metrics**:
 - Test Coverage: ≥80%
 - Installation Steps: 1 (double-click)
 - User Testing: 5-10 non-technical users
-- Platform Testing: Windows 10/11 (primary), macOS, Linux
+- Platform Testing: Windows 10/11, macOS, Linux
 
-**Selected Approach**: Path 2 - Single-Binary Web Application (see docs/V1.5_RECOMMENDATION.md)
+**Approach**: Build BOTH thick clients for comparison
+1. **WebView2 Native Client** - Lightweight (8.2MB), OS-native browser engine
+2. **Electron Client** - Cross-platform (150MB), Chromium-based
 
 **Rationale**:
-- Lowest development risk (2-3 weeks)
-- Leverages existing codebase
-- No ongoing costs
-- Data stays local
-- Acceptable UX (one-click launch, auto-opens browser)
+- Side-by-side evaluation allows data-driven decision
+- Different strengths for different use cases
+- User testing will reveal preferences
+- Can support both if needed
 
-**Rejected Alternatives**:
-1. Electron Desktop Application - Longer timeline, larger bundle, maintenance burden
-2. Progressive Web App with Cloud Backend - Ongoing costs, data privacy concerns, internet dependency
+**Implementation Status**:
+- [x] Repository refactoring (cmd/, build/, dist/ structure)
+- [x] WebView2 client implementation (cmd/webview/)
+- [x] WebView2 build scripts (macOS, Windows, Linux)
+- [x] WebView2 macOS build successful (8.2MB ARM64, 8.7MB AMD64)
+- [x] Electron client implementation (cmd/electron/)
+- [x] Electron build scripts
+- [ ] Electron build testing
+- [ ] Windows installer (Inno Setup for WebView2, NSIS for Electron)
+- [ ] macOS installer (DMG for both)
+- [ ] Linux packages (AppImage for both)
+- [ ] User testing with 5-10 non-technical users
+- [ ] Performance benchmarking
+- [ ] Final decision based on user feedback
+- [ ] Tag v1.5 and publish
 
 **Milestones**:
-- [x] Path selection and approval (Path 2: Single-Binary Web Application)
-- [ ] Week 1: Core bundling (Go embed, Python bundling, launcher, auto-browser-open)
-- [ ] Week 2: Platform builds (macOS, Windows, Linux + installers)
-- [ ] Week 3: Testing and documentation (user testing, guides, demo video)
-- [ ] User testing with non-technical users (5-10 people)
+- [x] Architecture decision (build both for evaluation)
+- [x] WebView2 implementation complete
+- [x] Electron implementation complete
+- [ ] Week 1: Build testing and installer creation
+- [ ] Week 2: User testing and performance benchmarking
+- [ ] Week 3: Final decision, polish, and release
 - [ ] Windows validation on test machine
-- [ ] Final bug fixes and polish
 - [ ] Tag v1.5 and publish
 
 **Success Criteria**:
