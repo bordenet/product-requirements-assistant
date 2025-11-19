@@ -131,8 +131,17 @@ go mod download
 cd ..
 log_ok "Go dependencies installed"
 
-# Python dependencies
-pip3 install -q -r requirements.txt
+# Python dependencies - create venv if it doesn't exist
+if [ ! -d "venv" ]; then
+    log_info "Creating Python virtual environment..."
+    python3 -m venv venv
+    log_ok "Virtual environment created"
+fi
+
+log_info "Installing Python dependencies..."
+source venv/bin/activate
+pip install -q -r requirements.txt
+deactivate
 log_ok "Python dependencies installed"
 
 # Step 3: Run tests
