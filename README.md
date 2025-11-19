@@ -23,6 +23,29 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 - **Frontend**: Streamlit web UI on port 8501
 - **Storage**: Local filesystem
 
+## Thick Client Applications (v1.5)
+
+Two thick client implementations are available for side-by-side evaluation:
+
+### Quick Launch (Both Clients)
+
+**macOS/Linux:**
+```bash
+./run-thick-clients.sh
+```
+
+**Windows:**
+```powershell
+.\run-thick-clients.ps1
+```
+
+### Clients
+
+1. **WebView2 Native** - Lightweight (8.2MB), OS-native browser engine
+2. **Electron** - Cross-platform (150MB), Chromium-based
+
+See [THICK_CLIENT_LAUNCHER.md](THICK_CLIENT_LAUNCHER.md) for details.
+
 ## Setup
 
 ### Quick Start
