@@ -1,175 +1,174 @@
 # Product Requirements Assistant - Thick Client Launcher (PowerShell)
-# Builds and runs both WebView2 and Electron clients side-by-side for comparison
+# Builds and runs both WebView2 and Electron clients side-by-side
 
-$ErrorActionPreference = "Stop"
+[CmdletBinding()]
+param(
+    [switch]$Verbose,
+    [switch]$Force,
+    [ValidateSet('dev', 'prod', 'build')]
+    [string]$Mode
+)
+
+$ErrorActionPreference = 'Stop'
 
 # Get script directory
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 
-# Colors
-function Write-Header { Write-Host $args[0] -ForegroundColor Blue }
-function Write-Success { Write-Host $args[0] -ForegroundColor Green }
-function Write-Warning { Write-Host $args[0] -ForegroundColor Yellow }
-function Write-Error { Write-Host $args[0] -ForegroundColor Red }
+# Import compact output module
+Import-Module "$ScriptDir\scripts\lib\Compact.psm1" -Force
+
+if ($Verbose) {
+    Enable-VerboseMode
+}
 
 # Cleanup function
-$WebViewProcess = $null
-$ElectronProcess = $null
+$script:WebViewProcess = $null
+$script:ElectronProcess = $null
 
-function Cleanup {
-    Write-Warning "`nShutting down clients..."
-    if ($WebViewProcess) {
-        Stop-Process -Id $WebViewProcess.Id -Force -ErrorAction SilentlyContinue
+function Invoke-Cleanup {
+    Write-Verbose-Line 'Shutting down clients...'
+    if ($script:WebViewProcess) {
+        Stop-Process -Id $script:WebViewProcess.Id -Force -ErrorAction SilentlyContinue
     }
-    if ($ElectronProcess) {
-        Stop-Process -Id $ElectronProcess.Id -Force -ErrorAction SilentlyContinue
+    if ($script:ElectronProcess) {
+        Stop-Process -Id $script:ElectronProcess.Id -Force -ErrorAction SilentlyContinue
     }
 }
 
-# Register cleanup on Ctrl+C
-Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action { Cleanup }
+# Register cleanup on exit
+Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action { Invoke-Cleanup } | Out-Null
 
 # Print header
-Write-Header "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-Write-Header "  Product Requirements Assistant - Thick Client Launcher"
-Write-Header "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-Write-Host ""
+Write-CompactHeader 'Product Requirements Assistant - Thick Client Launcher'
 
 # Check prerequisites
-Write-Warning "Checking prerequisites..."
+Start-Task 'Checking prerequisites'
 
 try {
-    $goVersion = go version
-    Write-Success "✓ Go found: $goVersion"
+    $goVersion = go version 2>&1
+    Write-Verbose-Line "Go: $goVersion"
 } catch {
-    Write-Error "✗ Go is not installed"
+    Fail-Task 'Go not installed'
     exit 1
 }
 
 try {
-    $nodeVersion = node --version
-    Write-Success "✓ Node.js found: $nodeVersion"
+    $nodeVersion = node --version 2>&1
+    Write-Verbose-Line "Node.js: $nodeVersion"
 } catch {
-    Write-Error "✗ Node.js is not installed"
+    Fail-Task 'Node.js not installed'
     exit 1
 }
 
 try {
-    $npmVersion = npm --version
-    Write-Success "✓ npm found: $npmVersion"
+    $npmVersion = npm --version 2>&1
+    Write-Verbose-Line "npm: $npmVersion"
 } catch {
-    Write-Error "✗ npm is not installed"
+    Fail-Task 'npm not installed'
     exit 1
 }
 
-Write-Host ""
+Complete-Task 'Prerequisites checked'
 
-# Menu
-Write-Warning "Select mode:"
-Write-Host "  1) Development (quick start, no build)"
-Write-Host "  2) Production (build binaries, then run)"
-Write-Host "  3) Build only (no run)"
-Write-Host ""
-$choice = Read-Host "Enter choice [1-3]"
-
-switch ($choice) {
-    "1" { $Mode = "dev" }
-    "2" { $Mode = "prod" }
-    "3" { $Mode = "build" }
-    default {
-        Write-Error "Invalid choice"
-        exit 1
+# Interactive mode selection if not specified
+if (-not $Mode) {
+    Write-Host ''
+    Write-Host 'Select mode:' -ForegroundColor Yellow
+    Write-Host '  1) Development (quick start, no build)'
+    Write-Host '  2) Production (build binaries, then run)'
+    Write-Host '  3) Build only (no run)'
+    Write-Host ''
+    $choice = Read-Host 'Enter choice [1-3]'
+    
+    switch ($choice) {
+        '1' { $Mode = 'dev' }
+        '2' { $Mode = 'prod' }
+        '3' { $Mode = 'build' }
+        default {
+            Write-Host 'Invalid choice' -ForegroundColor Red
+            exit 1
+        }
     }
+    Write-Host ''
 }
-
-Write-Host ""
 
 # Build if needed
-if ($Mode -eq "prod" -or $Mode -eq "build") {
-    Write-Warning "Building WebView2 client..."
+if ($Mode -eq 'prod' -or $Mode -eq 'build') {
+    Start-Task 'Building WebView2 client'
     Set-Location cmd\webview
-
-    # Ensure go.sum is up to date
-    go mod tidy
-
-    # Create dist directory if it doesn't exist
+    
+    go mod tidy 2>&1 | Write-Verbose-Line
     New-Item -ItemType Directory -Force -Path ..\..\dist\webview | Out-Null
-
-    # Build for Windows
-    $env:CGO_ENABLED = "1"
-    go build -o ..\..\dist\webview\prd-assistant.exe .
-    Write-Success "✓ WebView2 built: dist\webview\prd-assistant.exe"
-
-    Set-Location $ScriptDir
-    Write-Host ""
     
-    Write-Warning "Building Electron client..."
+    $env:CGO_ENABLED = '1'
+    go build -o ..\..\dist\webview\prd-assistant.exe . 2>&1 | Write-Verbose-Line
+    
+    Set-Location $ScriptDir
+    Complete-Task 'WebView2 client built'
+    
+    Start-Task 'Building Electron client'
     Set-Location cmd\electron
-    npm install --silent
-    Write-Success "✓ Electron dependencies installed"
+    npm install --silent 2>&1 | Write-Verbose-Line
     
     Set-Location $ScriptDir
-    Write-Host ""
+    Complete-Task 'Electron client built'
 }
 
 # Exit if build-only mode
-if ($Mode -eq "build") {
-    Write-Success "Build complete!"
+if ($Mode -eq 'build') {
+    Write-Host ''
+    Write-CompactHeader "Build complete! $(Get-ElapsedTime)"
     exit 0
 }
 
 # Run clients
-Write-Header "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-Write-Header "  Starting Thick Clients"
-Write-Header "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-Write-Host ""
+Write-Host ''
+Write-CompactSection 'Starting Thick Clients'
 
-# Start WebView2
-Write-Warning "Starting WebView2 client..."
-if ($Mode -eq "dev") {
+Start-Task 'Starting WebView2 client'
+if ($Mode -eq 'dev') {
     Set-Location cmd\webview
-    $WebViewProcess = Start-Process -FilePath "go" -ArgumentList "run", "." -PassThru -WindowStyle Hidden
+    $script:WebViewProcess = Start-Process -FilePath 'go' -ArgumentList 'run', '.' -PassThru -WindowStyle Hidden
     Set-Location $ScriptDir
 } else {
-    $WebViewProcess = Start-Process -FilePath "dist\webview\prd-assistant.exe" -PassThru -WindowStyle Hidden
+    $script:WebViewProcess = Start-Process -FilePath 'dist\webview\prd-assistant.exe' -PassThru -WindowStyle Hidden
 }
-Write-Success "✓ WebView2 started (PID: $($WebViewProcess.Id))"
-Write-Host ""
+Write-Verbose-Line "PID: $($script:WebViewProcess.Id)"
+Complete-Task 'WebView2 client started'
 
-# Wait for ports to be available
+# Wait for ports
 Start-Sleep -Seconds 3
 
-# Start Electron
-Write-Warning "Starting Electron client..."
+Start-Task 'Starting Electron client'
 Set-Location cmd\electron
-$ElectronProcess = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -WindowStyle Hidden
+$script:ElectronProcess = Start-Process -FilePath 'npm' -ArgumentList 'start' -PassThru -WindowStyle Hidden
 Set-Location $ScriptDir
-Write-Success "✓ Electron started (PID: $($ElectronProcess.Id))"
-Write-Host ""
+Write-Verbose-Line "PID: $($script:ElectronProcess.Id)"
+Complete-Task 'Electron client started'
 
 # Instructions
-Write-Header "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-Write-Success "Both clients are running!"
-Write-Host ""
-Write-Host "WebView2:  Native window (30-50MB bundle)"
-Write-Host "Electron:  Chromium window (150MB bundle)"
-Write-Host ""
-Write-Warning "Press Ctrl+C to stop both clients"
-Write-Header "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host ''
+Write-CompactHeader 'Both clients running!'
+Write-Host ''
+Write-Host 'WebView2:  Native window (30-50MB bundle)'
+Write-Host 'Electron:  Chromium window (150MB bundle)'
+Write-Host ''
+Write-Host 'Press Ctrl+C to stop both clients' -ForegroundColor Yellow
 
 # Wait for user interrupt
 try {
     while ($true) {
         Start-Sleep -Seconds 1
-        
+
         # Check if processes are still running
-        if ($WebViewProcess.HasExited -and $ElectronProcess.HasExited) {
-            Write-Warning "Both clients have exited"
+        if ($script:WebViewProcess.HasExited -and $script:ElectronProcess.HasExited) {
+            Warn-Task 'Both clients have exited'
             break
         }
     }
 } finally {
-    Cleanup
+    Invoke-Cleanup
+    Show-Cursor
 }
 

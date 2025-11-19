@@ -9,11 +9,13 @@
 
 # ANSI escape sequences
 readonly ANSI_CLEAR_LINE='\033[2K'
+# shellcheck disable=SC2034  # May be used by scripts sourcing this library
 readonly ANSI_CURSOR_UP='\033[1A'
 readonly ANSI_CURSOR_SAVE='\033[s'
 readonly ANSI_CURSOR_RESTORE='\033[u'
 readonly ANSI_HIDE_CURSOR='\033[?25l'
 readonly ANSI_SHOW_CURSOR='\033[?25h'
+# shellcheck disable=SC2034  # May be used by scripts sourcing this library
 readonly ANSI_MOVE_TO_COL='\033[%dG'
 
 # Colors
@@ -43,34 +45,37 @@ VERBOSE=${VERBOSE:-0}
 
 # Get elapsed time in HH:MM:SS format
 get_elapsed_time() {
-    local now=$(date +%s)
+    local now
+    now=$(date +%s)
     local elapsed=$((now - SCRIPT_START_TIME))
     printf "%02d:%02d:%02d" $((elapsed/3600)) $(((elapsed%3600)/60)) $((elapsed%60))
 }
 
 # Print timer in top-right corner
 print_timer() {
-    local cols=$(tput cols 2>/dev/null || echo 80)
-    local timer=$(get_elapsed_time)
+    local cols
+    cols=$(tput cols 2>/dev/null || echo 80)
+    local timer
+    timer=$(get_elapsed_time)
     local timer_text="${C_GRAY}[${timer}]${C_RESET}"
     local timer_len=11  # Length of [HH:MM:SS] with ANSI codes stripped
     local pos=$((cols - timer_len))
-    
+
     # Save cursor, move to position, print timer, restore cursor
-    printf "${ANSI_CURSOR_SAVE}"
-    printf "\033[${pos}G"  # Move to column
-    printf "${timer_text}"
-    printf "${ANSI_CURSOR_RESTORE}"
+    printf "%s" "${ANSI_CURSOR_SAVE}"
+    printf "\033[%dG" "$pos"  # Move to column
+    printf "%b" "${timer_text}"
+    printf "%s" "${ANSI_CURSOR_RESTORE}"
 }
 
 # Update status line in place
 update_status() {
     local symbol="$1"
     local message="$2"
-    
+
     # Clear line and print status with timer
-    printf "\r${ANSI_CLEAR_LINE}"
-    printf "${symbol} ${message}"
+    printf "\r%b" "${ANSI_CLEAR_LINE}"
+    printf "%b %s" "${symbol}" "${message}"
     print_timer
 }
 
@@ -148,11 +153,11 @@ print_section() {
 
 # Show cursor on exit
 cleanup_display() {
-    printf "${ANSI_SHOW_CURSOR}"
+    printf "%s" "${ANSI_SHOW_CURSOR}"
 }
 
 trap cleanup_display EXIT
 
 # Hide cursor for cleaner updates
-printf "${ANSI_HIDE_CURSOR}"
+printf "%s" "${ANSI_HIDE_CURSOR}"
 
