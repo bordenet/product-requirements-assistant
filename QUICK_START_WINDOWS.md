@@ -45,11 +45,25 @@ Just download one file and run it. That's it.
 ### If you downloaded the Electron Installer:
 
 1. **Double-click** the downloaded `.exe` file
-2. **Windows Security Warning** (normal for downloaded files):
-   - Click "More info"
-   - Click "Run anyway"
+
+2. **Windows SmartScreen Warning** (THIS IS NORMAL):
+
+   You will see:
+   ```
+   Windows protected your PC
+   Microsoft Defender SmartScreen prevented an unrecognized app from starting.
+   Running this app might put your PC at risk.
+   ```
+
+   **Why?** The app is not code-signed (costs $500/year). The app is safe - it's open source.
+
+   **To proceed:**
+   - Click **"More info"**
+   - Click **"Run anyway"**
+
 3. **Follow the installation wizard**
    - Click "Next" → "Install" → "Finish"
+
 4. **Launch the app**:
    - From Start Menu: Search for "Product Requirements Assistant"
    - Or double-click the desktop shortcut
@@ -57,9 +71,11 @@ Just download one file and run it. That's it.
 ### If you downloaded the WebView2 Portable:
 
 1. **Double-click** `prd-assistant-windows-amd64.exe`
-2. **Windows Security Warning** (normal for downloaded files):
-   - Click "More info"
-   - Click "Run anyway"
+
+2. **Windows SmartScreen Warning** (THIS IS NORMAL):
+
+   Same warning as above. Click **"More info"** → **"Run anyway"**
+
 3. **The application window opens automatically**
 
 ---
@@ -84,9 +100,35 @@ The application window will open. You can now:
 
 ### "Windows protected your PC" Warning
 
-This is normal for downloaded executables. To run:
-1. Click "More info"
-2. Click "Run anyway"
+**This is NORMAL and EXPECTED.** Here's why:
+
+**Why does this happen?**
+- The app is not code-signed with a Microsoft certificate
+- Code signing costs $500/year - we're an open-source project
+- Windows shows this warning for ALL unsigned downloads
+- **The app is safe** - all code is open source on GitHub
+
+**Is it safe to run?**
+- ✅ Yes! The app is open source
+- ✅ You can review all code on GitHub
+- ✅ No telemetry, no data collection
+- ✅ Runs entirely on your computer
+
+**How to run anyway:**
+1. Click **"More info"** (small text link)
+2. Click **"Run anyway"** (button appears)
+3. App will start normally
+
+**For IT/Security teams:**
+- Source code: https://github.com/bordenet/product-requirements-assistant
+- No network calls except to AI services (user-initiated)
+- No admin privileges required
+- Portable version available (no installation)
+
+**Future plans:**
+- We plan to add code signing in future releases
+- This will eliminate the warning
+- See [docs/CODE_SIGNING.md](docs/CODE_SIGNING.md) for details
 
 ### WebView2 Runtime Missing (WebView2 version only)
 
@@ -100,6 +142,30 @@ If you see an error about WebView2:
 1. Make sure you downloaded the correct file for Windows
 2. Try right-click → "Run as administrator"
 3. Check Windows Event Viewer for error details
+
+### Corporate/Enterprise Environments
+
+If you're on a company computer with strict security policies:
+
+**Problem**: IT may block unsigned executables entirely
+
+**Solutions**:
+1. **Ask IT to whitelist the app**
+   - Provide them: https://github.com/bordenet/product-requirements-assistant
+   - Show them the open source code
+   - Explain it's a local-only tool (no cloud services)
+
+2. **Request admin approval**
+   - Some companies allow exceptions for business tools
+   - Explain it's for creating Product Requirements Documents
+
+3. **Use on personal device**
+   - If company policy allows, use on your personal laptop
+   - All data stays local, no company data leaves your machine
+
+4. **Wait for signed version**
+   - We plan to add code signing in future releases
+   - Subscribe to releases: https://github.com/bordenet/product-requirements-assistant/releases
 
 ---
 
