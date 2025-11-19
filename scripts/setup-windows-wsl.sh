@@ -42,7 +42,7 @@ if ! grep -qi microsoft /proc/version; then
     log_warn "This script is optimized for Windows WSL"
     log_warn "Detected environment: $(uname -a)"
     if [ "$AUTO_YES" = false ]; then
-        read -p "Continue anyway? [y/N]: " response
+        read -r -p "Continue anyway? [y/N]: " response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
             echo "Setup cancelled."
             exit 0
@@ -95,13 +95,27 @@ else
     log_ok "Node.js $NODE_VERSION"
 fi
 
-# Install make
+# Install build tools (needed for Python packages like Pillow)
 if ! command_exists make; then
-    log_info "Installing make..."
-    sudo apt-get install -y -qq build-essential
-    log_ok "Make installed"
+    log_info "Installing build tools..."
+    sudo apt-get install -y -qq build-essential gcc python3-dev
+    log_ok "Build tools installed"
 else
     log_ok "Make"
+fi
+
+# Install additional dependencies for Pillow (Python imaging library)
+if ! dpkg -l | grep -q libjpeg-dev 2>/dev/null; then
+    log_info "Installing image processing libraries..."
+    sudo apt-get install -y -qq \
+        libjpeg-dev \
+        zlib1g-dev \
+        libtiff-dev \
+        libfreetype6-dev \
+        liblcms2-dev \
+        libwebp-dev \
+        libopenjp2-7-dev
+    log_ok "Image processing libraries installed"
 fi
 
 # Install curl (for health checks)
@@ -176,7 +190,7 @@ if [ ${#PORTS_IN_USE[@]} -gt 0 ]; then
     echo ""
     
     if [ "$AUTO_YES" = false ]; then
-        read -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
+        read -r -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
         echo ""
         response=${response:-y}
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
