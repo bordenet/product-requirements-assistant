@@ -76,11 +76,23 @@ fi
 # Install Python
 if ! command_exists python3; then
     log_info "Installing Python..."
-    sudo apt-get install -y -qq python3 python3-pip
+    sudo apt-get install -y -qq python3 python3-pip python3-venv
     log_ok "Python installed"
 else
     PYTHON_VERSION=$(python3 --version | awk '{print $2}')
     log_ok "Python $PYTHON_VERSION"
+fi
+
+# Install Node.js (for Electron client)
+if ! command_exists node; then
+    log_info "Installing Node.js..."
+    # Install Node.js 20.x from NodeSource
+    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+    sudo apt-get install -y -qq nodejs
+    log_ok "Node.js installed"
+else
+    NODE_VERSION=$(node --version)
+    log_ok "Node.js $NODE_VERSION"
 fi
 
 # Install make
@@ -100,6 +112,14 @@ if ! command_exists curl; then
 else
     log_ok "curl"
 fi
+
+# Install WebView2/GTK dependencies for thick client
+log_info "Installing WebView2/GTK dependencies..."
+sudo apt-get install -y -qq \
+    libgtk-3-dev \
+    libwebkit2gtk-4.1-dev \
+    pkg-config
+log_ok "WebView2/GTK dependencies installed"
 
 # Step 2: Install project dependencies
 CURRENT_STEP=$((CURRENT_STEP + 1))
