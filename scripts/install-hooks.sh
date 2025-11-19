@@ -55,12 +55,12 @@ echo ""
 
 # Check for binaries
 if [[ -f "$SCRIPT_DIR/scripts/check-binaries.sh" ]]; then
-    "$SCRIPT_DIR/scripts/check-binaries.sh"
+    bash "$SCRIPT_DIR/scripts/check-binaries.sh"
 fi
 
 # Check for secrets
 if [[ -f "$SCRIPT_DIR/scripts/check-secrets.sh" ]]; then
-    "$SCRIPT_DIR/scripts/check-secrets.sh"
+    bash "$SCRIPT_DIR/scripts/check-secrets.sh"
 fi
 
 # Run quick validation (optional - can be slow)

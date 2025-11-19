@@ -30,15 +30,15 @@ if [ -z "$STAGED_FILES" ]; then
     exit 0
 fi
 
-# Secret patterns to check
-declare -A SECRET_PATTERNS=(
-    ["AWS Secret Key"]="AWS_SECRET_ACCESS_KEY.*=.*['\"]?[A-Za-z0-9/+]{40}"
-    ["AWS Access Key"]="AWS_ACCESS_KEY_ID.*=.*['\"]?AKIA[A-Z0-9]{16}"
-    ["Generic API Key"]="api[_-]?key.*=.*['\"][A-Za-z0-9]{20,}['\"]"
-    ["Password"]="password.*=.*['\"][^'\"]{8,}['\"]"
-    ["Private Key"]="-----BEGIN (RSA |EC )?PRIVATE KEY-----"
-    ["Generic Secret"]="secret.*=.*['\"][A-Za-z0-9]{20,}['\"]"
-    ["Bearer Token"]="bearer [A-Za-z0-9\-._~+/]+=*"
+# Secret patterns to check (pattern:description format)
+SECRET_PATTERNS=(
+    "AWS_SECRET_ACCESS_KEY.*=.*[A-Za-z0-9/+]{40}:AWS Secret Key"
+    "AWS_ACCESS_KEY_ID.*=.*AKIA[A-Z0-9]{16}:AWS Access Key"
+    "api[_-]?key.*=.*[A-Za-z0-9]{20,}:Generic API Key"
+    "password.*=.*[A-Za-z0-9]{8,}:Password"
+    "-----BEGIN (RSA |EC )?PRIVATE KEY-----:Private Key"
+    "secret.*=.*[A-Za-z0-9]{20,}:Generic Secret"
+    "bearer [A-Za-z0-9\-._~+/]+=:Bearer Token"
 )
 
 SECRETS_FOUND=()
@@ -56,14 +56,15 @@ while IFS= read -r file; do
     fi
 
     # Check each pattern
-    for pattern_name in "${!SECRET_PATTERNS[@]}"; do
-        pattern="${SECRET_PATTERNS[$pattern_name]}"
-        
+    for pattern_entry in "${SECRET_PATTERNS[@]}"; do
+        pattern="${pattern_entry%%:*}"
+        description="${pattern_entry##*:}"
+
         # Search for pattern in file
         if grep -iEq "$pattern" "$file"; then
             # Exclude safe patterns
             if ! grep -iE "$pattern" "$file" | grep -qE "(example|test|mock|dummy|placeholder|<.*>|REPLACE|YOUR_|TODO)"; then
-                SECRETS_FOUND+=("$file: $pattern_name")
+                SECRETS_FOUND+=("$file: $description")
             fi
         fi
     done
