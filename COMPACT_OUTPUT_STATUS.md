@@ -5,7 +5,7 @@
 ### 1. Shell Script Infrastructure (Bash/Linux/macOS/WSL)
 
 **Created:**
-- ✅ `scripts/lib/compact.sh` - Compact output library for shell scripts
+- ✅ `scripts/lib/compact.sh` - Compact output library for shell scripts (163 lines)
   - Running timer in top-right corner (HH:MM:SS format)
   - In-place status updates using ANSI escape sequences
   - Minimal vertical space (single line per task)
@@ -13,7 +13,7 @@
   - Verbose mode support via `-v` flag
   - Clean shellcheck linting (no warnings)
 
-- ✅ `scripts/setup-windows-wsl-compact.sh` - Fast, resumable WSL setup
+- ✅ `scripts/setup-windows-wsl-compact.sh` - Fast, resumable WSL setup (261 lines)
   - Smart caching system (`.setup-cache/` directory)
   - Only installs missing dependencies
   - First run: ~2-3 minutes, subsequent: ~5-10 seconds
@@ -21,7 +21,25 @@
   - Hash-based Python dependency tracking
   - Validates setup with quick build test
 
+- ✅ `scripts/setup-macos-compact.sh` - Fast, resumable macOS setup (199 lines)
+  - Same smart caching features as WSL version
+  - Homebrew package management
+  - Individual Python package checking
+  - All scripts under 400 lines
+
+- ✅ `scripts/setup-linux-compact.sh` - Fast, resumable Linux setup (209 lines)
+  - Same smart caching features
+  - apt package management with daily update caching
+  - WebView2/GTK dependency handling
+  - All scripts under 400 lines
+
 **Updated:**
+- ✅ `run-thick-clients.sh` - Rewritten with compact output (195 lines)
+  - Mode flags: `-m dev/prod/build`
+  - Verbose mode support
+  - Clean non-verbose output
+  - Interactive mode selection
+
 - ✅ `.gitignore` - Excludes `.setup-cache/` directory
 - ✅ All shell scripts pass shellcheck linting
 
@@ -122,11 +140,11 @@ file *.ps1 scripts/*.ps1 scripts/lib/*.psm1
 
 ### High Priority
 - [ ] Update `scripts/setup-windows.ps1` with compact output
-- [ ] Update `scripts/setup-macos.sh` with compact output
-- [ ] Update `scripts/setup-linux.sh` with compact output
-- [ ] Update `run-thick-clients.sh` with compact output
 - [ ] Lint all PowerShell scripts with PSScriptAnalyzer
 - [ ] Test all scripts for clean non-verbose output
+- [x] Update `scripts/setup-macos.sh` with compact output → `setup-macos-compact.sh`
+- [x] Update `scripts/setup-linux.sh` with compact output → `setup-linux-compact.sh`
+- [x] Update `run-thick-clients.sh` with compact output
 
 ### Medium Priority
 - [ ] Refactor any scripts >400 lines
@@ -184,8 +202,10 @@ None currently - all critical PowerShell syntax errors resolved.
 ---
 
 **Last Updated:** 2025-11-19
-**Commits Pushed:** 
+**Commits Pushed:**
 - `e0355cf` - feat: add compact output library and fast resumable setup script
 - `1ee4057` - fix: resolve PowerShell syntax errors and add compact output module
 - `1652b34` - fix: resolve shellcheck warnings in WSL compact setup script
+- `b754686` - docs: add compact output system implementation status
+- `3a684c0` - feat: add compact output to shell scripts (macOS, Linux, run-thick-clients)
 
