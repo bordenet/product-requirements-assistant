@@ -1,0 +1,71 @@
+{
+  "name": "prd-assistant-electron",
+  "version": "1.5.0",
+  "description": "Product Requirements Assistant - Electron Thick Client",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --win --mac --linux"
+  },
+  "build": {
+    "appId": "com.bordenet.prd-assistant",
+    "productName": "PRD Assistant",
+    "directories": {
+      "output": "../../dist/electron"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "../../backend/**/*",
+      "../../frontend/**/*",
+      "../../prompts/**/*",
+      "../../venv/**/*",
+      "!../../backend/*.test",
+      "!../../backend/coverage.out"
+    },
+    "extraResources": [
+      {
+        "from": "../../inputs",
+        "to": "inputs",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../../outputs",
+        "to": "outputs",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "../../build/electron/icons/icon.ico"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "icon": "../../build/electron/icons/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "../../build/electron/icons/icon.png",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "author": "bordenet",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {}
+}
+

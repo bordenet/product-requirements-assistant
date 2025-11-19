@@ -46,3 +46,10 @@ ehthumbs.db
 
 # Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+
+# Thick client build artifacts
+dist/
+cmd/webview/go.sum
+cmd/electron/node_modules/
+cmd/electron/package-lock.json
+internal/
