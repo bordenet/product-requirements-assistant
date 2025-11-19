@@ -24,7 +24,14 @@
       "Bash(./setup-macos.sh:*)",
       "Bash(python3:*)",
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(pip --version:*)",
+      "Bash(./run.sh:*)",
+      "Bash(git rm:*)",
+      "Bash(git push)",
+      "Bash(./scripts/setup-macos.sh:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
