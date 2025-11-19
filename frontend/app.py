@@ -154,28 +154,20 @@ def show_project_workflow():
     st.progress(progress)
     
     st.header(f"Project: {project['title']}")
-    
-    # Show project overview
-    with st.expander("📊 Project Overview", expanded=True):
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if project['phases'][0].get('content'):
-                st.success("✅ Phase 1: Complete")
-            else:
-                st.info("⏳ Phase 1: Pending")
-        with col2:
-            if project['phases'][1].get('content'):
-                st.success("✅ Phase 2: Complete")
-            else:
-                st.info("⏳ Phase 2: Pending")
-        with col3:
-            if project['phases'][2].get('content'):
-                st.success("✅ Phase 3: Complete")
-            else:
-                st.info("⏳ Phase 3: Pending")
-    
-    # Tabs for phases
-    tab1, tab2, tab3 = st.tabs(["Phase 1: Claude Initial", "Phase 2: Gemini Review", "Phase 3: Claude Compare"])
+
+    # Minimal status indicator
+    status_text = f"Phase 1: {'✓' if project['phases'][0].get('content') else '○'}  |  Phase 2: {'✓' if project['phases'][1].get('content') else '○'}  |  Phase 3: {'✓' if project['phases'][2].get('content') else '○'}"
+    st.caption(status_text)
+
+    st.markdown("---")
+
+    # Prominent phase navigation
+    st.markdown("### Select a phase to work on:")
+    tab1, tab2, tab3 = st.tabs([
+        "📝 Phase 1: Claude Initial",
+        "🔍 Phase 2: Gemini Review",
+        "✨ Phase 3: Claude Compare"
+    ])
     
     with tab1:
         show_phase_1()
