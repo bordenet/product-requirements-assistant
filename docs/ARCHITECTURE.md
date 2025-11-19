@@ -16,7 +16,33 @@ Product Requirements Assistant is a PRD creation tool with a 3-phase AI-assisted
 - `inputs/`: Input documents and project data
 - `outputs/`: Generated PRDs and project files (JSON format)
 
+## Platform Support
+
+The application supports multiple platforms with dedicated setup scripts:
+
+### macOS
+```bash
+./scripts/setup-macos.sh [-y]
+```
+
+### Linux
+```bash
+./scripts/setup-linux.sh [-y]
+```
+
+### Windows (WSL)
+```bash
+./scripts/setup-windows-wsl.sh [-y]
+```
+
+### Windows (PowerShell)
+```powershell
+.\scripts\setup-windows.ps1 [-AutoYes]
+```
+
 ## Development Commands
+
+### Unix/Linux/macOS
 ```bash
 # Install dependencies
 make install
@@ -24,17 +50,31 @@ make install
 # Start backend (terminal 1)
 make run-backend
 
-# Start frontend (terminal 2) 
+# Start frontend (terminal 2)
 make run-frontend
 
 # Test backend
 make test-backend
+
+# Validate entire monorepo
+./scripts/validate-monorepo.sh --quick  # Fast validation
+./scripts/validate-monorepo.sh --full   # Comprehensive validation
 
 # Format code
 make format
 
 # Clean outputs
 make clean
+```
+
+### Windows (PowerShell)
+```powershell
+# Validate entire monorepo
+.\scripts\validate-monorepo.ps1 -Quick  # Fast validation
+.\scripts\validate-monorepo.ps1 -Full   # Comprehensive validation
+
+# Install pre-commit hooks
+.\scripts\install-hooks.ps1
 ```
 
 ## Technology Stack
@@ -74,9 +114,47 @@ make clean
 - `POST /api/projects`: Create new project
 - `GET /api/projects/{id}`: Get project details
 - `POST /api/projects/{id}/phase/{phase}`: Update phase data
+- `POST /api/projects/{id}/generate/{phase}`: Generate mock AI response (testing only)
 - `GET /api/prompts/{phase}`: Get prompt template
 - `POST /api/prompts/{phase}`: Update prompt template
 - `GET /api/projects`: List all projects
+
+## Mock AI for Testing
+
+The application includes a mock AI system for automated testing and development:
+
+### Purpose
+- **Automated Testing**: Run end-to-end tests without manual copy/paste
+- **CI/CD Integration**: Validate the complete workflow in pipelines
+- **Development**: Quickly test changes without waiting for AI responses
+- **Demonstrations**: Show the full workflow without external dependencies
+
+### Configuration
+Set the `MOCK_AI_ENABLED` environment variable:
+```bash
+export MOCK_AI_ENABLED=true  # Enable mock AI
+export MOCK_AI_ENABLED=false # Disable (default)
+```
+
+### Implementation
+- **Location**: `backend/mock_ai.go` (core logic), `backend/mock_templates.go` (response templates)
+- **Templates**: Realistic PRD content for all 3 phases
+- **Security**: Disabled by default, returns 403 when disabled
+- **Testing**: Comprehensive test coverage in `backend/mock_ai_test.go`
+
+### Usage
+```bash
+# Enable mock AI
+export MOCK_AI_ENABLED=true
+cd backend && go run .
+
+# Generate responses automatically
+curl -X POST http://localhost:8080/api/projects/{id}/generate/1  # Phase 1
+curl -X POST http://localhost:8080/api/projects/{id}/generate/2  # Phase 2
+curl -X POST http://localhost:8080/api/projects/{id}/generate/3  # Phase 3
+```
+
+See [docs/MOCK_AI.md](MOCK_AI.md) for complete documentation.
 
 ## Development Notes
 - Backend serves on localhost:8080
