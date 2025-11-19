@@ -37,11 +37,22 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 ![Claude Integration](docs/img/Screenshot--ClaudePhase1.png)
 *Copy/paste workflow with Claude Sonnet 4.5*
 
+## Platform Support
+
+### Desktop Applications (Download & Run)
+- **Electron** - Full installer for Windows, macOS, Linux (~150MB)
+- **WebView2** - Lightweight portable executable (~10MB)
+
+### Web Application (Coming Soon)
+- **CloudFront** - Browser-based, 100% client-side storage
+- **No installation** - Just open a URL
+- **Privacy-first** - All data stored in your browser (IndexedDB)
+
 ## Architecture
 
 - **Backend**: Go REST API on port 8080
-- **Frontend**: Streamlit web UI on port 8501
-- **Storage**: Local filesystem
+- **Frontend**: Streamlit web UI on port 8501 (desktop) / Vanilla JS (web)
+- **Storage**: Local filesystem (desktop) / IndexedDB (web)
 
 ## Download Pre-Built Applications
 
@@ -318,7 +329,19 @@ Use the automated release tool for semantic versioning:
 ./scripts/release.py minor --dry-run -v
 ```
 
-See [docs/RELEASING.md](docs/RELEASING.md) for detailed release documentation.
+See [docs/deployment/RELEASING.md](docs/deployment/RELEASING.md) for detailed release documentation.
+
+## Documentation
+
+📚 **[Complete Documentation Index](docs/README.md)**
+
+Quick links:
+- **[Architecture](docs/architecture/ARCHITECTURE.md)** - System design and tech stack
+- **[API Reference](docs/architecture/API.md)** - Backend REST API
+- **[Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)** - Desktop app usage
+- **[CloudFront Deployment](docs/deployment/CLOUDFRONT_HOSTING.md)** - Web app hosting
+- **[Code Signing](docs/deployment/CODE_SIGNING.md)** - Windows security
+- **[Mock AI](docs/development/MOCK_AI.md)** - Testing with mock responses
 
 ## Known Limitations
 
