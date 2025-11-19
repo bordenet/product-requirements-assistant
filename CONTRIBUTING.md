@@ -1,18 +1,53 @@
 # Contributing to Product Requirements Assistant
 
-## Development Setup
+Thank you for your interest in contributing! This guide will help you get started.
+
+---
+
+## 📚 Documentation
+
+Before contributing, please review:
+- **[Architecture](docs/architecture/ARCHITECTURE.md)** - System design
+- **[API Reference](docs/architecture/API.md)** - Backend API
+- **[Development Guide](docs/development/)** - Development tools
+- **[Scripts Reference](scripts/README.md)** - Automation scripts
+
+---
+
+## 🚀 Development Setup
 
 ### Prerequisites
 
-- Go 1.21 or higher
-- Python 3.8 or higher
-- Make
+- **Go** 1.21 or higher
+- **Python** 3.8 or higher
+- **Make** (optional, but recommended)
+- **Git**
 
 ### Quick Start
 
+**Option 1: Automated Setup (Recommended)**
+
+```bash
+# macOS
+./scripts/setup-macos.sh -y
+
+# Linux
+./scripts/setup-linux.sh -y
+
+# Windows (WSL)
+./scripts/setup-windows-wsl.sh -y
+
+# Windows (PowerShell)
+.\scripts\setup-windows.ps1 -AutoYes
+```
+
+See [`scripts/README.md`](scripts/README.md) for details.
+
+**Option 2: Manual Setup**
+
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/product-requirements-assistant.git
+git clone https://github.com/bordenet/product-requirements-assistant.git
 cd product-requirements-assistant
 
 # Install dependencies
@@ -28,6 +63,8 @@ make run-backend
 # Terminal 2
 make run-frontend
 ```
+
+Open http://localhost:8501
 
 ## Code Standards
 
@@ -123,7 +160,7 @@ make test-integration
 - [ ] Commit messages follow convention
 - [ ] PR description explains changes
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 product-requirements-assistant/
@@ -141,28 +178,45 @@ product-requirements-assistant/
 ├── frontend/        # Streamlit UI
 │   ├── app.py       # Main application
 │   └── api_client.py # Backend client
+├── web/             # Browser-based web app
+│   └── README.md    # See web/README.md
 ├── docs/            # Documentation
+│   └── README.md    # See docs/README.md
 ├── scripts/         # Setup scripts
+│   └── README.md    # See scripts/README.md
 ├── prompts/         # Prompt templates
+│   └── README.md    # See prompts/README.md
 ├── testdata/        # Test fixtures
 └── outputs/         # Generated PRDs
 ```
+
+**See also:**
+- [`README.md`](README.md) - Main project documentation
+- [`docs/README.md`](docs/README.md) - Complete documentation index
+- [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) - System architecture
 
 ## Adding New Features
 
 ### Backend Endpoint
 
-1. Add route in `backend/main.go`
-2. Implement handler in `backend/handlers.go`
+1. Add route in [`backend/main.go`](backend/main.go)
+2. Implement handler in [`backend/handlers.go`](backend/handlers.go)
 3. Add validation if needed
-4. Add tests in `backend/e2e_test.go`
-5. Update `docs/API.md`
+4. Add tests in [`backend/e2e_test.go`](backend/e2e_test.go)
+5. Update [`docs/architecture/API.md`](docs/architecture/API.md)
 
 ### Frontend Feature
 
-1. Add UI components in `frontend/app.py`
-2. Add API client methods in `frontend/api_client.py`
+1. Add UI components in [`frontend/app.py`](frontend/app.py)
+2. Add API client methods in [`frontend/api_client.py`](frontend/api_client.py)
 3. Test manually with backend running
+4. Update documentation
+
+### Web App Feature
+
+1. Add UI components in [`web/index.html`](web/index.html)
+2. Add JavaScript modules in [`web/js/`](web/js/)
+3. Test in browser (see [`web/README.md`](web/README.md))
 4. Update documentation
 
 ## Questions?

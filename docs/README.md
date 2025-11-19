@@ -27,13 +27,49 @@
 ```
 docs/
 ├── architecture/       # System design and API docs
+│   ├── ARCHITECTURE.md
+│   ├── API.md
+│   └── README.md
 ├── deployment/         # Deployment and release guides
+│   ├── CLOUDFRONT_HOSTING.md
+│   ├── CODE_SIGNING.md
+│   ├── DEPLOY_STREAMLIT_CLOUD.md
+│   ├── RELEASING.md
+│   ├── WEB_APP_DEPLOYMENT.md
+│   ├── WEB_APP_IMPLEMENTATION.md
+│   └── README.md
 ├── development/        # Development tools and workflows
+│   ├── COMPACT_OUTPUT_STATUS.md
+│   ├── LAUNCHER_SCRIPTS.md
+│   ├── LOGGING.md
+│   ├── MOCK_AI.md
+│   ├── THICK_CLIENT_LAUNCHER.md
+│   └── README.md
 ├── decisions/          # Historical design decisions
+│   ├── REFACTORING_PLAN.md
+│   ├── THICK_CLIENT_DECISION.md
+│   └── README.md
 ├── guides/            # User-facing guides
+│   ├── THICK_CLIENTS_GUIDE.md
+│   └── README.md
 ├── img/               # Screenshots and diagrams
-└── _archive/          # Obsolete docs (kept for reference)
+├── _archive/          # Obsolete docs (kept for reference)
+│   ├── IMPLEMENTATION_SUMMARY.md
+│   ├── TESTING_RESULTS.md
+│   ├── V1.5_*.md (5 files)
+│   ├── WINDOWS_THICK_CLIENT.md
+│   └── README.md
+├── PROJECT_PLAN.md    # Version history and roadmap
+└── README.md          # This file
 ```
+
+**See subdirectory README files for detailed contents:**
+- [`architecture/README.md`](architecture/README.md)
+- [`deployment/README.md`](deployment/README.md)
+- [`development/README.md`](development/README.md)
+- [`decisions/README.md`](decisions/README.md)
+- [`guides/README.md`](guides/README.md)
+- [`_archive/README.md`](_archive/README.md)
 
 ---
 
@@ -151,31 +187,40 @@ All deployment options prioritize user privacy:
 
 ---
 
-## 📝 Contributing
+## 📝 Contributing to Documentation
 
 When adding new documentation:
 
 1. **Choose the right category:**
-   - `architecture/` - System design, APIs
-   - `deployment/` - Deployment, releases, infrastructure
-   - `development/` - Dev tools, testing, debugging
-   - `guides/` - User-facing documentation
-   - `decisions/` - Design decisions (historical)
+   - [`architecture/`](architecture/) - System design, APIs
+   - [`deployment/`](deployment/) - Deployment, releases, infrastructure
+   - [`development/`](development/) - Dev tools, testing, debugging
+   - [`guides/`](guides/) - User-facing documentation
+   - [`decisions/`](decisions/) - Design decisions (historical)
 
-2. **Update this README** with a link to your new doc
+2. **Update the subdirectory README** with a link to your new doc
 
-3. **Keep docs up-to-date** with code changes
+3. **Update this README** if adding a new category
 
-4. **Archive obsolete docs** to `_archive/` (don't delete)
+4. **Keep docs up-to-date** with code changes
+
+5. **Archive obsolete docs** to [`_archive/`](_archive/) (don't delete)
+
+6. **Use hyperlinks** for all cross-references (see examples in this file)
+
+**See:** [`CONTRIBUTING.md`](../CONTRIBUTING.md) for general contribution guidelines
 
 ---
 
 ## 🗄️ Archive
 
-Obsolete documentation is kept in `_archive/` for historical reference:
+Obsolete documentation is kept in [`_archive/`](_archive/) for historical reference:
 - V1.5 planning docs (superseded by current implementation)
 - Old testing results
 - Deprecated guides
+- Implementation summaries (historical records)
+
+**See:** [`_archive/README.md`](_archive/README.md) for complete archive index
 
 These are kept for context but should not be used for current development.
 

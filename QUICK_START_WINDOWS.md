@@ -203,14 +203,16 @@ Your data never leaves your machine.
 ## 👨‍💻 For Developers
 
 If you want to build from source or contribute:
-- See [README.md](README.md) for development setup
-- See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
+- See [`README.md`](README.md) for development setup
+- See [`CONTRIBUTING.md`](CONTRIBUTING.md) for contribution guidelines
+- See [`docs/`](docs/) for complete documentation
 
 ---
 
 ## 🆘 Need Help?
 
 - [Report an issue](https://github.com/bordenet/product-requirements-assistant/issues)
-- [View documentation](docs/)
-- [Watch tutorial video](#) (coming soon)
+- [View documentation](docs/README.md)
+- [Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)
+- [Code Signing Info](docs/deployment/CODE_SIGNING.md) (SmartScreen warnings)
 

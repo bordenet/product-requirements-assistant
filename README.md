@@ -161,19 +161,51 @@ Then open http://localhost:8501
 4. **Phase 3**: Copy prompt → Claude → paste final PRD
 5. **Export**: Download as markdown with full revision history
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 product-requirements-assistant/
-├── backend/          # Go server (port 8080)
-├── frontend/         # Streamlit app (port 8501)
-├── scripts/          # Setup and utility scripts
-├── prompts/          # Prompt templates
-├── outputs/          # Generated PRDs
-├── venv/            # Python virtual environment
-├── Makefile         # Common commands
-└── run.sh           # Unified setup script
+├── backend/                    # Go REST API server (port 8080)
+├── frontend/                   # Streamlit web UI (port 8501)
+├── web/                        # Browser-based web app (100% client-side)
+│   ├── js/                    # JavaScript modules
+│   ├── css/                   # Styles
+│   ├── data/                  # Default prompts
+│   └── README.md              # Web app documentation
+├── cmd/                        # Desktop application launchers
+│   ├── electron/              # Electron client (~150MB)
+│   └── webview/               # WebView2 client (~10MB)
+├── scripts/                    # Automation scripts
+│   ├── setup-*.sh             # Platform-specific setup
+│   ├── validate-monorepo.*    # Code quality validation
+│   ├── release.py             # Release automation
+│   └── README.md              # Scripts documentation
+├── prompts/                    # AI prompt templates
+│   ├── claude_initial.txt     # Phase 1 prompt
+│   ├── gemini_review.txt      # Phase 2 prompt
+│   ├── claude_compare.txt     # Phase 3 prompt
+│   └── README.md              # Prompts documentation
+├── docs/                       # Documentation
+│   ├── architecture/          # System design and API
+│   ├── deployment/            # Deployment and releases
+│   ├── development/           # Dev tools and workflows
+│   ├── decisions/             # Design decisions
+│   ├── guides/                # User guides
+│   ├── _archive/              # Obsolete docs (historical)
+│   └── README.md              # Documentation index
+├── outputs/                    # Generated PRDs (local storage)
+├── testdata/                   # Test fixtures
+├── Makefile                    # Common development commands
+├── run.sh                      # Quick start script
+├── CONTRIBUTING.md             # Contribution guidelines
+└── README.md                   # This file
 ```
+
+**See also:**
+- [`docs/README.md`](docs/README.md) - Complete documentation index
+- [`scripts/README.md`](scripts/README.md) - Scripts reference
+- [`prompts/README.md`](prompts/README.md) - Prompts documentation
+- [`web/README.md`](web/README.md) - Web app guide
 
 ## Configuration
 
@@ -201,7 +233,7 @@ Or just run the setup script again - it will handle this automatically.
 tail -f backend.log frontend.log
 ```
 
-See [LOGGING.md](docs/LOGGING.md) for detailed error documentation.
+See [`docs/development/LOGGING.md`](docs/development/LOGGING.md) for detailed error documentation.
 
 ## Testing
 
@@ -255,7 +287,7 @@ curl -X POST http://localhost:8080/api/projects/{project_id}/generate/2
 curl -X POST http://localhost:8080/api/projects/{project_id}/generate/3
 ```
 
-**⚠️ Note**: Mock AI is for testing/development only. See [docs/MOCK_AI.md](docs/MOCK_AI.md) for details.
+**⚠️ Note**: Mock AI is for testing/development only. See [`docs/development/MOCK_AI.md`](docs/development/MOCK_AI.md) for details.
 
 ## Quality Gates
 
@@ -287,13 +319,32 @@ git commit --no-verify -m "Emergency fix"
 ```
 ⚠️ Only use `--no-verify` when absolutely necessary!
 
-## Documentation
+## 📚 Documentation
 
-- **[Architecture](docs/ARCHITECTURE.md)**: System design and technical details
-- **[API Reference](docs/API.md)**: Complete API endpoint documentation
-- **[Logging](docs/LOGGING.md)**: Logging configuration and troubleshooting
-- **[Releasing](docs/RELEASING.md)**: Creating releases with semantic versioning
-- **[Contributing](CONTRIBUTING.md)**: Development setup and contribution guidelines
+**Complete Documentation:** [`docs/README.md`](docs/README.md)
+
+### Quick Links
+
+**For Users:**
+- **[Quick Start (Windows)](QUICK_START_WINDOWS.md)** - Download and run on Windows
+- **[Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)** - Desktop app user guide
+- **[Web App Guide](web/README.md)** - Browser-based version
+
+**For Developers:**
+- **[Architecture](docs/architecture/ARCHITECTURE.md)** - System design and tech stack
+- **[API Reference](docs/architecture/API.md)** - Backend REST API
+- **[Contributing](CONTRIBUTING.md)** - Development setup and guidelines
+- **[Scripts](scripts/README.md)** - Automation scripts reference
+
+**For DevOps:**
+- **[Releasing](docs/deployment/RELEASING.md)** - Creating releases
+- **[Code Signing](docs/deployment/CODE_SIGNING.md)** - Windows security
+- **[CloudFront Deployment](docs/deployment/CLOUDFRONT_HOSTING.md)** - Web app hosting
+
+**Development Tools:**
+- **[Mock AI](docs/development/MOCK_AI.md)** - Testing with mock responses
+- **[Logging](docs/development/LOGGING.md)** - Debugging and troubleshooting
+- **[Prompts](prompts/README.md)** - AI prompt templates
 
 ## Development
 
@@ -331,19 +382,7 @@ Use the automated release tool for semantic versioning:
 ./scripts/release.py minor --dry-run -v
 ```
 
-See [docs/deployment/RELEASING.md](docs/deployment/RELEASING.md) for detailed release documentation.
-
-## Documentation
-
-📚 **[Complete Documentation Index](docs/README.md)**
-
-Quick links:
-- **[Architecture](docs/architecture/ARCHITECTURE.md)** - System design and tech stack
-- **[API Reference](docs/architecture/API.md)** - Backend REST API
-- **[Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)** - Desktop app usage
-- **[CloudFront Deployment](docs/deployment/CLOUDFRONT_HOSTING.md)** - Web app hosting
-- **[Code Signing](docs/deployment/CODE_SIGNING.md)** - Windows security
-- **[Mock AI](docs/development/MOCK_AI.md)** - Testing with mock responses
+See [`docs/deployment/RELEASING.md`](docs/deployment/RELEASING.md) for detailed release documentation.
 
 ## Known Limitations
 
