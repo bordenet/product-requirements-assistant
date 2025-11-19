@@ -1,308 +1,291 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Product Requirements Assistant - Windows WSL Setup Script
-# Optimized for Windows Subsystem for Linux (Ubuntu/Debian)
+# Optimized for minimal vertical space with running timer
 
-set -e
+set -euo pipefail
 
-# Source common functions
+# Source compact output library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/lib/common.sh"
+source "$SCRIPT_DIR/lib/compact.sh"
 
 # Parse command line arguments
 AUTO_YES=false
+FORCE_INSTALL=false
 while [[ $# -gt 0 ]]; do
     case $1 in
+        -v|--verbose)
+            export VERBOSE=1
+            shift
+            ;;
         -y|--yes)
             AUTO_YES=true
             shift
             ;;
+        -f|--force)
+            FORCE_INSTALL=true
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $0 [-y|--yes] [-h|--help]"
-            echo ""
-            echo "Setup script for Windows WSL (Ubuntu/Debian)"
-            echo ""
-            echo "Options:"
-            echo "  -y, --yes    Automatically answer yes to prompts"
-            echo "  -h, --help   Show this help message"
+            cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Setup script for Windows WSL (Ubuntu/Debian)
+Fast, resumable setup - only installs what's missing.
+
+OPTIONS:
+  -v, --verbose    Show detailed output (default: compact)
+  -y, --yes        Automatically answer yes to prompts
+  -f, --force      Force reinstall all dependencies
+  -h, --help       Show this help message
+
+EXAMPLES:
+  $(basename "$0")              # Fast setup, only install missing items
+  $(basename "$0") -v           # Verbose output
+  $(basename "$0") -f           # Force reinstall everything
+  $(basename "$0") -v -f        # Verbose + force reinstall
+
+PERFORMANCE:
+  First run:  ~2-3 minutes (installs everything)
+  Subsequent: ~5-10 seconds (checks only, skips installed)
+
+EOF
             exit 0
             ;;
         *)
-            log_error "Unknown option: $1"
-            echo "Usage: $0 [-y|--yes] [-h|--help]"
+            echo "Error: Unknown option: $1"
+            echo "Run '$(basename "$0") --help' for usage information"
             exit 1
             ;;
     esac
 done
 
-TOTAL_STEPS=7
-CURRENT_STEP=0
-
 # Detect WSL
-if ! grep -qi microsoft /proc/version; then
-    log_warn "This script is optimized for Windows WSL"
-    log_warn "Detected environment: $(uname -a)"
+if ! grep -qi microsoft /proc/version 2>/dev/null; then
+    task_warn "Not running on Windows WSL"
+    verbose "Detected: $(uname -a)"
     if [ "$AUTO_YES" = false ]; then
         read -r -p "Continue anyway? [y/N]: " response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            echo "Setup cancelled."
+            echo "Setup cancelled"
             exit 0
         fi
     fi
 fi
 
-# Step 1: Check dependencies
-CURRENT_STEP=$((CURRENT_STEP + 1))
-log_step $CURRENT_STEP $TOTAL_STEPS "Checking dependencies"
+# Navigate to project root
+cd "$SCRIPT_DIR/.."
+PROJECT_ROOT=$(pwd)
 
-# Update package list
-if ! command_exists apt-get; then
-    log_error "apt-get not found. This script requires Ubuntu/Debian-based WSL"
-    exit 1
-fi
+print_header "Product Requirements Assistant - WSL Setup"
 
-log_info "Updating package list..."
-sudo apt-get update -qq
+# Cache file for tracking installed packages
+CACHE_DIR="$PROJECT_ROOT/.setup-cache"
+mkdir -p "$CACHE_DIR"
 
-# Install Go
-if ! command_exists go; then
-    log_info "Installing Go..."
-    sudo apt-get install -y -qq golang-go
-    log_ok "Go installed"
-else
-    GO_VERSION=$(go version | awk '{print $3}' | sed 's/go//')
-    log_ok "Go $GO_VERSION"
-fi
-
-# Install Python
-if ! command_exists python3; then
-    log_info "Installing Python..."
-    sudo apt-get install -y -qq python3 python3-pip python3-venv
-    log_ok "Python installed"
-else
-    PYTHON_VERSION=$(python3 --version | awk '{print $2}')
-    log_ok "Python $PYTHON_VERSION"
-fi
-
-# Install Node.js (for Electron client)
-if ! command_exists node; then
-    log_info "Installing Node.js..."
-    # Install Node.js 20.x from NodeSource
-    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-    sudo apt-get install -y -qq nodejs
-    log_ok "Node.js installed"
-else
-    NODE_VERSION=$(node --version)
-    log_ok "Node.js $NODE_VERSION"
-fi
-
-# Install build tools (needed for Python packages like Pillow)
-if ! command_exists make; then
-    log_info "Installing build tools..."
-    sudo apt-get install -y -qq build-essential gcc python3-dev
-    log_ok "Build tools installed"
-else
-    log_ok "Make"
-fi
-
-# Install additional dependencies for Pillow (Python imaging library)
-if ! dpkg -l | grep -q libjpeg-dev 2>/dev/null; then
-    log_info "Installing image processing libraries..."
-    sudo apt-get install -y -qq \
-        libjpeg-dev \
-        zlib1g-dev \
-        libtiff-dev \
-        libfreetype6-dev \
-        liblcms2-dev \
-        libwebp-dev \
-        libopenjp2-7-dev
-    log_ok "Image processing libraries installed"
-fi
-
-# Install curl (for health checks)
-if ! command_exists curl; then
-    log_info "Installing curl..."
-    sudo apt-get install -y -qq curl
-    log_ok "curl installed"
-else
-    log_ok "curl"
-fi
-
-# Install WebView2/GTK dependencies for thick client
-log_info "Installing WebView2/GTK dependencies..."
-sudo apt-get install -y -qq \
-    libgtk-3-dev \
-    libwebkit2gtk-4.1-dev \
-    pkg-config
-log_ok "WebView2/GTK dependencies installed"
-
-# Step 2: Install project dependencies
-CURRENT_STEP=$((CURRENT_STEP + 1))
-log_step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies"
-
-# Go dependencies
-cd backend
-go mod download
-cd ..
-log_ok "Go dependencies installed"
-
-# Python dependencies - create venv if it doesn't exist
-if [ ! -d "venv" ]; then
-    log_info "Creating Python virtual environment..."
-    python3 -m venv venv
-    log_ok "Virtual environment created"
-fi
-
-log_info "Installing Python dependencies..."
-source venv/bin/activate
-pip install -q -r requirements.txt
-deactivate
-log_ok "Python dependencies installed"
-
-# Step 3: Run tests
-CURRENT_STEP=$((CURRENT_STEP + 1))
-log_step $CURRENT_STEP $TOTAL_STEPS "Running tests"
-
-cd backend
-go test ./... > /dev/null 2>&1
-cd ..
-log_ok "All tests passed"
-
-# Step 4: Clean up existing processes
-CURRENT_STEP=$((CURRENT_STEP + 1))
-log_step $CURRENT_STEP $TOTAL_STEPS "Cleaning up existing processes"
-
-PORTS_IN_USE=()
-if lsof -ti:8080 >/dev/null 2>&1; then
-    PORTS_IN_USE+=("8080 (backend)")
-fi
-if lsof -ti:8501 >/dev/null 2>&1; then
-    PORTS_IN_USE+=("8501 (frontend)")
-fi
-
-if [ ${#PORTS_IN_USE[@]} -gt 0 ]; then
-    echo ""
-    log_warn "The following ports are currently in use:"
-    for port in "${PORTS_IN_USE[@]}"; do
-        echo "    - Port $port"
-    done
-    echo ""
-    echo "This script will kill the processes using these ports."
-    echo ""
-    
-    if [ "$AUTO_YES" = false ]; then
-        read -r -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
-        echo ""
-        response=${response:-y}
-        if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            echo "Setup cancelled."
-            exit 0
-        fi
-    fi
-fi
-
-# Kill processes
-if lsof -ti:8080 >/dev/null 2>&1; then
-    lsof -ti:8080 | xargs kill -9 2>/dev/null || true
-    sleep 1
-    log_ok "Port 8080 freed"
-else
-    log_ok "Port 8080 available"
-fi
-
-if lsof -ti:8501 >/dev/null 2>&1; then
-    lsof -ti:8501 | xargs kill -9 2>/dev/null || true
-    sleep 1
-    log_ok "Port 8501 freed"
-else
-    log_ok "Port 8501 available"
-fi
-
-# Step 5: Start backend
-CURRENT_STEP=$((CURRENT_STEP + 1))
-log_step $CURRENT_STEP $TOTAL_STEPS "Starting backend"
-
-nohup make run-backend > backend.log 2>&1 &
-BACKEND_PID=$!
-
-# Wait for backend health check
-SECONDS=0
-printf "  Waiting for backend"
-while true; do
-    response=$(curl -s -w "%{http_code}" "http://localhost:8080/api/health" -o /dev/null 2>/dev/null) || true
-    if [ "$response" = "200" ]; then
-        echo ""
-        log_ok "Backend ready (PID: $BACKEND_PID)"
-        break
-    fi
-    if [ $SECONDS -ge 30 ]; then
-        echo ""
-        log_error "Backend failed to start within 30 seconds"
-        echo ""
-        echo "Backend log:"
-        cat backend.log
-        exit 1
-    fi
-    printf "."
-    sleep 1
-done
-
-# Step 6: Run integration tests
-CURRENT_STEP=$((CURRENT_STEP + 1))
-log_step $CURRENT_STEP $TOTAL_STEPS "Running integration tests"
-
-if ! make test-integration >/dev/null 2>&1; then
-    log_error "Integration tests failed"
-    echo ""
-    echo "Backend is still running (PID: $BACKEND_PID)"
-    echo "Stop it with: kill $BACKEND_PID"
-    exit 1
-fi
-log_ok "Integration tests passed"
-
-# Cleanup handler
-cleanup() {
-    echo ""
-    echo ""
-    echo "Shutting down..."
-    if [ ! -z "$BACKEND_PID" ]; then
-        kill $BACKEND_PID 2>/dev/null && echo "  Backend stopped" || true
-    fi
-    if [ ! -z "$FRONTEND_PID" ]; then
-        kill $FRONTEND_PID 2>/dev/null && echo "  Frontend stopped" || true
-    fi
-    echo "Done."
-    exit 0
+# Helper: Check if package is cached
+is_cached() {
+    local pkg="$1"
+    [[ -f "$CACHE_DIR/$pkg" ]] && [[ $FORCE_INSTALL == false ]]
 }
 
-trap cleanup SIGINT SIGTERM
+# Helper: Mark package as cached
+mark_cached() {
+    local pkg="$1"
+    touch "$CACHE_DIR/$pkg"
+}
 
-# Step 7: Start frontend
-CURRENT_STEP=$((CURRENT_STEP + 1))
-log_step $CURRENT_STEP $TOTAL_STEPS "Starting frontend"
+# Step 1: System dependencies
+task_start "Checking system dependencies"
 
-nohup make run-frontend > frontend.log 2>&1 &
-FRONTEND_PID=$!
+# Update apt cache only if needed (once per day)
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "apt-updated-$(date +%Y%m%d)"; then
+    verbose "Updating package list..."
+    sudo apt-get update -qq 2>&1 | verbose
+    mark_cached "apt-updated-$(date +%Y%m%d)"
+fi
 
-sleep 3
-log_ok "Frontend ready (PID: $FRONTEND_PID)"
+# Check Go
+if ! command -v go &>/dev/null; then
+    task_fail "Go not installed"
+    echo "Install Go 1.21+ from: https://go.dev/dl/"
+    exit 1
+fi
+verbose "Go $(go version | awk '{print $3}' | sed 's/go//')"
 
-# Application running
+# Check Python
+if ! command -v python3 &>/dev/null; then
+    task_start "Installing Python"
+    sudo apt-get install -y -qq python3 python3-pip python3-venv 2>&1 | verbose
+    mark_cached "python3"
+    task_ok "Python installed"
+fi
+verbose "Python $(python3 --version | awk '{print $2}')"
+
+# Check Node.js
+if ! command -v node &>/dev/null; then
+    task_start "Installing Node.js"
+    curl -fsSL https://deb.nodesource.com/setup_20.x 2>&1 | verbose | sudo -E bash - 2>&1 | verbose
+    sudo apt-get install -y -qq nodejs 2>&1 | verbose
+    mark_cached "nodejs"
+    task_ok "Node.js installed"
+fi
+verbose "Node.js $(node --version)"
+
+# Check build tools (needed for Python packages like Pillow)
+if ! command -v gcc &>/dev/null; then
+    task_start "Installing build tools"
+    sudo apt-get install -y -qq build-essential gcc python3-dev 2>&1 | verbose
+    mark_cached "build-essential"
+    task_ok "Build tools installed"
+fi
+verbose "GCC $(gcc --version | head -1 | awk '{print $NF}')"
+
+# Check image processing libraries (for Pillow)
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "pillow-deps"; then
+    if ! dpkg -l | grep -q libjpeg-dev 2>/dev/null; then
+        task_start "Installing image processing libraries"
+        sudo apt-get install -y -qq \
+            libjpeg-dev \
+            zlib1g-dev \
+            libtiff-dev \
+            libfreetype6-dev \
+            liblcms2-dev \
+            libwebp-dev \
+            libopenjp2-7-dev 2>&1 | verbose
+        mark_cached "pillow-deps"
+        task_ok "Image processing libraries installed"
+    else
+        task_skip "Image processing libraries"
+    fi
+else
+    task_skip "Image processing libraries"
+fi
+
+# Check WebView2/GTK dependencies
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "webview-deps"; then
+    if ! dpkg -l | grep -q libwebkit2gtk-4.1-dev 2>/dev/null; then
+        task_start "Installing WebView2/GTK dependencies"
+        sudo apt-get install -y -qq libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config 2>&1 | verbose
+        mark_cached "webview-deps"
+        task_ok "WebView2/GTK dependencies installed"
+    else
+        task_skip "WebView2/GTK dependencies"
+    fi
+else
+    task_skip "WebView2/GTK dependencies"
+fi
+
+task_ok "System dependencies ready"
+
+# Step 2: Go dependencies
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "go-deps"; then
+    task_start "Installing Go dependencies"
+    cd backend
+    go mod download 2>&1 | verbose
+    cd ..
+    mark_cached "go-deps"
+    task_ok "Go dependencies installed"
+else
+    task_skip "Go dependencies"
+fi
+
+# Step 3: Python virtual environment
+if [ ! -d "venv" ]; then
+    task_start "Creating Python virtual environment"
+    python3 -m venv venv 2>&1 | verbose
+    task_ok "Virtual environment created"
+else
+    task_skip "Python virtual environment"
+fi
+
+# Step 4: Python dependencies (smart check)
+REQUIREMENTS_HASH=$(md5sum requirements.txt 2>/dev/null | awk '{print $1}' || echo "none")
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "py-deps-$REQUIREMENTS_HASH"; then
+    task_start "Installing Python dependencies"
+    source venv/bin/activate
+
+    # Only install missing packages
+    if [[ $FORCE_INSTALL == true ]]; then
+        pip install -q -r requirements.txt 2>&1 | verbose
+    else
+        # Check each package individually (faster than full install)
+        while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            [[ "$pkg" =~ ^# ]] && continue
+            pkg_name=$(echo "$pkg" | cut -d'=' -f1 | cut -d'>' -f1 | cut -d'<' -f1 | tr -d ' ')
+            if ! pip show "$pkg_name" &>/dev/null; then
+                verbose "Installing $pkg_name..."
+                pip install -q "$pkg" 2>&1 | verbose
+            fi
+        done < requirements.txt
+    fi
+
+    deactivate
+    mark_cached "py-deps-$REQUIREMENTS_HASH"
+    task_ok "Python dependencies installed"
+else
+    task_skip "Python dependencies"
+fi
+
+# Step 5: Quick validation
+task_start "Validating setup"
+cd backend
+if go build -o /tmp/prd-test . 2>&1 | verbose; then
+    rm -f /tmp/prd-test
+    cd ..
+    task_ok "Setup validated"
+else
+    cd ..
+    task_fail "Validation failed"
+    exit 1
+fi
+
+# Done
 echo ""
-echo "========================================"
-echo "Application running"
-echo "========================================"
-echo "Backend:  http://localhost:8080"
-echo "Frontend: http://localhost:8501"
+print_header "✓ Setup complete! $(get_elapsed_time)"
 echo ""
-echo "WSL Note: Access from Windows at:"
-echo "  http://$(hostname).local:8080"
-echo "  http://$(hostname).local:8501"
+echo "Next steps:"
+echo "  make run-backend    # Start Go backend (port 8080)"
+echo "  make run-frontend   # Start Streamlit frontend (port 8501)"
+echo "  ./run-thick-clients.sh  # Launch desktop clients"
 echo ""
-echo "Logs: tail -f backend.log frontend.log"
-echo "Stop: Press Ctrl+C"
-echo "========================================"
-echo ""
+echo "Run with -v for verbose output, -f to force reinstall"
 
-# Wait indefinitely
-wait
+# Step 4: Validate directory structure
+task_start "Validating directory structure"
+for dir in backend frontend inputs outputs prompts; do
+    if [ ! -d "$dir" ]; then
+        task_fail "Missing directory: $dir"
+        exit 1
+    fi
+    verbose "Found: $dir/"
+done
+task_ok "Directory structure validated"
+
+# Step 5: Create .env if needed
+if [ ! -f ".env" ]; then
+    if [ -f ".env.example" ]; then
+        task_start "Creating .env from .env.example"
+        cp .env.example .env 2>&1 | verbose
+        task_ok ".env created"
+    else
+        task_warn ".env.example not found, skipping .env creation"
+    fi
+else
+    verbose ".env exists"
+fi
+
+# Final summary
+echo ""
+print_header "Setup Complete!"
+echo ""
+echo "Next steps:"
+echo "  1. Review .env configuration"
+echo "  2. Run: make run-backend    (in one terminal)"
+echo "  3. Run: make run-frontend   (in another terminal)"
+echo "  4. Open: http://localhost:8501"
+echo ""
+echo "For thick clients:"
+echo "  ./run-thick-clients.sh"
+echo ""
 

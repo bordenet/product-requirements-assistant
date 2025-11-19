@@ -1,353 +1,239 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Product Requirements Assistant - Linux Setup Script
+# Optimized for minimal vertical space with running timer
 
-# Cross-platform setup script for Product Requirements Assistant
-# Supports macOS (Homebrew) and Linux (apt)
+set -euo pipefail
 
-set -e
+# Source compact output library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/compact.sh"
 
 # Parse command line arguments
+# shellcheck disable=SC2034
 AUTO_YES=false
+FORCE_INSTALL=false
 while [[ $# -gt 0 ]]; do
     case $1 in
+        -v|--verbose)
+            export VERBOSE=1
+            shift
+            ;;
         -y|--yes)
             AUTO_YES=true
             shift
             ;;
+        -f|--force)
+            FORCE_INSTALL=true
+            shift
+            ;;
+        -h|--help)
+            cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Setup script for Linux (Ubuntu/Debian)
+
+OPTIONS:
+  -v, --verbose    Show detailed output (default: compact)
+  -y, --yes        Automatically answer yes to prompts
+  -f, --force      Force reinstall all dependencies
+  -h, --help       Show this help message
+
+EXAMPLES:
+  $(basename "$0")              # Fast setup, only install missing items
+  $(basename "$0") -v           # Verbose output
+  $(basename "$0") -f           # Force reinstall everything
+  $(basename "$0") -v -f        # Verbose + force reinstall
+
+PERFORMANCE:
+  First run:  ~2-3 minutes (installs everything)
+  Subsequent: ~5-10 seconds (checks only, skips installed)
+
+EOF
+            exit 0
+            ;;
         *)
-            echo "Unknown option: $1"
-            echo "Usage: $0 [-y|--yes]"
-            echo "  -y, --yes    Automatically answer yes to prompts"
+            echo "Error: Unknown option: $1"
+            echo "Run '$(basename "$0") --help' for usage information"
             exit 1
             ;;
     esac
 done
 
-# Function to check if a command is available
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
+# Navigate to project root
+cd "$SCRIPT_DIR/.."
+PROJECT_ROOT=$(pwd)
+
+print_header "Product Requirements Assistant - Linux Setup"
+
+# Cache file for tracking installed packages
+CACHE_DIR="$PROJECT_ROOT/.setup-cache"
+mkdir -p "$CACHE_DIR"
+
+# Helper: Check if package is cached
+is_cached() {
+    local pkg="$1"
+    [[ -f "$CACHE_DIR/$pkg" ]] && [[ $FORCE_INSTALL == false ]]
 }
 
-# Print step with consistent formatting
-print_step() {
-    echo ""
-    echo "[$1/$2] $3"
+# Helper: Mark package as cached
+mark_cached() {
+    local pkg="$1"
+    touch "$CACHE_DIR/$pkg"
 }
 
-# Print success
-print_ok() {
-    echo "  ✓ $1"
-}
+# Step 1: System dependencies
+task_start "Checking system dependencies"
 
-# Print error
-print_error() {
-    echo "  ✗ $1"
-}
+# Update apt cache only if needed (once per day)
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "apt-updated-$(date +%Y%m%d)"; then
+    verbose "Updating package list..."
+    sudo apt-get update -qq 2>&1 | verbose
+    mark_cached "apt-updated-$(date +%Y%m%d)"
+fi
 
-# Detect OS and set package manager
-detect_os() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        OS="macos"
-        PKG_MGR="brew"
-    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        OS="linux"
-        if command_exists apt-get; then
-            PKG_MGR="apt"
-        else
-            print_error "Unsupported Linux distribution (apt not found)"
-            exit 1
-        fi
-    else
-        print_error "Unsupported operating system: $OSTYPE"
-        exit 1
-    fi
-}
-
-# Install package using appropriate package manager
-install_package() {
-    local pkg=$1
-    case $PKG_MGR in
-        brew)
-            brew install "$pkg" >/dev/null 2>&1
-            ;;
-        apt)
-            sudo apt-get update >/dev/null 2>&1
-            sudo apt-get install -y "$pkg" >/dev/null 2>&1
-            ;;
-    esac
-}
-
-TOTAL_STEPS=7
-CURRENT_STEP=0
-
-# Detect OS
-detect_os
-
-# --- Dependency Checks ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Checking dependencies"
-
-# Check package manager
-if [ "$PKG_MGR" = "brew" ] && ! command_exists brew; then
-    print_error "Homebrew not found"
-    echo "Please install Homebrew: https://brew.sh/"
+# Check Go
+if ! command -v go &>/dev/null; then
+    task_fail "Go not installed"
+    echo "Install Go 1.21+ from: https://go.dev/dl/"
     exit 1
 fi
+verbose "Go $(go version | awk '{print $3}' | sed 's/go//')"
 
-# Check/install Go
-if ! command_exists go; then
-    echo "  Installing Go..."
-    case $PKG_MGR in
-        brew)
-            install_package go
-            ;;
-        apt)
-            install_package golang-go
-            ;;
-    esac
-    print_ok "Go installed"
+# Check Python
+if ! command -v python3 &>/dev/null; then
+    task_start "Installing Python"
+    sudo apt-get install -y -qq python3 python3-pip python3-venv 2>&1 | verbose
+    mark_cached "python3"
+    task_ok "Python installed"
+fi
+verbose "Python $(python3 --version | awk '{print $2}')"
+
+# Check Node.js
+if ! command -v node &>/dev/null; then
+    task_start "Installing Node.js"
+    curl -fsSL https://deb.nodesource.com/setup_20.x 2>&1 | verbose | sudo -E bash - 2>&1 | verbose
+    sudo apt-get install -y -qq nodejs 2>&1 | verbose
+    mark_cached "nodejs"
+    task_ok "Node.js installed"
+fi
+verbose "Node.js $(node --version)"
+
+# Check build tools (needed for Python packages like Pillow)
+if ! command -v gcc &>/dev/null; then
+    task_start "Installing build tools"
+    sudo apt-get install -y -qq build-essential gcc python3-dev 2>&1 | verbose
+    mark_cached "build-essential"
+    task_ok "Build tools installed"
+fi
+verbose "GCC $(gcc --version | head -1 | awk '{print $NF}')"
+
+# Check image processing libraries (for Pillow)
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "pillow-deps"; then
+    if ! dpkg -l | grep -q libjpeg-dev 2>/dev/null; then
+        task_start "Installing image processing libraries"
+        sudo apt-get install -y -qq \
+            libjpeg-dev \
+            zlib1g-dev \
+            libtiff-dev \
+            libfreetype6-dev \
+            liblcms2-dev \
+            libwebp-dev \
+            libopenjp2-7-dev 2>&1 | verbose
+        mark_cached "pillow-deps"
+        task_ok "Image processing libraries installed"
+    else
+        task_skip "Image processing libraries"
+    fi
 else
-    print_ok "Go"
+    task_skip "Image processing libraries"
 fi
 
-# Check/install Python3
-if ! command_exists python3; then
-    echo "  Installing Python3..."
-    case $PKG_MGR in
-        brew)
-            install_package python
-            ;;
-        apt)
-            install_package python3
-            install_package python3-pip
-            ;;
-    esac
-    print_ok "Python3 installed"
+# Check WebView2/GTK dependencies
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "webview-deps"; then
+    if ! dpkg -l | grep -q libwebkit2gtk-4.1-dev 2>/dev/null; then
+        task_start "Installing WebView2/GTK dependencies"
+        sudo apt-get install -y -qq libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config 2>&1 | verbose
+        mark_cached "webview-deps"
+        task_ok "WebView2/GTK dependencies installed"
+    else
+        task_skip "WebView2/GTK dependencies"
+    fi
 else
-    print_ok "Python3"
+    task_skip "WebView2/GTK dependencies"
 fi
 
-# Check/install pip
-if ! command_exists pip3 && ! python3 -m pip --version >/dev/null 2>&1; then
-    echo "  Installing pip..."
-    case $PKG_MGR in
-        brew)
-            # pip comes with python on macOS
-            ;;
-        apt)
-            install_package python3-pip
-            ;;
-    esac
-    print_ok "pip installed"
+task_ok "System dependencies ready"
+
+# Step 2: Go dependencies
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "go-deps"; then
+    task_start "Installing Go dependencies"
+    cd backend
+    go mod download 2>&1 | verbose
+    cd ..
+    mark_cached "go-deps"
+    task_ok "Go dependencies installed"
+else
+    task_skip "Go dependencies"
 fi
 
-# --- Project Setup ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Installing dependencies"
-
-# Create virtual environment if it doesn't exist
+# Step 3: Python virtual environment
 if [ ! -d "venv" ]; then
-    echo "  Creating Python virtual environment..."
-    python3 -m venv venv >/dev/null 2>&1
+    task_start "Creating Python virtual environment"
+    python3 -m venv venv 2>&1 | verbose
+    task_ok "Virtual environment created"
+else
+    task_skip "Python virtual environment"
 fi
 
-# Install dependencies
-cd backend && go mod download && go mod tidy >/dev/null 2>&1
-cd ..
-./venv/bin/pip install -r requirements.txt >/dev/null 2>&1
-print_ok "Dependencies installed"
+# Step 4: Python dependencies (smart check)
+REQUIREMENTS_HASH=$(md5sum requirements.txt | awk '{print $1}')
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "py-deps-$REQUIREMENTS_HASH"; then
+    task_start "Installing Python dependencies"
+    source venv/bin/activate
 
-# --- Testing ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Running tests"
-make test-all >/dev/null 2>&1
-print_ok "Unit tests passed"
-
-# --- Clean up existing processes ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Cleaning up existing processes"
-
-# Function to check if port is in use (cross-platform)
-check_port() {
-    local port=$1
-    if command_exists lsof; then
-        lsof -ti:$port >/dev/null 2>&1
-    elif command_exists fuser; then
-        fuser $port/tcp >/dev/null 2>&1
-    elif command_exists nc; then
-        nc -z localhost $port 2>/dev/null
+    if [[ $FORCE_INSTALL == true ]]; then
+        pip install -q -r requirements.txt 2>&1 | verbose
     else
-        return 1
-    fi
-}
-
-# Check if any ports are in use
-PORTS_IN_USE=()
-if check_port 8080; then
-    PORTS_IN_USE+=("8080 (backend)")
-fi
-if check_port 8501; then
-    PORTS_IN_USE+=("8501 (frontend)")
-fi
-if check_port 8502; then
-    PORTS_IN_USE+=("8502 (frontend-alt)")
-fi
-
-# If any ports are in use, warn the user
-if [ ${#PORTS_IN_USE[@]} -gt 0 ]; then
-    echo ""
-    echo "⚠️  WARNING: The following ports are currently in use:"
-    for port in "${PORTS_IN_USE[@]}"; do
-        echo "    - Port $port"
-    done
-    echo ""
-    echo "This script will kill the processes using these ports."
-    echo ""
-
-    # Skip prompt if -y flag is set
-    if [ "$AUTO_YES" = true ]; then
-        echo "Auto-confirming (--yes flag set)"
-        response="y"
-    else
-        # Prompt with 3-second timeout (defaults to Yes)
-        read -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
-        echo ""
+        # Check each package individually (faster than full install)
+        while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            [[ "$pkg" =~ ^# ]] && continue
+            pkg_name=$(echo "$pkg" | cut -d'=' -f1 | cut -d'>' -f1 | cut -d'<' -f1 | tr -d ' ')
+            if ! pip show "$pkg_name" &>/dev/null; then
+                verbose "Installing $pkg_name..."
+                pip install -q "$pkg" 2>&1 | verbose
+            fi
+        done < requirements.txt
     fi
 
-    # Default to yes if empty or timeout
-    response=${response:-y}
-
-    if [[ ! "$response" =~ ^[Yy]$ ]]; then
-        echo "Setup cancelled by user."
-        exit 0
-    fi
+    deactivate
+    mark_cached "py-deps-$REQUIREMENTS_HASH"
+    task_ok "Python dependencies installed"
+else
+    task_skip "Python dependencies"
 fi
 
-# Function to kill process on port (cross-platform)
-kill_port() {
-    local port=$1
-    if command_exists lsof; then
-        # macOS and most Linux systems
-        if lsof -ti:$port >/dev/null 2>&1; then
-            echo "  Killing existing process on port $port..."
-            lsof -ti:$port | xargs kill -9 2>/dev/null || true
-            sleep 1
-            print_ok "Port $port freed"
-        else
-            print_ok "Port $port available"
-        fi
-    elif command_exists fuser; then
-        # Linux alternative if lsof not available
-        if fuser $port/tcp >/dev/null 2>&1; then
-            echo "  Killing existing process on port $port..."
-            fuser -k $port/tcp 2>/dev/null || true
-            sleep 1
-            print_ok "Port $port freed"
-        else
-            print_ok "Port $port available"
-        fi
-    else
-        # Fallback: just check if port is available
-        if nc -z localhost $port 2>/dev/null; then
-            print_error "Port $port is in use but cannot kill process (lsof/fuser not available)"
-            echo "  Please manually stop the process using port $port"
-            exit 1
-        else
-            print_ok "Port $port available"
-        fi
-    fi
-}
-
-# Kill processes on required ports
-kill_port 8080  # Backend
-kill_port 8501  # Frontend
-kill_port 8502  # Alternate Streamlit port
-
-# --- Running the Application ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Starting backend"
-
-nohup make run-backend > backend.log 2>&1 &
-BACKEND_PID=$!
-
-# Wait for backend health check
-SECONDS=0
-printf "  Waiting for backend"
-while true; do
-    response=$(curl -s -w "%{http_code}" "http://localhost:8080/api/health" -o /dev/null 2>/dev/null) || true
-    if [ "$response" = "200" ]; then
-        echo ""
-        print_ok "Backend ready (PID: $BACKEND_PID)"
-        break
-    fi
-    if [ $SECONDS -ge 30 ]; then
-        echo ""
-        print_error "Backend failed to start within 30 seconds"
-        echo ""
-        echo "Backend log:"
-        cat backend.log
-        exit 1
-    fi
-    printf "."
-    sleep 1
-done
-
-# --- Integration Testing ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Running integration tests"
-if ! make test-integration >/dev/null 2>&1; then
-    print_error "Integration tests failed"
-    echo ""
-    echo "Backend is still running (PID: $BACKEND_PID)"
-    echo "Stop it with: kill $BACKEND_PID"
+# Step 5: Quick validation
+task_start "Validating setup"
+cd backend
+if go build -o /tmp/prd-test . 2>&1 | verbose; then
+    rm -f /tmp/prd-test
+    cd ..
+    task_ok "Setup validated"
+else
+    cd ..
+    task_fail "Validation failed"
     exit 1
 fi
-print_ok "Integration tests passed"
 
-# --- Cleanup Handler ---
-cleanup() {
-    echo ""
-    echo ""
-    echo "Shutting down..."
-    if [ ! -z "$BACKEND_PID" ]; then
-        kill $BACKEND_PID 2>/dev/null && echo "  Backend stopped" || true
-    fi
-    if [ ! -z "$FRONTEND_PID" ]; then
-        kill $FRONTEND_PID 2>/dev/null && echo "  Frontend stopped" || true
-    fi
-    echo "Done."
-    exit 0
-}
-
-trap cleanup SIGINT SIGTERM
-
-# --- Frontend ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Starting frontend"
-nohup make run-frontend > frontend.log 2>&1 &
-FRONTEND_PID=$!
-
-sleep 3
-print_ok "Frontend ready (PID: $FRONTEND_PID)"
-
-# --- Application Running ---
+# Done
 echo ""
-echo "========================================"
-echo "Application running"
-echo "========================================"
-echo "Backend:  http://localhost:8080"
-echo "Frontend: http://localhost:8501"
+print_header "✓ Setup complete! $(get_elapsed_time)"
 echo ""
-echo "Logs: tail -f backend.log frontend.log"
-echo "Stop:  Press Ctrl+C"
-echo "========================================"
+echo "Next steps:"
+echo "  make run-backend    # Start Go backend (port 8080)"
+echo "  make run-frontend   # Start Streamlit frontend (port 8501)"
+echo "  ./run-thick-clients.sh  # Launch desktop clients"
 echo ""
+echo "Run with -v for verbose output, -f to force reinstall"
 
-# Open browser (platform-specific)
-if [ "$OS" = "macos" ]; then
-    open http://localhost:8501 2>/dev/null || true
-elif [ "$OS" = "linux" ]; then
-    xdg-open http://localhost:8501 2>/dev/null || true
-fi
-
-# Wait indefinitely until user presses Ctrl+C
-wait
