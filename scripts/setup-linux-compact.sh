@@ -118,6 +118,36 @@ if ! command -v node &>/dev/null; then
 fi
 verbose "Node.js $(node --version)"
 
+# Check build tools (needed for Python packages like Pillow)
+if ! command -v gcc &>/dev/null; then
+    task_start "Installing build tools"
+    sudo apt-get install -y -qq build-essential gcc python3-dev 2>&1 | verbose
+    mark_cached "build-essential"
+    task_ok "Build tools installed"
+fi
+verbose "GCC $(gcc --version | head -1 | awk '{print $NF}')"
+
+# Check image processing libraries (for Pillow)
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "pillow-deps"; then
+    if ! dpkg -l | grep -q libjpeg-dev 2>/dev/null; then
+        task_start "Installing image processing libraries"
+        sudo apt-get install -y -qq \
+            libjpeg-dev \
+            zlib1g-dev \
+            libtiff-dev \
+            libfreetype6-dev \
+            liblcms2-dev \
+            libwebp-dev \
+            libopenjp2-7-dev 2>&1 | verbose
+        mark_cached "pillow-deps"
+        task_ok "Image processing libraries installed"
+    else
+        task_skip "Image processing libraries"
+    fi
+else
+    task_skip "Image processing libraries"
+fi
+
 # Check WebView2/GTK dependencies
 if [[ $FORCE_INSTALL == true ]] || ! is_cached "webview-deps"; then
     if ! dpkg -l | grep -q libwebkit2gtk-4.1-dev 2>/dev/null; then
