@@ -23,6 +23,23 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 - **Frontend**: Streamlit web UI on port 8501
 - **Storage**: Local filesystem
 
+## Download Executables
+
+Pre-built executables are available from [GitHub Releases](https://github.com/bordenet/product-requirements-assistant/releases):
+
+### WebView2 Native Client (Lightweight)
+- **macOS (Intel)**: `prd-assistant-macos-amd64` (8.7MB)
+- **macOS (Apple Silicon)**: `prd-assistant-macos-arm64` (8.2MB)
+- **Windows**: `prd-assistant-windows-amd64.exe` (~10MB)
+- **Linux**: `prd-assistant-linux-amd64` (~10MB)
+
+### Electron Client (Full-Featured)
+- **macOS**: `.dmg` installer (~150MB)
+- **Windows**: `.exe` installer (~150MB)
+- **Linux**: `.AppImage` (~150MB)
+
+**Note**: WebView2 requires OS-native browser engines (WebView2 on Windows, WebKit on macOS, WebKitGTK on Linux). Electron bundles Chromium.
+
 ## Thick Client Applications (v1.5)
 
 Two thick client implementations are available for side-by-side evaluation:
