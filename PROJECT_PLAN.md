@@ -22,7 +22,7 @@
 ---
 
 ### v1.5 (Planned: Q1 2025)
-**Status**: 🔄 Planning
+**Status**: 🔄 Planning - Path Selected
 
 **Objective**: Transform into self-contained application for non-technical users
 
@@ -32,29 +32,27 @@
 - User Testing: 5-10 non-technical users
 - Platform Testing: Windows 10/11 (primary), macOS, Linux
 
-**Approach Selection**: TBD (see docs/V1.5_PROPOSAL.md)
+**Selected Approach**: Path 2 - Single-Binary Web Application (see docs/V1.5_RECOMMENDATION.md)
 
-**Options**:
-1. Electron Desktop Application (3-4 weeks)
-2. Single-Binary Web Application (2-3 weeks) 
-3. Progressive Web App with Cloud Backend (4-5 weeks)
+**Rationale**:
+- Lowest development risk (2-3 weeks)
+- Leverages existing codebase
+- No ongoing costs
+- Data stays local
+- Acceptable UX (one-click launch, auto-opens browser)
 
-**Decision Criteria**:
-- Installation friction (primary)
-- Maintenance burden
-- Development timeline
-- Ongoing costs
-- Data privacy
+**Rejected Alternatives**:
+1. Electron Desktop Application - Longer timeline, larger bundle, maintenance burden
+2. Progressive Web App with Cloud Backend - Ongoing costs, data privacy concerns, internet dependency
 
-**Milestones** (TBD after path selection):
-- [ ] Path selection and approval
-- [ ] Architecture design and technical specification
-- [ ] Sprint 1: Core implementation
-- [ ] Sprint 2: UI/UX polish
-- [ ] Sprint 3: Testing and bug fixes
+**Milestones**:
+- [x] Path selection and approval (Path 2: Single-Binary Web Application)
+- [ ] Week 1: Core bundling (Go embed, Python bundling, launcher, auto-browser-open)
+- [ ] Week 2: Platform builds (macOS, Windows, Linux + installers)
+- [ ] Week 3: Testing and documentation (user testing, guides, demo video)
 - [ ] User testing with non-technical users (5-10 people)
 - [ ] Windows validation on test machine
-- [ ] Documentation and release notes
+- [ ] Final bug fixes and polish
 - [ ] Tag v1.5 and publish
 
 **Success Criteria**:
