@@ -14,7 +14,7 @@ FORCE_INSTALL=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         -v|--verbose)
-            VERBOSE=1
+            export VERBOSE=1
             shift
             ;;
         -y|--yes)
@@ -64,7 +64,7 @@ if ! grep -qi microsoft /proc/version 2>/dev/null; then
     task_warn "Not running on Windows WSL"
     verbose "Detected: $(uname -a)"
     if [ "$AUTO_YES" = false ]; then
-        read -p "Continue anyway? [y/N]: " response
+        read -r -p "Continue anyway? [y/N]: " response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
             echo "Setup cancelled"
             exit 0
