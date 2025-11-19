@@ -22,7 +22,6 @@
       "preload.js",
       "../../backend/**/*",
       "../../frontend/**/*",
-      "../../prompts/**/*",
       "../../venv/**/*",
       "!../../backend/*.test",
       "!../../backend/coverage.out"
@@ -35,6 +34,10 @@
       {
         "from": "../../outputs",
         "to": "outputs"
+      },
+      {
+        "from": "../../prompts",
+        "to": "prompts"
       }
     ],
     "win": {

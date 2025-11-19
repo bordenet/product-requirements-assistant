@@ -24,7 +24,17 @@ func initializePaths() {
 			workDir = "."
 		}
 
-		projectRoot := filepath.Dir(workDir)
+		// Determine project root
+		// In Electron packaged apps, check for RESOURCES_PATH env var
+		var projectRoot string
+		if resourcesPath := os.Getenv("RESOURCES_PATH"); resourcesPath != "" {
+			// Electron packaged app: extraResources are directly in resourcesPath
+			projectRoot = resourcesPath
+		} else {
+			// Development mode: go up one level from backend directory
+			projectRoot = filepath.Dir(workDir)
+		}
+
 		projectPaths.inputs = filepath.Join(projectRoot, "inputs")
 		projectPaths.outputs = filepath.Join(projectRoot, "outputs")
 		projectPaths.prompts = filepath.Join(projectRoot, "prompts")

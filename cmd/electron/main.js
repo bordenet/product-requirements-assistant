@@ -59,7 +59,8 @@ async function startBackend() {
     env: {
       ...process.env,
       PORT: BACKEND_PORT.toString(),
-      MOCK_AI_ENABLED: 'true'
+      MOCK_AI_ENABLED: 'true',
+      RESOURCES_PATH: projectRoot
     },
     stdio: 'inherit'
   });
