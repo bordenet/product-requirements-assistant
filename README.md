@@ -143,6 +143,30 @@ make test-integration
 ./scripts/validate-monorepo.sh --full    # ~3-5 minutes
 ```
 
+### Mock AI for Automated Testing
+
+For automated testing without manual copy/paste, enable Mock AI:
+
+```bash
+export MOCK_AI_ENABLED=true
+cd backend && go run .
+```
+
+Then use the generate endpoint to auto-complete phases:
+
+```bash
+# Generate Phase 1 response
+curl -X POST http://localhost:8080/api/projects/{project_id}/generate/1
+
+# Generate Phase 2 response
+curl -X POST http://localhost:8080/api/projects/{project_id}/generate/2
+
+# Generate Phase 3 response
+curl -X POST http://localhost:8080/api/projects/{project_id}/generate/3
+```
+
+**⚠️ Note**: Mock AI is for testing/development only. See [docs/MOCK_AI.md](docs/MOCK_AI.md) for details.
+
 ## Quality Gates
 
 This repository includes automated safety mechanisms:

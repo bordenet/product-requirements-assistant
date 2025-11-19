@@ -17,6 +17,7 @@ type AppConfig struct {
 	RateLimit      int
 	LogLevel       string
 	Environment    string
+	MockAIEnabled  bool
 }
 
 // LoadConfig loads and validates configuration from environment variables
@@ -93,6 +94,11 @@ func LoadConfig() (*AppConfig, error) {
 			return nil, fmt.Errorf("invalid ENVIRONMENT: must be development, staging, or production")
 		}
 		config.Environment = strings.ToLower(env)
+	}
+
+	// Load mock AI setting
+	if mockAI := os.Getenv("MOCK_AI_ENABLED"); mockAI != "" {
+		config.MockAIEnabled = strings.ToLower(mockAI) == "true" || mockAI == "1"
 	}
 
 	return config, nil
@@ -189,5 +195,6 @@ func PrintConfiguration(config *AppConfig) {
 	log.Printf("Max Request Size: %d bytes (%.2f MB)", config.MaxRequestSize, float64(config.MaxRequestSize)/(1024*1024))
 	log.Printf("Rate Limit: %d requests/minute", config.RateLimit)
 	log.Printf("Log Level: %s", config.LogLevel)
+	log.Printf("Mock AI: %v", config.MockAIEnabled)
 	log.Printf("================================================")
 }
