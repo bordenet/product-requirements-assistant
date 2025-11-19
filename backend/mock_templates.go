@@ -154,160 +154,306 @@ The proposed solution will address the identified problems through a systematic 
 *This is a mock AI-generated response for testing purposes.*
 `
 
-const phase2Template = `# PRD Review and Recommendations: %s
+const phase2Template = `# Critical Analysis: %s
 
-**Generated**: %s
-**AI Model**: Gemini 2.5 Pro (Mock)
-**Phase**: Critical Review
-
-## Overall Assessment
-
-The initial PRD provides a solid foundation for %s. This review identifies strengths, weaknesses, and recommendations for improvement.
-
-### Strengths ✅
-1. **Clear Problem Definition**: The problem statement is well-articulated and user-focused
-2. **Comprehensive Feature Set**: Core features address primary user needs effectively
-3. **Technical Feasibility**: Proposed architecture is sound and scalable
-4. **Measurable Success Criteria**: KPIs are specific and achievable
-
-### Areas for Improvement ⚠️
-
-#### 1. User Research Depth
-**Issue**: Limited evidence of user validation
-**Impact**: Medium
-**Recommendation**: Conduct user interviews with 10-15 target users before finalizing requirements
-
-#### 2. Edge Cases and Error Handling
-**Issue**: Insufficient coverage of failure scenarios
-**Impact**: High
-**Recommendation**: Add detailed error handling specifications for:
-- Network failures
-- Invalid user inputs
-- System overload conditions
-- Data corruption scenarios
-
-#### 3. Accessibility Considerations
-**Issue**: WCAG compliance mentioned but not detailed
-**Impact**: Medium
-**Recommendation**: Specify:
-- Keyboard navigation requirements
-- Screen reader compatibility
-- Color contrast ratios
-- Alternative text for images
-
-#### 4. Data Privacy and Compliance
-**Issue**: GDPR mentioned but implementation unclear
-**Impact**: High
-**Recommendation**: Detail:
-- Data retention policies
-- User consent mechanisms
-- Right to deletion implementation
-- Data export functionality
-
-#### 5. Performance Benchmarks
-**Issue**: Metrics provided but baseline unclear
-**Impact**: Medium
-**Recommendation**: Establish current performance baselines and justify targets
-
-## Detailed Recommendations
-
-### Feature Prioritization
-**Current**: All features marked P0-P2
-**Recommended**: Apply MoSCoW method
-- **Must Have**: Core functionality only
-- **Should Have**: Enhanced UX features
-- **Could Have**: Analytics (move to Phase 2)
-- **Won't Have**: Advanced features for v1.0
-
-### Technical Architecture
-**Addition Needed**:
-- API versioning strategy
-- Database migration plan
-- Rollback procedures
-- Monitoring and alerting specifics
-
-### Security Enhancements
-**Critical Additions**:
-1. **Input Validation**: Specify validation rules for all user inputs
-2. **Rate Limiting**: Define API rate limits per user/IP
-3. **Audit Logging**: Track all sensitive operations
-4. **Penetration Testing**: Schedule security audit before launch
-
-### User Experience
-**Improvements**:
-1. **Onboarding**: Add interactive tutorial for first-time users
-2. **Help System**: Implement contextual help tooltips
-3. **Feedback Mechanisms**: Add in-app feedback collection
-4. **Offline Support**: Consider progressive web app (PWA) capabilities
-
-## Risk Assessment Enhancements
-
-### Additional Risks to Consider
-
-#### Operational Risks
-- **Risk**: Insufficient support team capacity
-- **Mitigation**: Hire 2 support engineers, implement chatbot for common issues
-
-#### Compliance Risks
-- **Risk**: Regulatory changes during development
-- **Mitigation**: Monthly compliance review, legal consultation
-
-#### Vendor Risks
-- **Risk**: Third-party service dependencies
-- **Mitigation**: Identify alternatives, implement circuit breakers
-
-## Testing Strategy (Missing from Original)
-
-### Recommended Testing Approach
-1. **Unit Tests**: 80%% code coverage minimum
-2. **Integration Tests**: All API endpoints
-3. **E2E Tests**: Critical user journeys
-4. **Performance Tests**: Load testing with 2x expected traffic
-5. **Security Tests**: OWASP Top 10 vulnerability scanning
-6. **Accessibility Tests**: Automated and manual WCAG validation
-
-## Documentation Requirements (Missing)
-
-### Essential Documentation
-1. **API Documentation**: OpenAPI/Swagger specification
-2. **User Guide**: Step-by-step tutorials
-3. **Admin Guide**: System configuration and maintenance
-4. **Developer Guide**: Architecture and contribution guidelines
-5. **Runbook**: Incident response procedures
-
-## Cost Analysis (Missing)
-
-### Recommended Budget Breakdown
-- **Development**: $300K (60%%)
-- **Infrastructure**: $50K/year (10%%)
-- **Marketing**: $75K (15%%)
-- **Support**: $75K (15%%)
-- **Total Year 1**: $500K
-
-## Timeline Refinement
-
-### Suggested Adjustments
-- **Phase 1**: Add 2 weeks for user research
-- **Phase 2**: Add 1 week for security audit
-- **Phase 3**: Add 2 weeks for documentation and training
-
-**Revised Timeline**: 7 months (vs. original 6 months)
-
-## Conclusion
-
-The PRD is well-structured and addresses core requirements effectively. Implementing the recommendations above will significantly reduce project risks and improve product quality.
-
-### Priority Actions
-1. **Immediate**: Conduct user research and validate assumptions
-2. **Week 1**: Detail error handling and edge cases
-3. **Week 2**: Enhance security specifications
-4. **Week 3**: Develop comprehensive testing strategy
-
-### Approval Recommendation
-**Status**: Conditional Approval
-**Conditions**: Address high-impact issues (items 2, 4, and security enhancements)
+**Review Date**: %s
+**Model**: Gemini 2.5 Pro (Mock)
+**Analysis Type**: Technical & Strategic PRD Review
 
 ---
 
-*This is a mock AI-generated review for testing purposes.*
+## Executive Summary
+
+I've analyzed the proposed PRD for **%s** across six dimensions: technical architecture, user experience, business viability, risk management, implementation feasibility, and compliance requirements. The document demonstrates strong foundational thinking but requires refinement in several critical areas before proceeding to implementation.
+
+**Overall Score**: 7.2/10
+**Recommendation**: Proceed with modifications (see Priority Actions below)
+
+---
+
+## Dimensional Analysis
+
+### 1. Technical Architecture (Score: 7/10)
+
+**What Works:**
+- Clear separation of concerns in proposed system design
+- Appropriate technology stack selection for stated requirements
+- Scalability considerations are present
+
+**Critical Gaps:**
+- **Database Schema**: No entity-relationship diagram or schema definition provided
+- **API Contract**: Missing OpenAPI specification or endpoint documentation
+- **State Management**: Client-side state handling strategy undefined
+- **Caching Strategy**: No mention of caching layers (CDN, application, database)
+
+**Specific Recommendations:**
+
+1. Define database schema with:
+   - Primary/foreign key relationships
+   - Indexing strategy for query optimization
+   - Data migration approach
+
+2. Document API contract:
+   - Request/response schemas
+   - Authentication flow
+   - Rate limiting parameters
+   - Versioning strategy (recommend semantic versioning)
+
+3. Specify caching:
+   - CDN for static assets (CloudFront, Cloudflare)
+   - Redis for session/application cache
+   - Database query result caching with TTL
+
+### 2. Error Handling & Edge Cases (Score: 5/10)
+
+**Major Deficiency**: The PRD lacks comprehensive error scenario coverage.
+
+**Required Additions:**
+- **Network Failures**: Retry logic with exponential backoff (max 3 retries, 2^n seconds)
+- **Validation Errors**: Client-side and server-side validation with specific error messages
+- **Timeout Handling**: Define timeout thresholds (API: 30s, DB queries: 5s)
+- **Partial Failures**: Circuit breaker pattern for third-party dependencies
+- **Data Inconsistency**: Transaction rollback procedures and conflict resolution
+
+**Example Error Taxonomy Needed:**
+
+4xx Client Errors:
+  - 400: Invalid request format
+  - 401: Authentication required
+  - 403: Insufficient permissions
+  - 404: Resource not found
+  - 429: Rate limit exceeded
+
+5xx Server Errors:
+  - 500: Internal server error
+  - 502: Upstream service unavailable
+  - 503: Service temporarily unavailable
+  - 504: Gateway timeout
+
+### 3. Security & Compliance (Score: 6/10)
+
+**Strengths:**
+- GDPR awareness demonstrated
+- HTTPS mentioned for data in transit
+
+**Critical Omissions:**
+
+**Authentication & Authorization:**
+- No specification of authentication mechanism (JWT, OAuth 2.0, session-based)
+- Missing role-based access control (RBAC) definition
+- No multi-factor authentication (MFA) requirement
+
+**Data Protection:**
+- Encryption at rest not specified (recommend AES-256)
+- Key management strategy undefined (AWS KMS, HashiCorp Vault)
+- PII handling procedures missing
+- Data retention policy vague (specify: 90 days for logs, 7 years for transactions)
+
+**Compliance Requirements:**
+- GDPR: Need explicit consent flow, data portability API, deletion workflow
+- SOC 2 Type II: If handling enterprise data, audit requirements needed
+- CCPA: California users require specific opt-out mechanisms
+
+**Required Security Measures:**
+1. Input sanitization on all user-provided data (prevent XSS, SQL injection)
+2. Rate limiting: 100 requests/minute per user, 1000/minute per IP
+3. CORS policy definition
+4. Content Security Policy (CSP) headers
+5. Dependency vulnerability scanning (Snyk, Dependabot)
+6. Penetration testing before launch
+
+### 4. Performance & Scalability (Score: 7/10)
+
+**Positive Elements:**
+- Load targets mentioned (good starting point)
+- Scalability considerations present
+
+**Needs Quantification:**
+
+**Response Time Requirements:**
+- API endpoints: < 200ms (p95), < 500ms (p99)
+- Page load: < 2s (initial), < 1s (subsequent)
+- Database queries: < 50ms (simple), < 200ms (complex)
+
+**Throughput Targets:**
+- Concurrent users: Specify expected (1,000) and peak (5,000)
+- Requests per second: Define baseline (100 RPS) and target (500 RPS)
+- Data volume: Current (10GB) and projected growth (100GB/year)
+
+**Scalability Strategy:**
+- Horizontal scaling: Auto-scaling groups with CPU > 70%% trigger
+- Database: Read replicas for query distribution, sharding strategy for > 1TB
+- CDN: Static asset distribution to reduce origin load
+- Load balancing: Application Load Balancer with health checks
+
+### 5. Testing Strategy (Score: 4/10)
+
+**Major Gap**: Testing approach is superficial.
+
+**Required Test Coverage:**
+
+Unit Tests (80%% minimum):
+- All business logic functions
+- Edge cases and boundary conditions
+- Error handling paths
+
+Integration Tests:
+- API endpoint contracts
+- Database operations
+- Third-party service integrations
+- Authentication flows
+
+End-to-End Tests:
+- Critical user journeys (5-7 scenarios)
+- Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
+- Mobile responsiveness (iOS Safari, Chrome Android)
+
+Performance Tests:
+- Load testing: Sustained 2x expected traffic for 1 hour
+- Stress testing: Find breaking point (increase load until failure)
+- Soak testing: 24-hour run at expected load
+
+Security Tests:
+- OWASP Top 10 vulnerability scanning
+- Dependency audit (npm audit, go mod verify)
+- Penetration testing by third party
+
+### 6. User Experience & Accessibility (Score: 6/10)
+
+**Strengths:**
+- User-centric problem framing
+- Clear feature descriptions
+
+**Accessibility Gaps:**
+
+WCAG 2.1 AA Compliance Required:
+- Keyboard navigation: All interactive elements accessible via Tab/Enter
+- Screen readers: ARIA labels on all form inputs and buttons
+- Color contrast: Minimum 4.5:1 for text, 3:1 for UI components
+- Focus indicators: Visible focus state on all interactive elements
+- Alt text: Descriptive alternatives for all images and icons
+
+**UX Improvements:**
+- Loading states: Skeleton screens or spinners for async operations
+- Error messages: Specific, actionable guidance (not generic "Error occurred")
+- Empty states: Helpful prompts when no data exists
+- Confirmation dialogs: For destructive actions (delete, overwrite)
+- Undo functionality: For critical user actions
+
+---
+
+## Risk Analysis
+
+### Technical Risks
+
+**Risk 1: Third-Party API Dependency**
+- Probability: Medium (40%%)
+- Impact: High
+- Mitigation: Implement circuit breakers, maintain fallback mechanisms, contract SLA guarantees
+
+**Risk 2: Database Performance Degradation**
+- Probability: Medium (35%%)
+- Impact: High
+- Mitigation: Query optimization, connection pooling, read replicas, caching layer
+
+**Risk 3: Security Breach**
+- Probability: Low (15%%)
+- Impact: Critical
+- Mitigation: Regular security audits, bug bounty program, incident response plan
+
+### Business Risks
+
+**Risk 4: User Adoption Below Target**
+- Probability: Medium (45%%)
+- Impact: High
+- Mitigation: Beta testing with 50-100 users, iterative feedback incorporation, marketing campaign
+
+**Risk 5: Scope Creep**
+- Probability: High (60%%)
+- Impact: Medium
+- Mitigation: Strict change control process, prioritization framework, stakeholder alignment
+
+---
+
+## Priority Actions (Ranked by Impact)
+
+### Critical (Must Address Before Development)
+
+1. **Define Error Handling Strategy** (Impact: High, Effort: Medium)
+   - Document all error scenarios
+   - Specify retry logic and fallback behaviors
+   - Create error message catalog
+
+2. **Complete Security Specification** (Impact: Critical, Effort: High)
+   - Authentication mechanism selection
+   - Authorization model (RBAC)
+   - Data encryption strategy
+   - Compliance checklist (GDPR, CCPA)
+
+3. **Establish Testing Framework** (Impact: High, Effort: High)
+   - Unit test requirements (80%% coverage)
+   - Integration test scenarios
+   - Performance benchmarks
+   - Security testing plan
+
+### High Priority (Address in Sprint 1)
+
+4. **API Contract Definition** (Impact: High, Effort: Medium)
+   - OpenAPI 3.0 specification
+   - Request/response schemas
+   - Authentication flows
+   - Rate limiting rules
+
+5. **Database Schema Design** (Impact: High, Effort: Medium)
+   - Entity-relationship diagram
+   - Indexing strategy
+   - Migration plan
+   - Backup/recovery procedures
+
+### Medium Priority (Address in Sprint 2-3)
+
+6. **Accessibility Compliance** (Impact: Medium, Effort: Medium)
+   - WCAG 2.1 AA audit
+   - Keyboard navigation implementation
+   - Screen reader testing
+
+7. **Performance Baselines** (Impact: Medium, Effort: Low)
+   - Current system metrics
+   - Target performance goals
+   - Monitoring dashboard
+
+---
+
+## Quantitative Assessment
+
+| Dimension | Score | Weight | Weighted Score |
+|-----------|-------|--------|----------------|
+| Technical Architecture | 7/10 | 25%% | 1.75 |
+| Error Handling | 5/10 | 15%% | 0.75 |
+| Security & Compliance | 6/10 | 20%% | 1.20 |
+| Performance & Scalability | 7/10 | 15%% | 1.05 |
+| Testing Strategy | 4/10 | 15%% | 0.60 |
+| UX & Accessibility | 6/10 | 10%% | 0.60 |
+| **Overall** | **7.2/10** | **100%%** | **5.95/10** |
+
+---
+
+## Final Recommendation
+
+**Decision**: Proceed with modifications
+
+**Rationale**: The PRD demonstrates solid strategic thinking and appropriate technology choices. However, critical gaps in error handling, security specification, and testing strategy must be addressed before development begins. The proposed timeline should be extended by 3-4 weeks to accommodate these additions.
+
+**Confidence Level**: High (85%%)
+
+**Next Steps**:
+1. Address all Critical priority items (estimated 2-3 weeks)
+2. Conduct technical review with engineering team
+3. Validate assumptions with 10-15 target users
+4. Revise PRD with findings
+5. Final approval gate before Sprint 1
+
+---
+
+*Analysis generated for testing and development purposes.*
 `
