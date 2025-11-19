@@ -11,6 +11,7 @@ jobs:
     name: Build WebView2 Client
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -43,7 +44,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev
       
       - name: Build WebView2 client
         env:
@@ -108,25 +109,26 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: electron-macos
-          path: cmd/electron/dist/*.dmg
-      
+          path: dist/electron/*.dmg
+
       - name: Upload Windows artifacts
         if: matrix.platform == 'win'
         uses: actions/upload-artifact@v4
         with:
           name: electron-windows
-          path: cmd/electron/dist/*.exe
-      
+          path: dist/electron/*.exe
+
       - name: Upload Linux artifacts
         if: matrix.platform == 'linux'
         uses: actions/upload-artifact@v4
         with:
           name: electron-linux
-          path: cmd/electron/dist/*.AppImage
+          path: dist/electron/*.AppImage
   
   create-release:
     name: Create GitHub Release
     needs: [build-webview, build-electron]
+    if: always()
     runs-on: ubuntu-latest
     
     steps:
