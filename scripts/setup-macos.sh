@@ -1,240 +1,199 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Product Requirements Assistant - macOS Setup Script
+# Optimized for minimal vertical space with running timer
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+set -euo pipefail
+
+# Source compact output library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/compact.sh"
 
 # Parse command line arguments
+# shellcheck disable=SC2034
 AUTO_YES=false
+FORCE_INSTALL=false
 while [[ $# -gt 0 ]]; do
     case $1 in
+        -v|--verbose)
+            export VERBOSE=1
+            shift
+            ;;
         -y|--yes)
             AUTO_YES=true
             shift
             ;;
+        -f|--force)
+            FORCE_INSTALL=true
+            shift
+            ;;
+        -h|--help)
+            cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Setup script for macOS
+
+OPTIONS:
+  -v, --verbose    Show detailed output (default: compact)
+  -y, --yes        Automatically answer yes to prompts
+  -f, --force      Force reinstall all dependencies
+  -h, --help       Show this help message
+
+EXAMPLES:
+  $(basename "$0")              # Fast setup, only install missing items
+  $(basename "$0") -v           # Verbose output
+  $(basename "$0") -f           # Force reinstall everything
+  $(basename "$0") -v -f        # Verbose + force reinstall
+
+PERFORMANCE:
+  First run:  ~2-3 minutes (installs everything)
+  Subsequent: ~5-10 seconds (checks only, skips installed)
+
+EOF
+            exit 0
+            ;;
         *)
-            echo "Unknown option: $1"
-            echo "Usage: $0 [-y|--yes]"
-            echo "  -y, --yes    Automatically answer yes to prompts"
+            echo "Error: Unknown option: $1"
+            echo "Run '$(basename "$0") --help' for usage information"
             exit 1
             ;;
     esac
 done
 
-# Function to check if a command is available
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
+# Navigate to project root
+cd "$SCRIPT_DIR/.."
+PROJECT_ROOT=$(pwd)
+
+print_header "Product Requirements Assistant - macOS Setup"
+
+# Cache file for tracking installed packages
+CACHE_DIR="$PROJECT_ROOT/.setup-cache"
+mkdir -p "$CACHE_DIR"
+
+# Helper: Check if package is cached
+is_cached() {
+    local pkg="$1"
+    [[ -f "$CACHE_DIR/$pkg" ]] && [[ $FORCE_INSTALL == false ]]
 }
 
-# Print step with consistent formatting
-print_step() {
-    echo ""
-    echo "[$1/$2] $3"
+# Helper: Mark package as cached
+mark_cached() {
+    local pkg="$1"
+    touch "$CACHE_DIR/$pkg"
 }
 
-# Print success
-print_ok() {
-    echo "  ✓ $1"
-}
+# Step 1: System dependencies
+task_start "Checking system dependencies"
 
-# Print error
-print_error() {
-    echo "  ✗ $1"
-}
-
-TOTAL_STEPS=7
-CURRENT_STEP=0
-
-# --- Dependency Checks ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Checking dependencies"
-
-if ! command_exists brew; then
-    print_error "Homebrew not found"
-    echo "Please install Homebrew: https://brew.sh/"
+# Check Homebrew
+if ! command -v brew &>/dev/null; then
+    task_fail "Homebrew not installed"
+    echo "Install Homebrew from: https://brew.sh/"
     exit 1
 fi
+verbose "Homebrew $(brew --version | head -1)"
 
-if ! command_exists go; then
-    echo "  Installing Go..."
-    brew install go >/dev/null 2>&1
-    print_ok "Go installed"
+# Check Go
+if ! command -v go &>/dev/null; then
+    task_start "Installing Go"
+    brew install go 2>&1 | verbose
+    mark_cached "go"
+    task_ok "Go installed"
 else
-    print_ok "Go"
+    verbose "Go $(go version | awk '{print $3}' | sed 's/go//')"
 fi
 
-if ! command_exists python3; then
-    echo "  Installing Python..."
-    brew install python >/dev/null 2>&1
-    print_ok "Python installed"
+# Check Python
+if ! command -v python3 &>/dev/null; then
+    task_start "Installing Python"
+    brew install python 2>&1 | verbose
+    mark_cached "python3"
+    task_ok "Python installed"
 else
-    print_ok "Python3"
+    verbose "Python $(python3 --version | awk '{print $2}')"
 fi
 
-# --- Project Setup ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Installing dependencies"
-make install >/dev/null 2>&1
-print_ok "Dependencies installed"
-
-# --- Testing ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Running tests"
-make test-all >/dev/null 2>&1
-print_ok "Unit tests passed"
-
-# --- Clean up existing processes ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Cleaning up existing processes"
-
-# Check if any ports are in use
-PORTS_IN_USE=()
-if lsof -ti:8080 >/dev/null 2>&1; then
-    PORTS_IN_USE+=("8080 (backend)")
-fi
-if lsof -ti:8501 >/dev/null 2>&1; then
-    PORTS_IN_USE+=("8501 (frontend)")
-fi
-if lsof -ti:8502 >/dev/null 2>&1; then
-    PORTS_IN_USE+=("8502 (frontend-alt)")
+# Check Node.js
+if ! command -v node &>/dev/null; then
+    task_start "Installing Node.js"
+    brew install node 2>&1 | verbose
+    mark_cached "node"
+    task_ok "Node.js installed"
+else
+    verbose "Node.js $(node --version)"
 fi
 
-# If any ports are in use, warn the user
-if [ ${#PORTS_IN_USE[@]} -gt 0 ]; then
-    echo ""
-    echo "⚠️  WARNING: The following ports are currently in use:"
-    for port in "${PORTS_IN_USE[@]}"; do
-        echo "    - Port $port"
-    done
-    echo ""
-    echo "This script will kill the processes using these ports."
-    echo ""
+task_ok "System dependencies ready"
 
-    # Skip prompt if -y flag is set
-    if [ "$AUTO_YES" = true ]; then
-        echo "Auto-confirming (--yes flag set)"
-        response="y"
+# Step 2: Go dependencies
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "go-deps"; then
+    task_start "Installing Go dependencies"
+    cd backend
+    go mod download 2>&1 | verbose
+    cd ..
+    mark_cached "go-deps"
+    task_ok "Go dependencies installed"
+else
+    task_skip "Go dependencies"
+fi
+
+# Step 3: Python virtual environment
+if [ ! -d "venv" ]; then
+    task_start "Creating Python virtual environment"
+    python3 -m venv venv 2>&1 | verbose
+    task_ok "Virtual environment created"
+else
+    task_skip "Python virtual environment"
+fi
+
+# Step 4: Python dependencies (smart check)
+REQUIREMENTS_HASH=$(md5 -q requirements.txt 2>/dev/null || echo "none")
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "py-deps-$REQUIREMENTS_HASH"; then
+    task_start "Installing Python dependencies"
+    source venv/bin/activate
+    
+    if [[ $FORCE_INSTALL == true ]]; then
+        pip install -q -r requirements.txt 2>&1 | verbose
     else
-        # Prompt with 3-second timeout (defaults to Yes)
-        read -t 3 -p "Continue? [Y/n] (auto-yes in 3s): " response || response="y"
-        echo ""
+        # Check each package individually (faster than full install)
+        while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            [[ "$pkg" =~ ^# ]] && continue
+            pkg_name=$(echo "$pkg" | cut -d'=' -f1 | cut -d'>' -f1 | cut -d'<' -f1 | tr -d ' ')
+            if ! pip show "$pkg_name" &>/dev/null; then
+                verbose "Installing $pkg_name..."
+                pip install -q "$pkg" 2>&1 | verbose
+            fi
+        done < requirements.txt
     fi
-
-    # Default to yes if empty or timeout
-    response=${response:-y}
-
-    if [[ ! "$response" =~ ^[Yy]$ ]]; then
-        echo "Setup cancelled by user."
-        exit 0
-    fi
-fi
-
-# Kill processes on port 8080 (backend)
-if lsof -ti:8080 >/dev/null 2>&1; then
-    echo "  Killing existing process on port 8080..."
-    lsof -ti:8080 | xargs kill -9 2>/dev/null || true
-    sleep 1
-    print_ok "Port 8080 freed"
+    
+    deactivate
+    mark_cached "py-deps-$REQUIREMENTS_HASH"
+    task_ok "Python dependencies installed"
 else
-    print_ok "Port 8080 available"
+    task_skip "Python dependencies"
 fi
 
-# Kill processes on port 8501 (frontend)
-if lsof -ti:8501 >/dev/null 2>&1; then
-    echo "  Killing existing process on port 8501..."
-    lsof -ti:8501 | xargs kill -9 2>/dev/null || true
-    sleep 1
-    print_ok "Port 8501 freed"
+# Step 5: Quick validation
+task_start "Validating setup"
+cd backend
+if go build -o /tmp/prd-test . 2>&1 | verbose; then
+    rm -f /tmp/prd-test
+    cd ..
+    task_ok "Setup validated"
 else
-    print_ok "Port 8501 available"
-fi
-
-# Also check for port 8502 (alternate Streamlit port)
-if lsof -ti:8502 >/dev/null 2>&1; then
-    echo "  Killing existing process on port 8502..."
-    lsof -ti:8502 | xargs kill -9 2>/dev/null || true
-    sleep 1
-    print_ok "Port 8502 freed"
-fi
-
-# --- Running the Application ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Starting backend"
-
-nohup make run-backend > backend.log 2>&1 &
-BACKEND_PID=$!
-
-# Wait for backend health check
-SECONDS=0
-printf "  Waiting for backend"
-while true; do
-    response=$(curl -s -w "%{http_code}" "http://localhost:8080/api/health" -o /dev/null 2>/dev/null) || true
-    if [ "$response" = "200" ]; then
-        echo ""
-        print_ok "Backend ready (PID: $BACKEND_PID)"
-        break
-    fi
-    if [ $SECONDS -ge 30 ]; then
-        echo ""
-        print_error "Backend failed to start within 30 seconds"
-        echo ""
-        echo "Backend log:"
-        cat backend.log
-        exit 1
-    fi
-    printf "."
-    sleep 1
-done
-
-# --- Integration Testing ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Running integration tests"
-if ! make test-integration >/dev/null 2>&1; then
-    print_error "Integration tests failed"
-    echo ""
-    echo "Backend is still running (PID: $BACKEND_PID)"
-    echo "Stop it with: kill $BACKEND_PID"
+    cd ..
+    task_fail "Validation failed"
     exit 1
 fi
-print_ok "Integration tests passed"
 
-# --- Cleanup Handler ---
-cleanup() {
-    echo ""
-    echo ""
-    echo "Shutting down..."
-    if [ ! -z "$BACKEND_PID" ]; then
-        kill $BACKEND_PID 2>/dev/null && echo "  Backend stopped" || true
-    fi
-    if [ ! -z "$FRONTEND_PID" ]; then
-        kill $FRONTEND_PID 2>/dev/null && echo "  Frontend stopped" || true
-    fi
-    echo "Done."
-    exit 0
-}
-
-trap cleanup SIGINT SIGTERM
-
-# --- Frontend ---
-CURRENT_STEP=$((CURRENT_STEP + 1))
-print_step $CURRENT_STEP $TOTAL_STEPS "Starting frontend"
-nohup make run-frontend > frontend.log 2>&1 &
-FRONTEND_PID=$!
-
-sleep 3
-print_ok "Frontend ready (PID: $FRONTEND_PID)"
-
-# --- Application Running ---
+# Done
 echo ""
-echo "========================================"
-echo "Application running"
-echo "========================================"
-echo "Backend:  http://localhost:8080"
-echo "Frontend: http://localhost:8501"
+print_header "✓ Setup complete! $(get_elapsed_time)"
 echo ""
-echo "Logs: tail -f backend.log frontend.log"
-echo "Stop:  Press Ctrl+C"
-echo "========================================"
+echo "Next steps:"
+echo "  make run-backend    # Start Go backend (port 8080)"
+echo "  make run-frontend   # Start Streamlit frontend (port 8501)"
+echo "  ./run-thick-clients.sh  # Launch desktop clients"
 echo ""
+echo "Run with -v for verbose output, -f to force reinstall"
 
-# Wait indefinitely until user presses Ctrl+C
-wait
