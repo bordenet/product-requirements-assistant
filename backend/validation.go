@@ -10,12 +10,12 @@ import (
 
 // InputValidator handles input validation and sanitization
 type InputValidator struct {
-	maxTitleLength       int
-	maxProblemsLength    int
-	maxContextLength     int
-	maxContentLength     int
-	forbiddenPatterns    []*regexp.Regexp
-	allowedHTMLTags      map[string]bool
+	maxTitleLength    int
+	maxProblemsLength int
+	maxContextLength  int
+	maxContentLength  int
+	forbiddenPatterns []*regexp.Regexp
+	allowedHTMLTags   map[string]bool
 }
 
 // NewInputValidator creates a new input validator with default settings
@@ -23,32 +23,32 @@ func NewInputValidator() *InputValidator {
 	// Compile forbidden patterns (actual security risks only)
 	// These patterns look for HTML tags with specific characters that indicate actual code injection
 	forbiddenPatterns := []*regexp.Regexp{
-		regexp.MustCompile(`<script[^>]*>.*?</script>`),           // Script tags
-		regexp.MustCompile(`javascript:\s*[a-zA-Z]`),              // JavaScript URLs (must have code after)
-		regexp.MustCompile(`<\s*\w+[^>]*\son\w+\s*=\s*["']`),     // Event handlers in actual HTML tags
-		regexp.MustCompile(`<iframe[^>]*>.*?</iframe>`),          // Iframes
-		regexp.MustCompile(`<object[^>]*>.*?</object>`),          // Objects
-		regexp.MustCompile(`<embed[^>]*>`),                       // Embeds
+		regexp.MustCompile(`<script[^>]*>.*?</script>`),      // Script tags
+		regexp.MustCompile(`javascript:\s*[a-zA-Z]`),         // JavaScript URLs (must have code after)
+		regexp.MustCompile(`<\s*\w+[^>]*\son\w+\s*=\s*["']`), // Event handlers in actual HTML tags
+		regexp.MustCompile(`<iframe[^>]*>.*?</iframe>`),      // Iframes
+		regexp.MustCompile(`<object[^>]*>.*?</object>`),      // Objects
+		regexp.MustCompile(`<embed[^>]*>`),                   // Embeds
 	}
 
 	// Allowed HTML tags for content (basic formatting only)
 	allowedTags := map[string]bool{
-		"p":      true,
-		"br":     true,
-		"strong": true,
-		"em":     true,
-		"ul":     true,
-		"ol":     true,
-		"li":     true,
-		"h1":     true,
-		"h2":     true,
-		"h3":     true,
-		"h4":     true,
-		"h5":     true,
-		"h6":     true,
-		"code":   true,
-		"pre":    true,
-		"a":      true,
+		"p":          true,
+		"br":         true,
+		"strong":     true,
+		"em":         true,
+		"ul":         true,
+		"ol":         true,
+		"li":         true,
+		"h1":         true,
+		"h2":         true,
+		"h3":         true,
+		"h4":         true,
+		"h5":         true,
+		"h6":         true,
+		"code":       true,
+		"pre":        true,
+		"a":          true,
 		"blockquote": true,
 	}
 
@@ -68,7 +68,7 @@ func (v *InputValidator) ValidateCreateProjectRequest(req *CreateProjectRequest)
 	if strings.TrimSpace(req.Title) == "" {
 		return fmt.Errorf("title is required")
 	}
-	
+
 	req.Title = v.sanitizeString(req.Title)
 	if len(req.Title) > v.maxTitleLength {
 		return fmt.Errorf("title must be less than %d characters", v.maxTitleLength)
@@ -78,7 +78,7 @@ func (v *InputValidator) ValidateCreateProjectRequest(req *CreateProjectRequest)
 	if strings.TrimSpace(req.Problems) == "" {
 		return fmt.Errorf("problems description is required")
 	}
-	
+
 	req.Problems = v.sanitizeString(req.Problems)
 	if len(req.Problems) > v.maxProblemsLength {
 		return fmt.Errorf("problems description must be less than %d characters", v.maxProblemsLength)
@@ -152,10 +152,10 @@ func (v *InputValidator) ValidatePromptUpdate(req *PromptUpdate) error {
 func (v *InputValidator) sanitizeString(input string) string {
 	// Trim whitespace
 	input = strings.TrimSpace(input)
-	
+
 	// Remove null bytes
 	input = strings.ReplaceAll(input, "\x00", "")
-	
+
 	// Remove control characters except newlines and tabs
 	var result strings.Builder
 	for _, r := range input {
@@ -164,7 +164,7 @@ func (v *InputValidator) sanitizeString(input string) string {
 		}
 		result.WriteRune(r)
 	}
-	
+
 	// HTML escape for basic protection
 	return html.EscapeString(result.String())
 }
@@ -173,10 +173,10 @@ func (v *InputValidator) sanitizeString(input string) string {
 func (v *InputValidator) sanitizeContent(input string) string {
 	// Trim whitespace
 	input = strings.TrimSpace(input)
-	
+
 	// Remove null bytes
 	input = strings.ReplaceAll(input, "\x00", "")
-	
+
 	// Remove control characters except common whitespace
 	var result strings.Builder
 	for _, r := range input {
@@ -185,7 +185,7 @@ func (v *InputValidator) sanitizeContent(input string) string {
 		}
 		result.WriteRune(r)
 	}
-	
+
 	// Don't HTML escape content as it may contain legitimate markdown
 	return result.String()
 }
@@ -193,13 +193,13 @@ func (v *InputValidator) sanitizeContent(input string) string {
 // checkForbiddenPatterns checks for potentially malicious patterns
 func (v *InputValidator) checkForbiddenPatterns(input string) error {
 	lowerInput := strings.ToLower(input)
-	
+
 	for _, pattern := range v.forbiddenPatterns {
 		if pattern.MatchString(lowerInput) {
 			return fmt.Errorf("contains forbidden pattern: %s", pattern.String())
 		}
 	}
-	
+
 	return nil
 }
 
@@ -222,13 +222,13 @@ func (v *InputValidator) ValidateProjectID(id string) error {
 	if id == "" {
 		return fmt.Errorf("project ID is required")
 	}
-	
+
 	// Check for basic UUID format (simplified)
 	uuidPattern := regexp.MustCompile(`^[a-f0-9-]{36}$`)
 	if !uuidPattern.MatchString(id) {
 		return fmt.Errorf("invalid project ID format")
 	}
-	
+
 	return nil
 }
 
@@ -239,11 +239,11 @@ func (v *InputValidator) ValidatePromptPhase(phase string) error {
 		"gemini_review":  true,
 		"claude_compare": true,
 	}
-	
+
 	if !validPhases[phase] {
 		return fmt.Errorf("invalid prompt phase: must be claude_initial, gemini_review, or claude_compare")
 	}
-	
+
 	return nil
 }
 

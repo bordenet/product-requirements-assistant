@@ -118,12 +118,12 @@ func (rl *RateLimiter) Middleware() func(http.Handler) http.Handler {
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		
+
 		// Wrap the response writer to capture status code
 		lrw := &LoggingResponseWriter{ResponseWriter: w, statusCode: 200}
-		
+
 		next.ServeHTTP(lrw, r)
-		
+
 		log.Printf("%s %s %d %v", r.Method, r.URL.Path, lrw.statusCode, time.Since(start))
 	})
 }

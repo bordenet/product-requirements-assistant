@@ -27,7 +27,7 @@ type TestData struct {
 func setupTestServer() *httptest.Server {
 	// Reset projects map for clean test state
 	projects = make(map[string]*Project)
-	
+
 	router := mux.NewRouter()
 	router.HandleFunc("/api/health", healthCheck).Methods("GET")
 	router.HandleFunc("/api/projects", createProject).Methods("POST")
@@ -79,25 +79,25 @@ func TestEndToEndWorkflow(t *testing.T) {
 
 	// Test both project scenarios
 	testCases := []struct {
-		name         string
-		dataFile     string
-		phase1File   string
-		phase2File   string
-		phase3File   string
+		name       string
+		dataFile   string
+		phase1File string
+		phase2File string
+		phase3File string
 	}{
 		{
-			name:         "AI Chat Widget",
-			dataFile:     "ai-chat-widget.json",
-			phase1File:   "ai-chat-widget-phase1-claude.md",
-			phase2File:   "ai-chat-widget-phase2-gemini.md",
-			phase3File:   "ai-chat-widget-phase3-claude.md",
+			name:       "AI Chat Widget",
+			dataFile:   "ai-chat-widget.json",
+			phase1File: "ai-chat-widget-phase1-claude.md",
+			phase2File: "ai-chat-widget-phase2-gemini.md",
+			phase3File: "ai-chat-widget-phase3-claude.md",
 		},
 		{
-			name:         "Mobile Offline Sync",
-			dataFile:     "mobile-offline-sync.json",
-			phase1File:   "mobile-offline-sync-phase1-claude.md",
-			phase2File:   "mobile-offline-sync-phase2-gemini.md",
-			phase3File:   "mobile-offline-sync-phase3-claude.md",
+			name:       "Mobile Offline Sync",
+			dataFile:   "mobile-offline-sync.json",
+			phase1File: "mobile-offline-sync-phase1-claude.md",
+			phase2File: "mobile-offline-sync-phase2-gemini.md",
+			phase3File: "mobile-offline-sync-phase3-claude.md",
 		},
 	}
 

@@ -59,23 +59,23 @@ func (m *MetricsCollector) IncrementPhasesUpdated() {
 // ApplicationMetrics represents the current application metrics
 type ApplicationMetrics struct {
 	// Request metrics
-	RequestCount int64 `json:"request_count"`
-	ErrorCount   int64 `json:"error_count"`
+	RequestCount int64   `json:"request_count"`
+	ErrorCount   int64   `json:"error_count"`
 	ErrorRate    float64 `json:"error_rate_percent"`
-	
+
 	// Business metrics
 	ProjectsCreated int64 `json:"projects_created"`
 	PhasesUpdated   int64 `json:"phases_updated"`
-	
+
 	// System metrics
-	Uptime          string  `json:"uptime"`
-	UptimeSeconds   int64   `json:"uptime_seconds"`
-	MemoryUsageMB   float64 `json:"memory_usage_mb"`
-	GoroutineCount  int     `json:"goroutine_count"`
-	
+	Uptime         string  `json:"uptime"`
+	UptimeSeconds  int64   `json:"uptime_seconds"`
+	MemoryUsageMB  float64 `json:"memory_usage_mb"`
+	GoroutineCount int     `json:"goroutine_count"`
+
 	// File system metrics
 	FileSystemStats *FileSystemStats `json:"file_system_stats,omitempty"`
-	
+
 	// Cache metrics
 	CacheStats map[string]interface{} `json:"cache_stats,omitempty"`
 }
@@ -84,19 +84,19 @@ type ApplicationMetrics struct {
 func (m *MetricsCollector) GetApplicationMetrics() *ApplicationMetrics {
 	requestCount := atomic.LoadInt64(&m.requestCount)
 	errorCount := atomic.LoadInt64(&m.errorCount)
-	
+
 	var errorRate float64
 	if requestCount > 0 {
 		errorRate = (float64(errorCount) / float64(requestCount)) * 100
 	}
-	
+
 	uptime := time.Since(m.startTime)
-	
+
 	// Get memory stats
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 	memoryUsageMB := float64(memStats.Alloc) / 1024 / 1024
-	
+
 	metrics := &ApplicationMetrics{
 		RequestCount:    requestCount,
 		ErrorCount:      errorCount,
@@ -108,17 +108,17 @@ func (m *MetricsCollector) GetApplicationMetrics() *ApplicationMetrics {
 		MemoryUsageMB:   memoryUsageMB,
 		GoroutineCount:  runtime.NumGoroutine(),
 	}
-	
+
 	// Add file system stats if available
 	if fsStats, err := GetFileSystemStats(); err == nil {
 		metrics.FileSystemStats = fsStats
 	}
-	
+
 	// Add cache stats if available
 	if globalFileManager != nil {
 		metrics.CacheStats = globalFileManager.GetCacheStats()
 	}
-	
+
 	return metrics
 }
 
@@ -126,7 +126,7 @@ func (m *MetricsCollector) GetApplicationMetrics() *ApplicationMetrics {
 func metricsHandler(w http.ResponseWriter, r *http.Request) {
 	metrics := GetMetrics()
 	appMetrics := metrics.GetApplicationMetrics()
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(appMetrics)
 }
@@ -134,30 +134,30 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 // healthzHandler serves detailed health information
 func healthzHandler(w http.ResponseWriter, r *http.Request) {
 	metrics := GetMetrics()
-	
+
 	health := map[string]interface{}{
 		"status":    "healthy",
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 		"uptime":    time.Since(metrics.startTime).String(),
 		"version":   "1.0.0", // Could be set via build flags
 	}
-	
+
 	// Check file system health
 	if _, err := GetFileSystemStats(); err != nil {
 		health["file_system_error"] = err.Error()
 	}
-	
+
 	// Check if directories are accessible
 	outputsDir := getOutputsDir()
 	if _, err := os.Stat(outputsDir); err != nil {
 		health["outputs_dir_error"] = err.Error()
 	}
-	
+
 	promptsDir := getPromptsDir()
 	if _, err := os.Stat(promptsDir); err != nil {
 		health["prompts_dir_error"] = err.Error()
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(health)
 }
@@ -169,7 +169,7 @@ func readinessHandler(w http.ResponseWriter, r *http.Request) {
 		"status": "ready",
 		"checks": map[string]string{},
 	}
-	
+
 	// Check file manager
 	if globalFileManager == nil {
 		ready["status"] = "not_ready"
@@ -177,7 +177,7 @@ func readinessHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ready["checks"].(map[string]string)["file_manager"] = "ok"
 	}
-	
+
 	// Check directories
 	outputsDir := getOutputsDir()
 	if _, err := os.Stat(outputsDir); err != nil {
@@ -186,7 +186,7 @@ func readinessHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ready["checks"].(map[string]string)["outputs_dir"] = "ok"
 	}
-	
+
 	promptsDir := getPromptsDir()
 	if _, err := os.Stat(promptsDir); err != nil {
 		ready["status"] = "not_ready"
@@ -194,12 +194,12 @@ func readinessHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ready["checks"].(map[string]string)["prompts_dir"] = "ok"
 	}
-	
+
 	// Set status code based on readiness
 	if ready["status"] == "not_ready" {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(ready)
 }
@@ -209,12 +209,12 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		metrics := GetMetrics()
 		metrics.IncrementRequestCount()
-		
+
 		// Wrap response writer to capture status code
 		mrw := &MetricsResponseWriter{ResponseWriter: w, statusCode: 200}
-		
+
 		next.ServeHTTP(mrw, r)
-		
+
 		// Increment error count for 4xx and 5xx status codes
 		if mrw.statusCode >= 400 {
 			metrics.IncrementErrorCount()
