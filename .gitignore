@@ -24,6 +24,9 @@ venv/
 *.dll
 *.so
 *.dylib
+prd-assistant
+coverage.out
+*.test
 
 # IDE
 .vscode/

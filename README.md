@@ -27,37 +27,50 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 
 ### Quick Start
 
-**All platforms (macOS, Linux, WSL):**
+**macOS/Linux:**
 ```bash
-./run.sh
+./run.sh [-y|--yes]
 ```
 
-The script will automatically detect your OS and run the appropriate setup.
-
-**For automated/CI environments (skip prompts):**
+**Windows (WSL - Ubuntu/Debian):**
 ```bash
-./run.sh -y
-# or
-./run.sh --yes
+./scripts/setup-windows-wsl.sh [-y|--yes]
 ```
 
-**Or run platform-specific scripts:**
+**Windows (PowerShell - native, no WSL required):**
+```powershell
+.\scripts\setup-windows.ps1 [-AutoYes]
+```
+
+The setup scripts will:
+- Install Go and Python if needed (via Homebrew/apt/Chocolatey)
+- Install project dependencies
+- Run tests
+- Check for processes on ports 8080/8501 and offer to kill them
+- Start backend and frontend
+- Open http://localhost:8501
+
+### Platform-Specific Scripts
+
+**macOS:**
 ```bash
-# macOS
 ./scripts/setup-macos.sh [-y|--yes]
+```
 
-# Linux/WSL (Ubuntu/Debian)
+**Linux:**
+```bash
 ./scripts/setup-linux.sh [-y|--yes]
 ```
 
-The setup script will:
-- Install Go and Python3 if needed
-- Create a Python virtual environment (venv)
-- Install project dependencies
-- Run tests
-- Check for processes on ports 8080/8501 and offer to kill them (or auto-confirm with `-y`)
-- Start backend and frontend
-- Open http://localhost:8501
+**Windows WSL:**
+```bash
+./scripts/setup-windows-wsl.sh [-y|--yes]
+```
+
+**Windows PowerShell:**
+```powershell
+.\scripts\setup-windows.ps1 [-AutoYes]
+```
 
 Stop with `Ctrl+C`.
 
@@ -139,9 +152,22 @@ make test-backend
 make test-integration
 
 # Comprehensive validation (recommended before commits)
-./scripts/validate-monorepo.sh --quick   # ~1-2 minutes
-./scripts/validate-monorepo.sh --full    # ~3-5 minutes
+./scripts/validate-monorepo.sh --quick   # ~1-2 minutes (Unix/Linux/macOS)
+./scripts/validate-monorepo.sh --full    # ~3-5 minutes (Unix/Linux/macOS)
+
+# Windows PowerShell
+.\scripts\validate-monorepo.ps1 -Quick   # ~1-2 minutes
+.\scripts\validate-monorepo.ps1 -Full    # ~3-5 minutes
 ```
+
+**Validation includes:**
+- Dependency checks (Go, Python versions)
+- Project structure validation
+- Backend build and linting (go vet, gofmt)
+- Backend tests (all test suites)
+- Frontend linting (flake8, black)
+- Security scanning (secret detection) - full mode only
+- Git status check - full mode only
 
 ### Mock AI for Automated Testing
 
