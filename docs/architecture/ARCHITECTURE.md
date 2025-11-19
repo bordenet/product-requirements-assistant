@@ -154,7 +154,7 @@ curl -X POST http://localhost:8080/api/projects/{id}/generate/2  # Phase 2
 curl -X POST http://localhost:8080/api/projects/{id}/generate/3  # Phase 3
 ```
 
-See [docs/MOCK_AI.md](MOCK_AI.md) for complete documentation.
+See [`docs/development/MOCK_AI.md`](../development/MOCK_AI.md) for complete documentation.
 
 ## Development Notes
 - Backend serves on localhost:8080
