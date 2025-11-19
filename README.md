@@ -43,10 +43,12 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 - **Electron** - Full installer for Windows, macOS, Linux (~150MB)
 - **WebView2** - Lightweight portable executable (~10MB)
 
-### Web Application (Coming Soon)
-- **CloudFront** - Browser-based, 100% client-side storage
-- **No installation** - Just open a URL
-- **Privacy-first** - All data stored in your browser (IndexedDB)
+### Web Application ✨ NEW!
+- **Browser-based** - No installation required, just open a URL
+- **100% client-side** - All data stored in your browser (IndexedDB)
+- **Privacy-first** - Zero server storage, zero tracking
+- **Try it:** Run locally with `cd web && python3 -m http.server 8000`
+- **Deploy:** CloudFront, GitHub Pages, Netlify, or any static host
 
 ## Architecture
 
