@@ -97,13 +97,22 @@ def main():
         st.divider()
         
         # Recent projects
-        st.subheader("Recent Projects")
+        st.markdown("#### Recent Projects")
         with st.spinner("Loading projects..."):
             projects = api.list_projects()
-        
+
         if not projects:
             st.info("No projects found. Create your first project!")
         else:
+            # Add custom CSS to reduce button font size in sidebar
+            st.markdown("""
+                <style>
+                .stSidebar button[kind="secondary"] p {
+                    font-size: 0.85rem !important;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
             for project in projects:
                 if st.button(f"📄 {project['title']}", key=project['id']):
                     with st.spinner("Loading project..."):
