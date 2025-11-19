@@ -137,7 +137,41 @@ make test-backend
 
 # Integration tests
 make test-integration
+
+# Comprehensive validation (recommended before commits)
+./scripts/validate-monorepo.sh --quick   # ~1-2 minutes
+./scripts/validate-monorepo.sh --full    # ~3-5 minutes
 ```
+
+## Quality Gates
+
+This repository includes automated safety mechanisms:
+
+**Pre-Commit Hooks** (prevents broken commits):
+```bash
+# Install hooks (one-time setup)
+./scripts/install-hooks.sh
+```
+
+The hooks will automatically:
+- ✅ Block compiled binaries from being committed
+- ✅ Scan for secrets and credentials
+- ✅ Ensure code quality before commits
+
+**Validation System**:
+```bash
+# Quick validation (dependencies, builds, tests)
+./scripts/validate-monorepo.sh --quick
+
+# Full validation (includes security scans)
+./scripts/validate-monorepo.sh --full
+```
+
+**To bypass hooks in emergencies**:
+```bash
+git commit --no-verify -m "Emergency fix"
+```
+⚠️ Only use `--no-verify` when absolutely necessary!
 
 ## Documentation
 
