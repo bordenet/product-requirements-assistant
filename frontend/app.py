@@ -104,17 +104,49 @@ def main():
         if not projects:
             st.info("No projects found. Create your first project!")
         else:
-            # Add custom CSS to reduce button font size in sidebar
+            # Add custom CSS for link-style project list
             st.markdown("""
                 <style>
-                .stSidebar button[kind="secondary"] p {
+                /* Make sidebar project buttons look like links */
+                section[data-testid="stSidebar"] button[kind="secondary"] {
+                    background-color: transparent !important;
+                    border: none !important;
+                    padding: 0.1rem 0 !important;
+                    text-align: left !important;
+                    justify-content: flex-start !important;
                     font-size: 0.85rem !important;
+                    color: #1E88E5 !important;
+                    box-shadow: none !important;
+                    min-height: auto !important;
+                    width: auto !important;
+                    line-height: 1.2 !important;
+                }
+                section[data-testid="stSidebar"] button[kind="secondary"]:hover {
+                    color: #1565C0 !important;
+                    text-decoration: underline !important;
+                    background-color: transparent !important;
+                    border: none !important;
+                }
+                section[data-testid="stSidebar"] button[kind="secondary"]:focus {
+                    box-shadow: none !important;
+                    background-color: transparent !important;
+                }
+                section[data-testid="stSidebar"] button[kind="secondary"] p {
+                    font-size: 0.85rem !important;
+                    text-align: left !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                section[data-testid="stSidebar"] button[kind="secondary"] div {
+                    text-align: left !important;
+                    justify-content: flex-start !important;
+                    padding: 0 !important;
                 }
                 </style>
             """, unsafe_allow_html=True)
 
             for project in projects:
-                if st.button(f"📄 {project['title']}", key=project['id']):
+                if st.button(project['title'], key=project['id']):
                     with st.spinner("Loading project..."):
                         st.session_state.current_project = project
                         st.session_state.phase = project['phase']
