@@ -1,59 +1,59 @@
+﻿#!/usr/bin/env pwsh
 # Product Requirements Assistant - Install Git Hooks (Windows PowerShell)
 # Installs pre-commit hooks for quality gates
 
-$ErrorActionPreference = "Stop"
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '')]
+param()
 
-function Write-Header {
-    param($Message)
-    Write-Host ""
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
-    Write-Host $Message -ForegroundColor Cyan
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
-    Write-Host ""
+$ErrorActionPreference = 'Stop'
+
+# Get script directory
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location (Join-Path $ScriptDir '..')
+
+# Import compact output module
+Import-Module "$ScriptDir\lib\Compact.psm1" -Force
+
+if ($VerbosePreference -eq 'Continue') {
+    Enable-VerboseMode
 }
 
-function Write-Section {
-    param($Message)
-    Write-Host ""
-    Write-Host "▸ $Message" -ForegroundColor Yellow
-}
+Write-CompactHeader 'Installing Git Hooks'
 
-function Write-OK {
-    param($Message)
-    Write-Host "[OK] $Message" -ForegroundColor Green
-}
+################################################################################
+# Step 1: Check Git Repository
+################################################################################
 
-function Write-Info {
-    param($Message)
-    Write-Host "[INFO] $Message" -ForegroundColor Blue
-}
+Start-Task 'Checking git repository'
 
-function Write-Warn {
-    param($Message)
-    Write-Host "[WARN] $Message" -ForegroundColor Yellow
-}
-
-function Write-Err {
-    param($Message)
-    Write-Host "[ERROR] $Message" -ForegroundColor Red
-}
-
-Write-Header "Installing Git Hooks"
-
-# Check if .git directory exists
-if (-not (Test-Path ".git")) {
-    Write-Err "Not a git repository. Run: git init"
+if (-not (Test-Path '.git')) {
+    Stop-Task 'Not a git repository'
+    Write-Host ''
+    Write-Host 'Run: git init'
     exit 1
 }
 
-# Create hooks directory if it doesn't exist
-$hooksDir = ".git\hooks"
+Complete-Task 'Git repository found'
+
+################################################################################
+# Step 2: Create Hooks Directory
+################################################################################
+
+$hooksDir = '.git\hooks'
 if (-not (Test-Path $hooksDir)) {
+    Start-Task 'Creating hooks directory'
     New-Item -ItemType Directory -Path $hooksDir | Out-Null
+    Complete-Task 'Hooks directory created'
+} else {
+    Skip-Task 'Hooks directory'
 }
 
-# Create pre-commit hook
-Write-Section "Creating pre-commit hook"
+################################################################################
+# Step 3: Create Pre-Commit Hook
+################################################################################
+
+Start-Task 'Creating pre-commit hook'
 
 $preCommitContent = @'
 #!/usr/bin/env bash
@@ -91,31 +91,50 @@ exit 0
 Set-Content -Path "$hooksDir\pre-commit" -Value $preCommitContent -NoNewline
 
 # On Windows, Git hooks need to be executable
-# Git for Windows handles this automatically, but we'll ensure it
 if (Get-Command git -ErrorAction SilentlyContinue) {
-    git update-index --chmod=+x "$hooksDir\pre-commit" 2>$null
-}
-
-Write-OK "Pre-commit hook installed"
-
-# Make check scripts executable (if on Git Bash/WSL)
-Write-Section "Making check scripts executable"
-if (Test-Path "scripts\check-binaries.sh") {
-    if (Get-Command git -ErrorAction SilentlyContinue) {
-        git update-index --chmod=+x "scripts\check-binaries.sh" 2>$null
-        git update-index --chmod=+x "scripts\check-secrets.sh" 2>$null
+    try {
+        git update-index --chmod=+x "$hooksDir\pre-commit" 2>$null
+        Write-Verbose-Line 'Set executable bit on pre-commit hook'
+    } catch {
+        Write-Verbose-Line 'Could not set executable bit (this is OK on Windows)'
     }
 }
-Write-OK "Check scripts configured"
 
-Write-Header "Installation Complete"
-Write-OK "Git hooks installed successfully!"
-Write-Host ""
-Write-Info "The following checks will run on every commit:"
-Write-Info "  • Binary detection (prevents compiled files)"
-Write-Info "  • Secret scanning (prevents credential leaks)"
-Write-Host ""
-Write-Info "To bypass hooks in emergencies: git commit --no-verify"
-Write-Warn "Only use --no-verify when absolutely necessary!"
-Write-Host ""
+Complete-Task 'Pre-commit hook installed'
 
+################################################################################
+# Step 4: Make Check Scripts Executable
+################################################################################
+
+Start-Task 'Configuring check scripts'
+
+if (Test-Path 'scripts\check-binaries.sh') {
+    if (Get-Command git -ErrorAction SilentlyContinue) {
+        try {
+            git update-index --chmod=+x 'scripts\check-binaries.sh' 2>$null
+            git update-index --chmod=+x 'scripts\check-secrets.sh' 2>$null
+            Write-Verbose-Line 'Set executable bit on check scripts'
+        } catch {
+            Write-Verbose-Line 'Could not set executable bit (this is OK on Windows)'
+        }
+    }
+}
+
+Complete-Task 'Check scripts configured'
+
+################################################################################
+# Done
+################################################################################
+
+Write-Host ''
+Write-CompactHeader "Installation complete! $(Get-ElapsedTime)"
+Write-Host ''
+Write-Host 'The following checks will run on every commit:'
+Write-Host '  • Binary detection (prevents compiled files)'
+Write-Host '  • Secret scanning (prevents credential leaks)'
+Write-Host ''
+Write-Host 'To bypass hooks in emergencies: git commit --no-verify'
+Write-Host '(Only use --no-verify when absolutely necessary!)'
+Write-Host ''
+
+exit 0

@@ -1,10 +1,10 @@
+﻿#!/usr/bin/env pwsh
 # Product Requirements Assistant - Thick Client Launcher (PowerShell)
 # Builds and runs both WebView2 and Electron clients side-by-side
 
 [CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '')]
 param(
-    [switch]$Verbose,
-    [switch]$Force,
     [ValidateSet('dev', 'prod', 'build')]
     [string]$Mode
 )
@@ -18,7 +18,7 @@ Set-Location $ScriptDir
 # Import compact output module
 Import-Module "$ScriptDir\scripts\lib\Compact.psm1" -Force
 
-if ($Verbose) {
+if ($VerbosePreference -eq 'Continue') {
     Enable-VerboseMode
 }
 
@@ -49,7 +49,7 @@ try {
     $goVersion = go version 2>&1
     Write-Verbose-Line "Go: $goVersion"
 } catch {
-    Fail-Task 'Go not installed'
+    Stop-Task 'Go not installed'
     exit 1
 }
 
@@ -57,7 +57,7 @@ try {
     $nodeVersion = node --version 2>&1
     Write-Verbose-Line "Node.js: $nodeVersion"
 } catch {
-    Fail-Task 'Node.js not installed'
+    Stop-Task 'Node.js not installed'
     exit 1
 }
 
@@ -65,7 +65,7 @@ try {
     $npmVersion = npm --version 2>&1
     Write-Verbose-Line "npm: $npmVersion"
 } catch {
-    Fail-Task 'npm not installed'
+    Stop-Task 'npm not installed'
     exit 1
 }
 
@@ -163,7 +163,7 @@ try {
 
         # Check if processes are still running
         if ($script:WebViewProcess.HasExited -and $script:ElectronProcess.HasExited) {
-            Warn-Task 'Both clients have exited'
+            Write-TaskWarning 'Both clients have exited'
             break
         }
     }

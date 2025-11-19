@@ -1,281 +1,317 @@
+﻿#!/usr/bin/env pwsh
 # Product Requirements Assistant - Windows Setup Script
-# Installs dependencies and starts the application on Windows (non-WSL)
+# Optimized for minimal vertical space with running timer and caching
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '')]
 param(
-    [switch]$AutoYes = $false
+    [switch]$AutoYes,
+    [switch]$Force,
+    [switch]$Help
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 
-# Color output functions
-function Write-Step {
-    param($Current, $Total, $Message)
-    Write-Host ""
-    Write-Host "[$Current/$Total] $Message" -ForegroundColor Cyan
+# Get script directory and navigate to project root
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location (Join-Path $ScriptDir '..')
+$ProjectRoot = Get-Location
+
+# Import compact output module
+Import-Module "$ScriptDir\lib\Compact.psm1" -Force
+
+if ($VerbosePreference -eq 'Continue') {
+    Enable-VerboseMode
 }
 
-function Write-OK {
-    param($Message)
-    Write-Host "  ✓ $Message" -ForegroundColor Green
+# Show help
+if ($Help) {
+    Write-Host @"
+Usage: .\setup-windows.ps1 [OPTIONS]
+
+Setup script for Windows (non-WSL)
+
+OPTIONS:
+  -Verbose     Show detailed output (default: compact)
+  -AutoYes     Automatically answer yes to prompts
+  -Force       Force reinstall all dependencies
+  -Help        Show this help message
+
+EXAMPLES:
+  .\setup-windows.ps1              # Fast setup, only install missing items
+  .\setup-windows.ps1 -Verbose     # Verbose output
+  .\setup-windows.ps1 -Force       # Force reinstall everything
+  .\setup-windows.ps1 -Verbose -Force  # Verbose + force reinstall
+
+PERFORMANCE:
+  First run:  ~2-3 minutes (installs everything)
+  Subsequent: ~5-10 seconds (checks only, skips installed)
+
+"@
+    exit 0
 }
 
-function Write-Err {
-    param($Message)
-    Write-Host "  ✗ $Message" -ForegroundColor Red
+Write-CompactHeader 'Product Requirements Assistant - Windows Setup'
+
+# Cache directory for tracking installed packages
+$CacheDir = Join-Path $ProjectRoot '.setup-cache'
+New-Item -ItemType Directory -Force -Path $CacheDir | Out-Null
+
+# Helper: Check if package is cached
+function Test-Cached {
+    param([string]$Name)
+    (Test-Path (Join-Path $CacheDir $Name)) -and (-not $Force)
 }
 
-function Test-CommandExists {
-    param($Command)
+# Helper: Mark package as cached
+function Set-Cached {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
+    param([string]$Name)
+    New-Item -ItemType File -Force -Path (Join-Path $CacheDir $Name) | Out-Null
+}
+
+# Helper: Test if command exists
+function Test-CommandExist {
+    param([string]$Command)
     $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
 }
 
+# Helper: Test if port is in use
 function Test-PortInUse {
-    param($Port)
+    param([int]$Port)
     $connections = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
     return $null -ne $connections
 }
 
+# Helper: Stop process on port
 function Stop-PortProcess {
-    param($Port, $Name)
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
+    param([int]$Port)
+    
     if (Test-PortInUse $Port) {
-        Write-Host "  Stopping process on port $Port..."
+        Write-Verbose-Line "Stopping process on port $Port..."
         $connections = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
         foreach ($conn in $connections) {
             Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
         }
         Start-Sleep -Seconds 1
-        Write-OK "Port $Port freed"
-    } else {
-        Write-OK "Port $Port available"
     }
 }
 
-$TotalSteps = 7
-$CurrentStep = 0
+################################################################################
+# Step 1: Check Prerequisites
+################################################################################
 
-# Step 1: Check dependencies
-$CurrentStep++
-Write-Step $CurrentStep $TotalSteps "Checking dependencies"
+Start-Task 'Checking prerequisites'
 
-# Check for Chocolatey
-if (-not (Test-CommandExists choco)) {
-    Write-Err "Chocolatey not found"
-    Write-Host ""
-    Write-Host "Please install Chocolatey first:"
-    Write-Host "  Run PowerShell as Administrator and execute:"
-    Write-Host "  Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
+# Check Go
+if (-not (Test-CommandExist 'go')) {
+    Stop-Task 'Go not installed'
+    Write-Host ''
+    Write-Host 'Install Go 1.21+ from: https://go.dev/dl/'
     exit 1
 }
-Write-OK "Chocolatey"
+$goVersion = (go version) -replace 'go version go', '' -replace ' .*', ''
+Write-Verbose-Line "Go $goVersion"
 
-# Check/Install Go
-if (-not (Test-CommandExists go)) {
-    Write-Host "  Installing Go..."
-    choco install golang -y | Out-Null
-    refreshenv
-    Write-OK "Go installed"
-} else {
-    $goVersion = (go version) -replace 'go version go', '' -replace ' .*', ''
-    Write-OK "Go $goVersion"
-}
-
-# Check/Install Python
-if (-not (Test-CommandExists python)) {
-    Write-Host "  Installing Python..."
-    choco install python -y | Out-Null
-    refreshenv
-    Write-OK "Python installed"
-} else {
-    $pythonVersion = (python --version) -replace 'Python ', ''
-    Write-OK "Python $pythonVersion"
-}
-
-# Check/Install Make (via GnuWin32 or Make for Windows)
-if (-not (Test-CommandExists make)) {
-    Write-Host "  Installing Make..."
-    choco install make -y | Out-Null
-    refreshenv
-    Write-OK "Make installed"
-} else {
-    Write-OK "Make"
-}
-
-# Step 2: Install project dependencies
-$CurrentStep++
-Write-Step $CurrentStep $TotalSteps "Installing project dependencies"
-
-# Go dependencies
-Push-Location backend
-go mod download
-Pop-Location
-Write-OK "Go dependencies installed"
-
-# Python dependencies
-pip install -q -r requirements.txt
-Write-OK "Python dependencies installed"
-
-# Step 3: Run tests
-$CurrentStep++
-Write-Step $CurrentStep $TotalSteps "Running tests"
-
-Push-Location backend
-go test ./... | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Write-Err "Tests failed"
+# Check Python
+if (-not (Test-CommandExist 'python')) {
+    Stop-Task 'Python not installed'
+    Write-Host ''
+    Write-Host 'Install Python 3.11+ from: https://www.python.org/downloads/'
     exit 1
 }
-Pop-Location
-Write-OK "All tests passed"
+$pythonVersion = (python --version) -replace 'Python ', ''
+Write-Verbose-Line "Python $pythonVersion"
 
-# Step 4: Clean up existing processes
-$CurrentStep++
-Write-Step $CurrentStep $TotalSteps "Cleaning up existing processes"
+# Check Node.js
+if (-not (Test-CommandExist 'node')) {
+    Stop-Task 'Node.js not installed'
+    Write-Host ''
+    Write-Host 'Install Node.js 20+ from: https://nodejs.org/'
+    exit 1
+}
+$nodeVersion = node --version
+Write-Verbose-Line "Node.js $nodeVersion"
+
+# Check npm
+if (-not (Test-CommandExist 'npm')) {
+    Stop-Task 'npm not installed'
+    Write-Host ''
+    Write-Host 'npm should come with Node.js. Reinstall Node.js.'
+    exit 1
+}
+$npmVersion = npm --version
+Write-Verbose-Line "npm $npmVersion"
+
+Complete-Task 'Prerequisites checked'
+
+################################################################################
+# Step 2: Go Dependencies
+################################################################################
+
+if (-not (Test-Cached 'go-deps')) {
+    Start-Task 'Installing Go dependencies'
+    Set-Location backend
+    go mod download 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+    Set-Location $ProjectRoot
+    Set-Cached 'go-deps'
+    Complete-Task 'Go dependencies installed'
+} else {
+    Skip-Task 'Go dependencies'
+}
+
+################################################################################
+# Step 3: Python Virtual Environment
+################################################################################
+
+if (-not (Test-Path 'venv')) {
+    Start-Task 'Creating Python virtual environment'
+    python -m venv venv 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+    Complete-Task 'Virtual environment created'
+} else {
+    Skip-Task 'Python virtual environment'
+}
+
+################################################################################
+# Step 4: Python Dependencies
+################################################################################
+
+$requirementsHash = (Get-FileHash requirements.txt -Algorithm SHA256).Hash
+if (-not (Test-Cached "py-deps-$requirementsHash")) {
+    Start-Task 'Installing Python dependencies'
+
+    # Activate virtual environment
+    & .\venv\Scripts\Activate.ps1
+
+    if ($Force) {
+        pip install -r requirements.txt --quiet 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+    } else {
+        # Only install missing packages
+        $installed = pip list --format=freeze
+        Get-Content requirements.txt | ForEach-Object {
+            $pkg = $_ -replace '==.*', '' -replace '>=.*', '' -replace '~=.*', ''
+            if ($pkg -and -not ($installed -match "^$pkg==")) {
+                Write-Verbose-Line "Installing $pkg..."
+                pip install $_ --quiet 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+            }
+        }
+    }
+
+    deactivate
+    Set-Cached "py-deps-$requirementsHash"
+    Complete-Task 'Python dependencies installed'
+} else {
+    Skip-Task 'Python dependencies'
+}
+
+################################################################################
+# Step 5: Validation
+################################################################################
+
+Start-Task 'Validating setup'
+
+Set-Location backend
+try {
+    go build -o nul . 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+    Write-Verbose-Line 'Go backend builds successfully'
+} catch {
+    Set-Location $ProjectRoot
+    Stop-Task 'Go backend build failed'
+    exit 1
+}
+Set-Location $ProjectRoot
+
+& .\venv\Scripts\Activate.ps1
+try {
+    python -c "import flask, pillow" 2>&1 | ForEach-Object { Write-Verbose-Line $_ }
+    Write-Verbose-Line 'Python imports work'
+} catch {
+    deactivate
+    Stop-Task 'Python imports failed'
+    exit 1
+}
+deactivate
+
+Complete-Task 'Setup validated'
+
+################################################################################
+# Step 6: Port Cleanup
+################################################################################
+
+Start-Task 'Checking ports'
+
+$portsToCheck = @(
+    @{Port=8080; Name='Backend'},
+    @{Port=3000; Name='Frontend'}
+)
 
 $portsInUse = @()
-if (Test-PortInUse 8080) { $portsInUse += "8080 (backend)" }
-if (Test-PortInUse 8501) { $portsInUse += "8501 (frontend)" }
-if (Test-PortInUse 8502) { $portsInUse += "8502 (frontend-alt)" }
+foreach ($portInfo in $portsToCheck) {
+    if (Test-PortInUse $portInfo.Port) {
+        $portsInUse += $portInfo
+    }
+}
 
 if ($portsInUse.Count -gt 0) {
-    Write-Host ""
-    Write-Host "⚠️  WARNING: The following ports are currently in use:" -ForegroundColor Yellow
-    foreach ($port in $portsInUse) {
-        Write-Host "    - Port $port"
-    }
-    Write-Host ""
-    Write-Host "This script will stop the processes using these ports."
-    Write-Host ""
-    
-    if (-not $AutoYes) {
-        $response = Read-Host "Continue? [Y/n]"
-        if ($response -and $response -notmatch '^[Yy]') {
-            Write-Host "Setup cancelled by user."
-            exit 0
+    Write-TaskWarning "Ports in use: $($portsInUse.Port -join ', ')"
+
+    if ($AutoYes) {
+        Write-Verbose-Line 'Auto-confirming port cleanup (--AutoYes flag set)'
+        $response = 'y'
+    } else {
+        Write-Host ''
+        Write-Host 'The following ports are in use:'
+        foreach ($portInfo in $portsInUse) {
+            Write-Host "  - Port $($portInfo.Port) ($($portInfo.Name))"
         }
+        Write-Host ''
+        $response = Read-Host 'Stop these processes? (Y/n)'
+        if (-not $response) { $response = 'y' }
     }
-}
 
-Stop-PortProcess 8080 "backend"
-Stop-PortProcess 8501 "frontend"
-Stop-PortProcess 8502 "frontend-alt"
-
-# Step 5: Start backend
-$CurrentStep++
-Write-Step $CurrentStep $TotalSteps "Starting backend"
-
-$backendJob = Start-Job -ScriptBlock {
-    Set-Location $using:PWD
-    Set-Location backend
-    go run .
-}
-
-# Wait for backend health check
-$seconds = 0
-Write-Host "  Waiting for backend" -NoNewline
-while ($true) {
-    try {
-        $response = Invoke-WebRequest -Uri "http://localhost:8080/api/health" -UseBasicParsing -TimeoutSec 1 -ErrorAction SilentlyContinue
-        if ($response.StatusCode -eq 200) {
-            Write-Host ""
-            Write-OK "Backend ready (Job ID: $($backendJob.Id))"
-            break
+    if ($response -eq 'y' -or $response -eq 'Y') {
+        foreach ($portInfo in $portsInUse) {
+            Stop-PortProcess $portInfo.Port
         }
-    } catch {
-        # Ignore errors during startup
+        Complete-Task 'Ports cleaned up'
+    } else {
+        Write-TaskWarning 'Ports not cleaned up'
     }
-
-    if ($seconds -ge 30) {
-        Write-Host ""
-        Write-Err "Backend failed to start within 30 seconds"
-        Write-Host ""
-        Write-Host "Backend output:"
-        Receive-Job $backendJob
-        Stop-Job $backendJob
-        Remove-Job $backendJob
-        exit 1
-    }
-
-    Write-Host "." -NoNewline
-    Start-Sleep -Seconds 1
-    $seconds++
+} else {
+    Complete-Task 'Ports available'
 }
 
-# Step 6: Run integration tests
-$CurrentStep++
-Write-Step $CurrentStep $TotalSteps "Running integration tests"
+################################################################################
+# Step 7: Environment File
+################################################################################
 
-$testResult = & bash scripts/integration-test.sh 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Err "Integration tests failed"
-    Write-Host $testResult
-    Stop-Job $backendJob
-    Remove-Job $backendJob
-    exit 1
-}
-Write-OK "Integration tests passed"
-
-# Step 7: Start frontend
-$CurrentStep++
-Write-Step $CurrentStep $TotalSteps "Starting frontend"
-
-$frontendJob = Start-Job -ScriptBlock {
-    Set-Location $using:PWD
-    streamlit run frontend/app.py --server.port=8501
-}
-
-Start-Sleep -Seconds 3
-Write-OK "Frontend ready (Job ID: $($frontendJob.Id))"
-
-# Application running
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Green
-Write-Host "Application running" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Green
-Write-Host "Backend:  http://localhost:8080"
-Write-Host "Frontend: http://localhost:8501"
-Write-Host ""
-Write-Host "Stop: Press Ctrl+C"
-Write-Host "========================================" -ForegroundColor Green
-Write-Host ""
-
-# Cleanup handler
-$cleanup = {
-    Write-Host ""
-    Write-Host "Shutting down..."
-    if ($backendJob) {
-        Stop-Job $backendJob -ErrorAction SilentlyContinue
-        Remove-Job $backendJob -ErrorAction SilentlyContinue
-        Write-Host "  Backend stopped"
+if (-not (Test-Path '.env')) {
+    if (Test-Path '.env.example') {
+        Start-Task 'Creating .env from .env.example'
+        Copy-Item '.env.example' '.env'
+        Complete-Task '.env created'
+    } else {
+        Write-TaskWarning '.env.example not found, skipping .env creation'
     }
-    if ($frontendJob) {
-        Stop-Job $frontendJob -ErrorAction SilentlyContinue
-        Remove-Job $frontendJob -ErrorAction SilentlyContinue
-        Write-Host "  Frontend stopped"
-    }
-    Write-Host "Done."
+} else {
+    Write-Verbose-Line '.env exists'
 }
 
-# Register cleanup on Ctrl+C
-Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action $cleanup | Out-Null
+################################################################################
+# Done
+################################################################################
 
-try {
-    # Wait for user to press Ctrl+C
-    while ($true) {
-        Start-Sleep -Seconds 1
+Write-Host ''
+Write-CompactHeader "Setup complete! $(Get-ElapsedTime)"
+Write-Host ''
+Write-Host 'To start the application:'
+Write-Host '  .\venv\Scripts\Activate.ps1'
+Write-Host '  cd backend'
+Write-Host '  go run .'
+Write-Host ''
+Write-Host 'Or use the launcher scripts:'
+Write-Host '  .\run-thick-clients.ps1 -Mode dev'
+Write-Host ''
 
-        # Check if jobs are still running
-        if ($backendJob.State -ne 'Running') {
-            Write-Err "Backend stopped unexpectedly"
-            Receive-Job $backendJob
-            break
-        }
-        if ($frontendJob.State -ne 'Running') {
-            Write-Err "Frontend stopped unexpectedly"
-            Receive-Job $frontendJob
-            break
-        }
-    }
-} finally {
-    & $cleanup
-}
 

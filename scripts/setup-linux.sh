@@ -91,11 +91,28 @@ if [[ $FORCE_INSTALL == true ]] || ! is_cached "apt-updated-$(date +%Y%m%d)"; th
     mark_cached "apt-updated-$(date +%Y%m%d)"
 fi
 
-# Check Go
+# Check/Install Go
 if ! command -v go &>/dev/null; then
-    task_fail "Go not installed"
-    echo "Install Go 1.21+ from: https://go.dev/dl/"
-    exit 1
+    task_start "Installing Go"
+    GO_VERSION="1.21.5"
+    GO_ARCH="linux-amd64"
+    GO_TAR="go${GO_VERSION}.${GO_ARCH}.tar.gz"
+
+    cd /tmp
+    wget -q "https://go.dev/dl/${GO_TAR}" 2>&1 | verbose
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf "${GO_TAR}" 2>&1 | verbose
+    rm "${GO_TAR}"
+    cd - >/dev/null
+
+    # Add to PATH if not already there
+    if ! grep -q '/usr/local/go/bin' ~/.bashrc; then
+        echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+    fi
+    export PATH=$PATH:/usr/local/go/bin
+
+    mark_cached "go-${GO_VERSION}"
+    task_ok "Go ${GO_VERSION} installed"
 fi
 verbose "Go $(go version | awk '{print $3}' | sed 's/go//')"
 
