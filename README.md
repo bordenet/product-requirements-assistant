@@ -10,6 +10,8 @@
 
 A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.
 
+**🌐 Try it now: [https://bordenet.github.io/product-requirements-assistant/](https://bordenet.github.io/product-requirements-assistant/)**
+
 ## Quick Start
 
 ### Option 1: Web App (Easiest - No Download Required)
