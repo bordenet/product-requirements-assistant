@@ -1,12 +1,12 @@
 import requests
-import json
-from typing import Dict, List, Optional
+from typing import Dict, List
+
 
 class APIClient:
     def __init__(self, base_url: str, timeout: int = 30):
         self.base_url = base_url
         self.timeout = timeout
-        
+
     def create_project(self, title: str, problems: str, context: str) -> Dict:
         try:
             response = requests.post(
@@ -27,7 +27,7 @@ class APIClient:
         except Exception as e:
             print(f"Error creating project: {e}")
             raise
-    
+
     def get_project(self, project_id: str) -> Dict:
         try:
             response = requests.get(f"{self.base_url}/api/projects/{project_id}", timeout=self.timeout)
@@ -40,7 +40,7 @@ class APIClient:
         except Exception as e:
             print(f"Error getting project: {e}")
             raise
-    
+
     def update_phase(self, project_id: str, phase: int, content: str) -> Dict:
         try:
             response = requests.post(
@@ -57,7 +57,7 @@ class APIClient:
         except Exception as e:
             print(f"Error updating phase: {e}")
             raise
-    
+
     def list_projects(self) -> List[Dict]:
         try:
             response = requests.get(f"{self.base_url}/api/projects", timeout=self.timeout)
@@ -73,7 +73,7 @@ class APIClient:
         except Exception as e:
             print(f"Error listing projects: {e}")
             return []
-    
+
     def get_prompt(self, phase: str) -> str:
         try:
             response = requests.get(f"{self.base_url}/api/prompts/{phase}", timeout=self.timeout)
@@ -89,7 +89,7 @@ class APIClient:
         except Exception as e:
             print(f"Error getting prompt: {e}")
             return ''
-    
+
     def update_prompt(self, phase: str, content: str) -> bool:
         try:
             response = requests.post(
