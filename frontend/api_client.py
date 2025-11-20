@@ -11,17 +11,15 @@ class APIClient:
         try:
             response = requests.post(
                 f"{self.base_url}/api/projects",
-                json={
-                    "title": title,
-                    "problems": problems,
-                    "context": context
-                },
-                timeout=self.timeout
+                json={"title": title, "problems": problems, "context": context},
+                timeout=self.timeout,
             )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.ConnectionError:
-            raise Exception("Could not connect to backend server. Please ensure it's running on port 8080.")
+            raise Exception(
+                "Could not connect to backend server. Please ensure it's running on port 8080."
+            )
         except requests.exceptions.Timeout:
             raise Exception("Request timed out. The backend server may be overloaded.")
         except Exception as e:
@@ -30,11 +28,15 @@ class APIClient:
 
     def get_project(self, project_id: str) -> Dict:
         try:
-            response = requests.get(f"{self.base_url}/api/projects/{project_id}", timeout=self.timeout)
+            response = requests.get(
+                f"{self.base_url}/api/projects/{project_id}", timeout=self.timeout
+            )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.ConnectionError:
-            raise Exception("Could not connect to backend server. Please ensure it's running on port 8080.")
+            raise Exception(
+                "Could not connect to backend server. Please ensure it's running on port 8080."
+            )
         except requests.exceptions.Timeout:
             raise Exception("Request timed out. The backend server may be overloaded.")
         except Exception as e:
@@ -46,12 +48,14 @@ class APIClient:
             response = requests.post(
                 f"{self.base_url}/api/projects/{project_id}/phase/{phase}",
                 json={"content": content},
-                timeout=self.timeout
+                timeout=self.timeout,
             )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.ConnectionError:
-            raise Exception("Could not connect to backend server. Please ensure it's running on port 8080.")
+            raise Exception(
+                "Could not connect to backend server. Please ensure it's running on port 8080."
+            )
         except requests.exceptions.Timeout:
             raise Exception("Request timed out. The backend server may be overloaded.")
         except Exception as e:
@@ -60,12 +64,16 @@ class APIClient:
 
     def list_projects(self) -> List[Dict]:
         try:
-            response = requests.get(f"{self.base_url}/api/projects", timeout=self.timeout)
+            response = requests.get(
+                f"{self.base_url}/api/projects", timeout=self.timeout
+            )
             if response.status_code == 200:
                 return response.json()
             return []
         except requests.exceptions.ConnectionError:
-            print("Could not connect to backend server. Please ensure it's running on port 8080.")
+            print(
+                "Could not connect to backend server. Please ensure it's running on port 8080."
+            )
             return []
         except requests.exceptions.Timeout:
             print("Request timed out. The backend server may be overloaded.")
@@ -76,30 +84,36 @@ class APIClient:
 
     def get_prompt(self, phase: str) -> str:
         try:
-            response = requests.get(f"{self.base_url}/api/prompts/{phase}", timeout=self.timeout)
+            response = requests.get(
+                f"{self.base_url}/api/prompts/{phase}", timeout=self.timeout
+            )
             if response.status_code == 200:
-                return response.json().get('content', '')
-            return ''
+                return response.json().get("content", "")
+            return ""
         except requests.exceptions.ConnectionError:
-            print("Could not connect to backend server. Please ensure it's running on port 8080.")
-            return ''
+            print(
+                "Could not connect to backend server. Please ensure it's running on port 8080."
+            )
+            return ""
         except requests.exceptions.Timeout:
             print("Request timed out. The backend server may be overloaded.")
-            return ''
+            return ""
         except Exception as e:
             print(f"Error getting prompt: {e}")
-            return ''
+            return ""
 
     def update_prompt(self, phase: str, content: str) -> bool:
         try:
             response = requests.post(
                 f"{self.base_url}/api/prompts/{phase}",
                 json={"content": content},
-                timeout=self.timeout
+                timeout=self.timeout,
             )
             return response.status_code == 200
         except requests.exceptions.ConnectionError:
-            print("Could not connect to backend server. Please ensure it's running on port 8080.")
+            print(
+                "Could not connect to backend server. Please ensure it's running on port 8080."
+            )
             return False
         except requests.exceptions.Timeout:
             print("Request timed out. The backend server may be overloaded.")
