@@ -1,8 +1,6 @@
 # Product Requirements Assistant
 
 [![CI/CD](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml)
-[![Coverage](https://codecov.io/github/bordenet/product-requirements-assistant/graph/badge.svg)](https://app.codecov.io/github/bordenet/product-requirements-assistant)
-
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://go.dev/)
 [![Python Version](https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
