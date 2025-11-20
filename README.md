@@ -12,20 +12,27 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 
 ## Quick Start for Windows Users
 
-1. Download the backend: [prd-assistant-backend-v0.5.0-windows-amd64.exe](https://github.com/bordenet/product-requirements-assistant/releases/latest) (7.9 MB)
-2. Install Python 3.8+ if needed: [python.org/downloads](https://www.python.org/downloads/)
-3. Clone this repository or download as ZIP
-4. Run the setup script: Open PowerShell in the project folder and run:
+### Option 1: One-Click Installer (Recommended)
+
+Download and run the Windows installer - no Python or developer tools required:
+
+1. Download [PRD.Assistant.Setup.0.5.0.exe](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0) (72 MB)
+2. Run the installer
+3. Launch from desktop shortcut or Start Menu
+
+**Note**: Windows may show a security warning (app is not code-signed). Click "More info" → "Run anyway".
+
+### Option 2: Manual Setup (For Developers)
+
+If you prefer to run from source or need to customize:
+
+1. Install Python 3.8+ if needed: [python.org/downloads](https://www.python.org/downloads/)
+2. Clone this repository or download as ZIP
+3. Run the setup script: Open PowerShell in the project folder and run:
    ```powershell
    .\scripts\setup-windows.ps1
    ```
-5. The application will open at http://localhost:8501
-
-The setup script will:
-- Install Python dependencies (Streamlit)
-- Use the downloaded backend binary
-- Start both backend and frontend servers
-- Open the application in your default browser
+4. The application will open at http://localhost:8501
 
 See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions and troubleshooting.
 
@@ -49,9 +56,9 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 ## Platform Support
 
 ### Windows (Current Release v0.5.0)
-- Backend Binary: Pre-built Go server (7.9 MB)
-- Requires: Python 3.8+ for Streamlit frontend
-- Setup: Run `.\scripts\setup-windows.ps1` after downloading binary
+- **Electron Installer**: One-click desktop app (72 MB, no dependencies)
+- **Manual Setup**: Run from source with Python 3.8+ and Go backend
+- Download: [v0.5.0 Release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0)
 
 ### Web Application
 - Browser-based: No installation required
@@ -60,9 +67,9 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 - Local testing: `cd web && python3 -m http.server 8000`
 - Deployment: Compatible with CloudFront, GitHub Pages, Netlify, or any static host
 
-### Additional Platforms
-- Electron Installer: One-click Windows installer (no Python required)
-- macOS and Linux: Native applications available
+### macOS and Linux
+- Build from source (see [Development Guide](docs/development/DEVELOPMENT.md))
+- Electron builds available (see `cmd/electron/`)
 
 ## Architecture
 
@@ -70,23 +77,20 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 - **Frontend**: Streamlit web UI on port 8501 (desktop) / Vanilla JS (web)
 - **Storage**: Local filesystem (desktop) / IndexedDB (web)
 
-## Download Pre-Built Binary
+## Download
 
 Current Release: v0.5.0
 
-Download from [GitHub Releases](https://github.com/bordenet/product-requirements-assistant/releases/latest):
+### Windows Electron Installer
+- File: `PRD.Assistant.Setup.0.5.0.exe` (72 MB)
+- Description: Self-contained desktop application
+- Requirements: None (all dependencies bundled)
+- Download: [v0.5.0 Release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0)
 
-### Windows Backend Binary
-- File: `prd-assistant-backend-v0.5.0-windows-amd64.exe` (7.9 MB)
-- Description: Pre-compiled Go backend server
-- Requirements: Python 3.8+ and this repository
-- Usage:
-  1. Download the .exe file
-  2. Clone or download this repository
-  3. Run `.\scripts\setup-windows.ps1`
-  4. The script will use the binary and start the application
-
-Note: This is the backend server only. The setup script handles the frontend (Streamlit) automatically.
+### Build from Source
+For developers or other platforms, see:
+- [Development Guide](docs/development/DEVELOPMENT.md)
+- [Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)
 
 ---
 
