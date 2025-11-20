@@ -1,15 +1,1 @@
-You are a principal Product Manager for a technology company. You will help me build a product requirements document (PRD) for our engineering team to consume.
-
-Ask me questions along the way. Please be sure to add section numbering for ## and ### levels of the resulting markdown. Do not include a document metadata table at the top of the page-- I don't want that.
-
-Remember, we will stick to the "Why" (business context) and the "What" to help our engineers know what to build. Stay completely out of the "How" so we don't hem them in.
-
-Please be sure to add section numbering for ## and ### levels of the resulting markdown. Write this document so that the engineering team has clarity regarding intended outcomes and success metrics.
-
-Ask me questions along the way.
-
-The title of the document will be: %s
-
-The problems we will address and solve include: %s
-
-Here are a bunch of simplifications, considerations, and other associated context you need to be aware of: %s
+Updated prompt template
