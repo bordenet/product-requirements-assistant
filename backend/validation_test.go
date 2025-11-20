@@ -165,6 +165,27 @@ func TestValidatePromptUpdate(t *testing.T) {
 			},
 			expectErr: true,
 		},
+		{
+			name: "Prompt content too long",
+			req: PromptUpdate{
+				Content: strings.Repeat("a", 1000001),
+			},
+			expectErr: true,
+		},
+		{
+			name: "Prompt with forbidden script tags",
+			req: PromptUpdate{
+				Content: "Valid content with <script>alert('xss')</script> tags",
+			},
+			expectErr: true,
+		},
+		{
+			name: "Prompt with safe HTML-like content",
+			req: PromptUpdate{
+				Content: "Use <div> and <span> tags in your HTML",
+			},
+			expectErr: false,
+		},
 	}
 
 	for _, tt := range tests {
