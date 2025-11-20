@@ -97,9 +97,9 @@ Create Product Requirements Documents using a 3-phase AI workflow:
 
 Don't want to download anything? Use the web app directly:
 
-**Coming soon:** https://bordenet.github.io/product-requirements-assistant/
+**🌐 [Launch Web App](https://bordenet.github.io/product-requirements-assistant/)**
 
-Same features, no download required!
+Same features, no download required! Works on any device with a modern browser.
 
 ---
 
