@@ -36,6 +36,16 @@ jobs:
       working-directory: ./backend
       run: go test -v -race -coverprofile=coverage.out ./...
 
+    - name: Upload backend coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./backend/coverage.out
+        flags: backend
+        name: backend-coverage
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+        verbose: true
+
   backend-lint:
     name: Backend Linting
     runs-on: ubuntu-latest
@@ -122,9 +132,24 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run frontend unit tests
+    - name: Install coverage tool
+      run: pip install coverage
+
+    - name: Run frontend tests with coverage
       working-directory: ./frontend
-      run: python -m unittest discover -p 'test_*.py'
+      run: |
+        coverage run -m unittest discover -p 'test_*.py'
+        coverage xml
+
+    - name: Upload frontend coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./frontend/coverage.xml
+        flags: frontend
+        name: frontend-coverage
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+        verbose: true
 
   integration-tests:
     name: Integration Tests
