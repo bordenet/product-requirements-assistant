@@ -12,15 +12,21 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 
 ## Quick Start for Windows Users
 
-### Option 1: One-Click Installer (Recommended)
+### Option 1: Standalone Executable (Recommended)
 
-Download and run the Windows installer - no Python or developer tools required:
+Download and run a single executable - no installation or dependencies required:
 
-1. Download [PRD.Assistant.Setup.0.5.0.exe](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0) (72 MB)
-2. Run the installer
-3. Launch from desktop shortcut or Start Menu
+1. Download [PRD-Assistant-Windows.exe](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0) (5.7 MB)
+2. Double-click to run
+3. Browser opens automatically to http://localhost:8080
 
 **Note**: Windows may show a security warning (app is not code-signed). Click "More info" → "Run anyway".
+
+**What it does:**
+- Starts a local web server
+- Opens your browser automatically
+- All data stored in your browser (privacy-first)
+- No installation, no Python, no dependencies
 
 ### Option 2: Manual Setup (For Developers)
 
@@ -56,7 +62,7 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 ## Platform Support
 
 ### Windows (Current Release v0.5.0)
-- **Electron Installer**: One-click desktop app (72 MB, no dependencies)
+- **Standalone Executable**: Single .exe file (5.7 MB, no dependencies)
 - **Manual Setup**: Run from source with Python 3.8+ and Go backend
 - Download: [v0.5.0 Release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0)
 
@@ -81,10 +87,10 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 
 Current Release: v0.5.0
 
-### Windows Electron Installer
-- File: `PRD.Assistant.Setup.0.5.0.exe` (72 MB)
-- Description: Self-contained desktop application
-- Requirements: None (all dependencies bundled)
+### Windows Standalone Executable
+- File: `PRD-Assistant-Windows.exe` (5.7 MB)
+- Description: Self-contained executable with embedded web app
+- Requirements: None (no installation, no dependencies)
 - Download: [v0.5.0 Release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0)
 
 ### Build from Source

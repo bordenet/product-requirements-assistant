@@ -1,47 +1,165 @@
-# Release v0.5.0 - Windows Electron Application
+# PRD Assistant v0.5.0 - Windows Standalone
 
-**Release Date:** November 20, 2025
+**Self-Contained • No Installation • 5.7 MB**
 
-Self-contained Windows desktop application with no dependencies required.
+A single executable that runs the PRD Assistant web app locally on your Windows machine.
 
-## 📦 What's Included
+---
 
-**One file:** `PRD.Assistant.Setup.0.5.0.exe` (72 MB)
+## 📦 What You Get
 
-Complete desktop application with:
-- Go backend server
-- Streamlit frontend
-- All dependencies bundled
-- Desktop and Start Menu shortcuts
+**One file:** `PRD-Assistant-Windows.exe` (5.7 MB)
 
-## 🚀 How to Install
+- ✅ No installation required
+- ✅ No Python, Go, or Node.js needed
+- ✅ No dependencies to install
+- ✅ All data stored locally in your browser
+- ✅ Privacy-first (no server, no tracking)
+
+---
+
+## 🚀 How to Use
 
 ### Step 1: Download
-Download `PRD.Assistant.Setup.0.5.0.exe` from the [v0.5.0 release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0).
 
-### Step 2: Run Installer
-Double-click the installer and follow the installation wizard.
+Download `PRD-Assistant-Windows.exe` from the Assets section below.
 
-**Security Note:** Windows may show a security warning because the app is not code-signed. Click "More info" → "Run anyway".
+### Step 2: Run
 
-### Step 3: Launch
-Launch from desktop shortcut or Start Menu.
+Double-click `PRD-Assistant-Windows.exe`
 
-That's it! No Python, no command line, no setup scripts.
+**What happens:**
+1. A console window opens showing "Starting PRD Assistant on http://localhost:8080"
+2. Your default browser opens automatically to the app
+3. Start creating PRDs immediately!
 
-## 🎯 What You Can Do
+### Step 3: Use the App
+
+The web app runs 100% in your browser:
+- Create unlimited projects
+- 3-phase AI workflow (Claude + Gemini)
+- Export/import projects as JSON
+- All data stored in browser (IndexedDB)
+
+### Step 4: Stop the App
+
+Close the console window or press `Ctrl+C`
+
+---
+
+## 🔐 Security Note
+
+Windows may show a security warning because this app is not code-signed:
+
+```
+Windows protected your PC
+Microsoft Defender SmartScreen prevented an unrecognized app from starting
+```
+
+**To run the app:**
+1. Click "More info"
+2. Click "Run anyway"
+
+**Why this happens:** Code signing certificates cost $474/year. This is a free, open-source project.
+
+**Is it safe?** Yes! The source code is available at https://github.com/bordenet/product-requirements-assistant
+
+---
+
+## 🎯 What It Does
 
 Create Product Requirements Documents using a 3-phase AI workflow:
-- **Phase 1**: Generate initial PRD with Claude Sonnet 4.5
-- **Phase 2**: Review and improve with Gemini 2.5 Pro
-- **Phase 3**: Compare and finalize with Claude Sonnet 4.5
 
-## 🔧 For Developers
+1. **Phase 1: Initial Draft** (Claude Sonnet 4.5)
+   - Generate initial PRD from your requirements
+   - Copy/paste workflow with AI
 
-If you prefer to run from source or need to customize, see:
-- [Development Guide](docs/development/DEVELOPMENT.md)
-- [Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)
+2. **Phase 2: Review & Refine** (Gemini 2.5 Pro)
+   - Review and improve the draft
+   - Distill and simplify
+
+3. **Phase 3: Final Comparison** (Claude Sonnet 4.5)
+   - Compare both versions
+   - Create final PRD
+
+---
+
+## 💾 Data Storage
+
+- **Where:** All data stored in your browser using IndexedDB
+- **Privacy:** Nothing sent to any server
+- **Backup:** Export all projects as JSON anytime
+- **Portability:** Import JSON files to restore projects
+
+---
+
+## 🌐 Alternative: Web App
+
+Don't want to download anything? Use the web app directly:
+
+**Coming soon:** https://bordenet.github.io/product-requirements-assistant/
+
+Same features, no download required!
+
+---
+
+## 🛠️ Technical Details
+
+- **Built with:** Go 1.21+ using embed.FS
+- **Web app:** Vanilla JavaScript + Tailwind CSS
+- **Storage:** Browser IndexedDB (50MB-10GB capacity)
+- **Server:** Local HTTP server on port 8080
+- **Size:** 5.7 MB (web app embedded in executable)
+
+---
+
+## 🐛 Troubleshooting
+
+### Port 8080 Already in Use
+
+**Problem:** "listen tcp :8080: bind: address already in use"
+
+**Solution:**
+1. Close other apps using port 8080
+2. Or change the port in the source code and rebuild
+
+### Browser Doesn't Open
+
+**Problem:** Browser doesn't open automatically
+
+**Solution:**
+1. Manually open your browser
+2. Go to http://localhost:8080
+
+### Console Window Closes Immediately
+
+**Problem:** Console window flashes and closes
+
+**Solution:**
+1. Open Command Prompt
+2. Run: `PRD-Assistant-Windows.exe`
+3. Check for error messages
+
+---
+
+## 📝 System Requirements
+
+- **OS:** Windows 10 or later
+- **Browser:** Chrome, Edge, Firefox, or Safari (modern version)
+- **RAM:** 100 MB
+- **Disk:** 10 MB (plus space for your projects)
+
+---
+
+## 🔗 Links
+
+- **Source Code:** https://github.com/bordenet/product-requirements-assistant
+- **Documentation:** https://github.com/bordenet/product-requirements-assistant#readme
+- **Issues:** https://github.com/bordenet/product-requirements-assistant/issues
+
+---
 
 ## 📄 License
 
-MIT License
+MIT License - Free to use, modify, and distribute
+
