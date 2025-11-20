@@ -1,60 +1,46 @@
-# Release v0.5.0 - Windows Backend Binary
+# Release v0.5.0 - Windows Electron Application
 
 **Release Date:** November 20, 2025
 
-Pre-built Windows backend server for non-technical users.
+Self-contained Windows desktop application with no dependencies required.
 
 ## 📦 What's Included
 
-**One file:** `prd-assistant-backend-v0.5.0-windows-amd64.exe` (7.9 MB)
+**One file:** `PRD.Assistant.Setup.0.5.0.exe` (72 MB)
 
-Backend server that runs on port 8080.
+Complete desktop application with:
+- Go backend server
+- Streamlit frontend
+- All dependencies bundled
+- Desktop and Start Menu shortcuts
 
-## ⚠️ What You Need
+## 🚀 How to Install
 
-**This is the backend server only** - you also need:
+### Step 1: Download
+Download `PRD.Assistant.Setup.0.5.0.exe` from the [v0.5.0 release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0).
 
-1. **Python 3.8+** - Download from [python.org](https://www.python.org/downloads/)
-2. **This repository** - Clone or download as ZIP from GitHub
-3. **Run the setup script** - `.\scripts\setup-windows.ps1` handles everything else
+### Step 2: Run Installer
+Double-click the installer and follow the installation wizard.
 
-The setup script will install Streamlit and start both backend and frontend automatically.
+**Security Note:** Windows may show a security warning because the app is not code-signed. Click "More info" → "Run anyway".
 
-## 🚀 How to Use
+### Step 3: Launch
+Launch from desktop shortcut or Start Menu.
 
-### Step 1: Install Python
-Download and install Python 3.8+ from [python.org/downloads](https://www.python.org/downloads/)
+That's it! No Python, no command line, no setup scripts.
 
-### Step 2: Get the Repository
-Clone or download this repository:
-```bash
-git clone https://github.com/bordenet/product-requirements-assistant.git
-```
-Or download as ZIP from GitHub and extract it.
+## 🎯 What You Can Do
 
-### Step 3: Download This Binary
-Download `prd-assistant-backend-v0.5.0-windows-amd64.exe` from this release.
+Create Product Requirements Documents using a 3-phase AI workflow:
+- **Phase 1**: Generate initial PRD with Claude Sonnet 4.5
+- **Phase 2**: Review and improve with Gemini 2.5 Pro
+- **Phase 3**: Compare and finalize with Claude Sonnet 4.5
 
-### Step 4: Run Setup
-Open PowerShell in the repository folder and run:
-```powershell
-.\scripts\setup-windows.ps1
-```
+## 🔧 For Developers
 
-The setup script will:
-- Find and use the downloaded backend binary
-- Install Python dependencies (Streamlit)
-- Start both backend and frontend
-- Open the app in your browser at http://localhost:8501
-
-### Step 5: Start Creating PRDs!
-The app is now running. Follow the 3-phase workflow to create product requirements documents.
-
-## 🎯 Future Releases
-
-- **Electron installer** - True one-click install (no Python needed)
-- **Self-contained .exe** - Everything bundled in one file
-- **macOS and Linux** - Native applications for all platforms
+If you prefer to run from source or need to customize, see:
+- [Development Guide](docs/development/DEVELOPMENT.md)
+- [Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)
 
 ## 📄 License
 
