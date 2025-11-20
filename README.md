@@ -4,19 +4,22 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 
 ## 🚀 Quick Start for Windows Users
 
-**No installation or setup required!** Just download and run:
+**Simple setup - no coding required!**
 
-1. **Go to [Latest Release](https://github.com/bordenet/product-requirements-assistant/releases/latest)**
-2. **Download ONE of these:**
-   - **Electron Installer** (Recommended): `Product-Requirements-Assistant-Setup-X.X.X.exe` (~150MB)
-     - Full installer with desktop shortcut
-     - Double-click to install, launch from Start Menu
-   - **WebView2 Portable**: `prd-assistant-windows-amd64.exe` (~10MB)
-     - No installation needed, just download and run
-     - Requires [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (usually pre-installed on Windows 10/11)
-3. **Run the downloaded file**
-   - Windows may show a security warning - click "More info" → "Run anyway"
-4. **Start creating PRDs!**
+1. **Download** the backend: [prd-assistant-backend-v0.5.0-windows-amd64.exe](https://github.com/bordenet/product-requirements-assistant/releases/latest) (7.9 MB)
+2. **Install Python 3.8+** if you don't have it: [python.org/downloads](https://www.python.org/downloads/)
+3. **Clone this repository** or download as ZIP
+4. **Run the setup script**: Open PowerShell in the project folder and run:
+   ```powershell
+   .\scripts\setup-windows.ps1
+   ```
+5. **Start creating PRDs!** The app will open in your browser
+
+The setup script will:
+- Install Python dependencies (Streamlit)
+- Use the downloaded backend binary
+- Start both backend and frontend
+- Open http://localhost:8501 in your browser
 
 📖 **See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions and troubleshooting**
 
@@ -39,9 +42,10 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 
 ## Platform Support
 
-### Desktop Applications (Download & Run)
-- **Electron** - Full installer for Windows, macOS, Linux (~150MB)
-- **WebView2** - Lightweight portable executable (~10MB)
+### Windows (Current Release v0.5.0)
+- **Backend Binary** - Pre-built Go server (7.9 MB)
+- **Requires**: Python 3.8+ for Streamlit frontend
+- **Setup**: Run `.\scripts\setup-windows.ps1` after downloading binary
 
 ### Web Application ✨ NEW!
 - **Browser-based** - No installation required, just open a URL
@@ -50,32 +54,34 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 - **Try it:** Run locally with `cd web && python3 -m http.server 8000`
 - **Deploy:** CloudFront, GitHub Pages, Netlify, or any static host
 
+### Coming Soon
+- **Electron Installer** - One-click Windows installer (no Python needed)
+- **Self-contained .exe** - Truly standalone Windows executable
+- **macOS and Linux** - Native applications
+
 ## Architecture
 
 - **Backend**: Go REST API on port 8080
 - **Frontend**: Streamlit web UI on port 8501 (desktop) / Vanilla JS (web)
 - **Storage**: Local filesystem (desktop) / IndexedDB (web)
 
-## Download Pre-Built Applications
+## Download Pre-Built Binary
 
-**For non-technical users**: Just download and run - no coding required!
+**Current Release: v0.5.0**
 
-Pre-built executables available from [GitHub Releases](https://github.com/bordenet/product-requirements-assistant/releases/latest):
+Download from [GitHub Releases](https://github.com/bordenet/product-requirements-assistant/releases/latest):
 
-### Electron Client (Recommended - Full Installer)
-- **Windows**: `Product-Requirements-Assistant-Setup-X.X.X.exe` (~150MB)
-- **macOS**: `Product-Requirements-Assistant-X.X.X.dmg` (~150MB)
-- **Linux**: `Product-Requirements-Assistant-X.X.X.AppImage` (~150MB)
+### Windows Backend Binary
+- **File**: `prd-assistant-backend-v0.5.0-windows-amd64.exe` (7.9 MB)
+- **What it is**: Pre-compiled Go backend server
+- **What you need**: Python 3.8+ and this repository
+- **How to use**:
+  1. Download the .exe file
+  2. Clone or download this repository
+  3. Run `.\scripts\setup-windows.ps1`
+  4. The script will use the binary and start the app
 
-**Includes**: Desktop shortcut, Start Menu entry, automatic updates
-
-### WebView2 Native Client (Lightweight - Portable)
-- **Windows**: `prd-assistant-windows-amd64.exe` (~10MB)
-- **macOS (Intel)**: `prd-assistant-macos-amd64` (~9MB)
-- **macOS (Apple Silicon)**: `prd-assistant-macos-arm64` (~8MB)
-- **Linux**: `prd-assistant-linux-amd64` (~10MB)
-
-**Requires**: OS-native browser engines (WebView2 on Windows, WebKit on macOS, WebKitGTK on Linux)
+**Note**: This is the backend server only. The setup script handles the frontend (Streamlit) automatically.
 
 ---
 
