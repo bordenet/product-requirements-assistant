@@ -10,9 +10,21 @@
 
 A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.
 
-## Quick Start for Windows Users
+## Quick Start
 
-### Option 1: Standalone Executable (Recommended)
+### Option 1: Web App (Easiest - No Download Required)
+
+Use the web app directly in your browser - no installation needed:
+
+**🌐 [Launch Web App](https://bordenet.github.io/product-requirements-assistant/)**
+
+- ✅ No download required
+- ✅ Works on any device (Windows, Mac, Linux, mobile)
+- ✅ 100% client-side - all data stored in your browser
+- ✅ Privacy-first - no server, no tracking
+- ✅ Export/import projects as JSON
+
+### Option 2: Windows Standalone Executable
 
 Download and run a single executable - no installation or dependencies required:
 
@@ -28,7 +40,7 @@ Download and run a single executable - no installation or dependencies required:
 - All data stored in your browser (privacy-first)
 - No installation, no Python, no dependencies
 
-### Option 2: Manual Setup (For Developers)
+### Option 3: Manual Setup (For Developers)
 
 If you prefer to run from source or need to customize:
 
@@ -61,15 +73,20 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 
 ## Platform Support
 
+### Web App (Recommended - All Platforms)
+- **Live Demo**: [https://bordenet.github.io/product-requirements-assistant/](https://bordenet.github.io/product-requirements-assistant/)
+- **Platform**: Any device with a modern browser (Windows, Mac, Linux, mobile)
+- **Requirements**: None - 100% client-side
+- **Privacy**: All data stored locally in browser (IndexedDB)
+- **Features**: Full 3-phase workflow, export/import projects
+
 ### Windows (Current Release v0.5.0)
 - **Standalone Executable**: Single .exe file (5.7 MB, no dependencies)
 - **Manual Setup**: Run from source with Python 3.8+ and Go backend
 - Download: [v0.5.0 Release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0)
 
-### Web Application
-- Browser-based: No installation required
-- Client-side storage: All data stored in browser IndexedDB
-- Privacy: No server storage or tracking
+### Local Development
+- Clone repository and run from source
 - Local testing: `cd web && python3 -m http.server 8000`
 - Deployment: Compatible with CloudFront, GitHub Pages, Netlify, or any static host
 
@@ -85,9 +102,12 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 
 ## Download
 
-Current Release: v0.5.0
+### Web App (Recommended)
+**🌐 [Launch Web App](https://bordenet.github.io/product-requirements-assistant/)**
 
-### Windows Standalone Executable
+No download required! Works on any device with a modern browser.
+
+### Windows Standalone Executable (v0.5.0)
 - File: `PRD-Assistant-Windows.exe` (5.7 MB)
 - Description: Self-contained executable with embedded web app
 - Requirements: None (no installation, no dependencies)
