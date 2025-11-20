@@ -1,6 +1,6 @@
 {
   "name": "prd-assistant-electron",
-  "version": "1.5.0",
+  "version": "0.5.0",
   "description": "Product Requirements Assistant - Electron Thick Client",
   "main": "main.js",
   "scripts": {
