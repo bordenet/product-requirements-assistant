@@ -50,12 +50,50 @@ function waitForServer(url, timeout) {
 // Start Go backend server
 async function startBackend() {
   const projectRoot = getProjectRoot();
-  const backendDir = path.join(projectRoot, 'backend');
-  
-  console.log('Starting backend from:', backendDir);
-  
-  backendProcess = spawn('go', ['run', '.'], {
-    cwd: backendDir,
+
+  // Determine backend executable path
+  let backendExe;
+  if (app.isPackaged) {
+    // Production: use bundled binary
+    const platform = process.platform;
+    const exeName = platform === 'win32' ? 'prd-assistant.exe' : 'prd-assistant';
+    backendExe = path.join(projectRoot, 'backend', exeName);
+  } else {
+    // Development: use go run
+    const backendDir = path.join(projectRoot, 'backend');
+    console.log('Starting backend from:', backendDir);
+
+    backendProcess = spawn('go', ['run', '.'], {
+      cwd: backendDir,
+      env: {
+        ...process.env,
+        PORT: BACKEND_PORT.toString(),
+        MOCK_AI_ENABLED: 'true',
+        RESOURCES_PATH: projectRoot
+      },
+      stdio: 'inherit'
+    });
+
+    backendProcess.on('error', (err) => {
+      console.error('Backend process error:', err);
+    });
+
+    backendProcess.on('exit', (code) => {
+      console.log(`Backend process exited with code ${code}`);
+    });
+
+    // Wait for backend to be ready
+    const ready = await waitForServer(`http://localhost:${BACKEND_PORT}/api/health`, STARTUP_TIMEOUT);
+    if (!ready) {
+      throw new Error('Backend failed to start');
+    }
+    console.log('Backend server ready');
+    return;
+  }
+
+  console.log('Starting backend from:', backendExe);
+
+  backendProcess = spawn(backendExe, [], {
     env: {
       ...process.env,
       PORT: BACKEND_PORT.toString(),
@@ -85,13 +123,28 @@ async function startBackend() {
 async function startFrontend() {
   const projectRoot = getProjectRoot();
   const frontendDir = path.join(projectRoot, 'frontend');
-  const venvPython = path.join(projectRoot, 'venv', 'bin', 'python');
-  
-  // Use venv python if available, otherwise system python
-  const pythonCmd = require('fs').existsSync(venvPython) ? venvPython : 'python3';
-  
+
+  // Determine Python executable path
+  let pythonCmd;
+  if (app.isPackaged) {
+    // Production: use bundled Python
+    const platform = process.platform;
+    if (platform === 'win32') {
+      pythonCmd = path.join(projectRoot, 'python', 'python.exe');
+    } else if (platform === 'darwin') {
+      pythonCmd = path.join(projectRoot, 'python', 'bin', 'python3');
+    } else {
+      pythonCmd = path.join(projectRoot, 'python', 'bin', 'python3');
+    }
+  } else {
+    // Development: use venv or system python
+    const venvPython = path.join(projectRoot, 'venv', 'bin', 'python');
+    pythonCmd = require('fs').existsSync(venvPython) ? venvPython : 'python3';
+  }
+
   console.log('Starting frontend from:', frontendDir);
-  
+  console.log('Using Python:', pythonCmd);
+
   frontendProcess = spawn(pythonCmd, [
     '-m', 'streamlit', 'run', 'app.py',
     '--server.port', FRONTEND_PORT.toString(),
