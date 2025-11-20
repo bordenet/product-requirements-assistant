@@ -1,36 +1,40 @@
 # Product Requirements Assistant
 
+[![CI/CD](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml)
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://go.dev/)
+[![Python Version](https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/bordenet/product-requirements-assistant)](https://github.com/bordenet/product-requirements-assistant/releases/latest)
+
 A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.
 
-## 🚀 Quick Start for Windows Users
+## Quick Start for Windows Users
 
-**Simple setup - no coding required!**
-
-1. **Download** the backend: [prd-assistant-backend-v0.5.0-windows-amd64.exe](https://github.com/bordenet/product-requirements-assistant/releases/latest) (7.9 MB)
-2. **Install Python 3.8+** if you don't have it: [python.org/downloads](https://www.python.org/downloads/)
-3. **Clone this repository** or download as ZIP
-4. **Run the setup script**: Open PowerShell in the project folder and run:
+1. Download the backend: [prd-assistant-backend-v0.5.0-windows-amd64.exe](https://github.com/bordenet/product-requirements-assistant/releases/latest) (7.9 MB)
+2. Install Python 3.8+ if needed: [python.org/downloads](https://www.python.org/downloads/)
+3. Clone this repository or download as ZIP
+4. Run the setup script: Open PowerShell in the project folder and run:
    ```powershell
    .\scripts\setup-windows.ps1
    ```
-5. **Start creating PRDs!** The app will open in your browser
+5. The application will open at http://localhost:8501
 
 The setup script will:
 - Install Python dependencies (Streamlit)
 - Use the downloaded backend binary
-- Start both backend and frontend
-- Open http://localhost:8501 in your browser
+- Start both backend and frontend servers
+- Open the application in your default browser
 
-📖 **See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions and troubleshooting**
+See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions and troubleshooting.
 
 ---
 
 ## Features
 
-- **3-Phase Workflow**: Initial draft (Claude), review (Gemini), finalization (Claude)
-- **Copy/Paste Integration**: Works with Claude Sonnet 4.5 and Gemini 2.5 Pro
-- **Local Storage**: Projects stored as JSON with markdown export
-- **Interactive UI**: Streamlit-based web interface with live preview
+- 3-Phase Workflow: Initial draft (Claude), review (Gemini), finalization (Claude)
+- Copy/Paste Integration: Works with Claude Sonnet 4.5 and Gemini 2.5 Pro
+- Local Storage: Projects stored as JSON with markdown export
+- Interactive UI: Streamlit-based web interface with live preview
 
 ## Screenshots
 
@@ -43,21 +47,20 @@ The setup script will:
 ## Platform Support
 
 ### Windows (Current Release v0.5.0)
-- **Backend Binary** - Pre-built Go server (7.9 MB)
-- **Requires**: Python 3.8+ for Streamlit frontend
-- **Setup**: Run `.\scripts\setup-windows.ps1` after downloading binary
+- Backend Binary: Pre-built Go server (7.9 MB)
+- Requires: Python 3.8+ for Streamlit frontend
+- Setup: Run `.\scripts\setup-windows.ps1` after downloading binary
 
-### Web Application ✨ NEW!
-- **Browser-based** - No installation required, just open a URL
-- **100% client-side** - All data stored in your browser (IndexedDB)
-- **Privacy-first** - Zero server storage, zero tracking
-- **Try it:** Run locally with `cd web && python3 -m http.server 8000`
-- **Deploy:** CloudFront, GitHub Pages, Netlify, or any static host
+### Web Application
+- Browser-based: No installation required
+- Client-side storage: All data stored in browser IndexedDB
+- Privacy: No server storage or tracking
+- Local testing: `cd web && python3 -m http.server 8000`
+- Deployment: Compatible with CloudFront, GitHub Pages, Netlify, or any static host
 
-### Coming Soon
-- **Electron Installer** - One-click Windows installer (no Python needed)
-- **Self-contained .exe** - Truly standalone Windows executable
-- **macOS and Linux** - Native applications
+### Additional Platforms
+- Electron Installer: One-click Windows installer (no Python required)
+- macOS and Linux: Native applications available
 
 ## Architecture
 
@@ -67,29 +70,29 @@ The setup script will:
 
 ## Download Pre-Built Binary
 
-**Current Release: v0.5.0**
+Current Release: v0.5.0
 
 Download from [GitHub Releases](https://github.com/bordenet/product-requirements-assistant/releases/latest):
 
 ### Windows Backend Binary
-- **File**: `prd-assistant-backend-v0.5.0-windows-amd64.exe` (7.9 MB)
-- **What it is**: Pre-compiled Go backend server
-- **What you need**: Python 3.8+ and this repository
-- **How to use**:
+- File: `prd-assistant-backend-v0.5.0-windows-amd64.exe` (7.9 MB)
+- Description: Pre-compiled Go backend server
+- Requirements: Python 3.8+ and this repository
+- Usage:
   1. Download the .exe file
   2. Clone or download this repository
   3. Run `.\scripts\setup-windows.ps1`
-  4. The script will use the binary and start the app
+  4. The script will use the binary and start the application
 
-**Note**: This is the backend server only. The setup script handles the frontend (Streamlit) automatically.
+Note: This is the backend server only. The setup script handles the frontend (Streamlit) automatically.
 
 ---
 
 ## For Developers
 
-**The sections below are for developers who want to build from source or contribute.**
+The sections below are for developers who want to build from source or contribute.
 
-If you just want to **use** the application, download the pre-built executable above - no setup required!
+If you want to use the application, download the pre-built executable above.
 
 ---
 
@@ -167,7 +170,7 @@ Then open http://localhost:8501
 4. **Phase 3**: Copy prompt → Claude → paste final PRD
 5. **Export**: Download as markdown with full revision history
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 product-requirements-assistant/
@@ -293,24 +296,24 @@ curl -X POST http://localhost:8080/api/projects/{project_id}/generate/2
 curl -X POST http://localhost:8080/api/projects/{project_id}/generate/3
 ```
 
-**⚠️ Note**: Mock AI is for testing/development only. See [`docs/development/MOCK_AI.md`](docs/development/MOCK_AI.md) for details.
+Note: Mock AI is for testing/development only. See [`docs/development/MOCK_AI.md`](docs/development/MOCK_AI.md) for details.
 
 ## Quality Gates
 
 This repository includes automated safety mechanisms:
 
-**Pre-Commit Hooks** (prevents broken commits):
+Pre-Commit Hooks (prevents broken commits):
 ```bash
 # Install hooks (one-time setup)
 ./scripts/install-hooks.sh
 ```
 
 The hooks will automatically:
-- ✅ Block compiled binaries from being committed
-- ✅ Scan for secrets and credentials
-- ✅ Ensure code quality before commits
+- Block compiled binaries from being committed
+- Scan for secrets and credentials
+- Ensure code quality before commits
 
-**Validation System**:
+Validation System:
 ```bash
 # Quick validation (dependencies, builds, tests)
 ./scripts/validate-monorepo.sh --quick
@@ -319,38 +322,38 @@ The hooks will automatically:
 ./scripts/validate-monorepo.sh --full
 ```
 
-**To bypass hooks in emergencies**:
+To bypass hooks in emergencies:
 ```bash
 git commit --no-verify -m "Emergency fix"
 ```
-⚠️ Only use `--no-verify` when absolutely necessary!
+Note: Only use `--no-verify` when absolutely necessary.
 
-## 📚 Documentation
+## Documentation
 
-**Complete Documentation:** [`docs/README.md`](docs/README.md)
+Complete Documentation: [`docs/README.md`](docs/README.md)
 
 ### Quick Links
 
-**For Users:**
-- **[Quick Start (Windows)](QUICK_START_WINDOWS.md)** - Download and run on Windows
-- **[Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)** - Desktop app user guide
-- **[Web App Guide](web/README.md)** - Browser-based version
+For Users:
+- [Quick Start (Windows)](QUICK_START_WINDOWS.md) - Download and run on Windows
+- [Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md) - Desktop app user guide
+- [Web App Guide](web/README.md) - Browser-based version
 
-**For Developers:**
-- **[Architecture](docs/architecture/ARCHITECTURE.md)** - System design and tech stack
-- **[API Reference](docs/architecture/API.md)** - Backend REST API
-- **[Contributing](CONTRIBUTING.md)** - Development setup and guidelines
-- **[Scripts](scripts/README.md)** - Automation scripts reference
+For Developers:
+- [Architecture](docs/architecture/ARCHITECTURE.md) - System design and tech stack
+- [API Reference](docs/architecture/API.md) - Backend REST API
+- [Contributing](CONTRIBUTING.md) - Development setup and guidelines
+- [Scripts](scripts/README.md) - Automation scripts reference
 
-**For DevOps:**
-- **[Releasing](docs/deployment/RELEASING.md)** - Creating releases
-- **[Code Signing](docs/deployment/CODE_SIGNING.md)** - Windows security
-- **[CloudFront Deployment](docs/deployment/CLOUDFRONT_HOSTING.md)** - Web app hosting
+For DevOps:
+- [Releasing](docs/deployment/RELEASING.md) - Creating releases
+- [Code Signing](docs/deployment/CODE_SIGNING.md) - Windows security
+- [CloudFront Deployment](docs/deployment/CLOUDFRONT_HOSTING.md) - Web app hosting
 
-**Development Tools:**
-- **[Mock AI](docs/development/MOCK_AI.md)** - Testing with mock responses
-- **[Logging](docs/development/LOGGING.md)** - Debugging and troubleshooting
-- **[Prompts](prompts/README.md)** - AI prompt templates
+Development Tools:
+- [Mock AI](docs/development/MOCK_AI.md) - Testing with mock responses
+- [Logging](docs/development/LOGGING.md) - Debugging and troubleshooting
+- [Prompts](prompts/README.md) - AI prompt templates
 
 ## Development
 

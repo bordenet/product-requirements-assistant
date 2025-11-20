@@ -400,7 +400,7 @@ func generateMockResponse(w http.ResponseWriter, r *http.Request) {
 
 	// Save project and phase output
 	saveProject(project)
-	savePhaseOutput(project, phaseNum)
+	savePhaseOutput(project, phaseNum-1)
 
 	// If all phases complete, save final PRD
 	if project.Phases[0].Content != "" && project.Phases[1].Content != "" && project.Phases[2].Content != "" {
