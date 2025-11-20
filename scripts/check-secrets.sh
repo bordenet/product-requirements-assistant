@@ -36,7 +36,7 @@ SECRET_PATTERNS=(
     "AWS_ACCESS_KEY_ID.*=.*AKIA[A-Z0-9]{16}:AWS Access Key"
     "api[_-]?key.*=.*[A-Za-z0-9]{20,}:Generic API Key"
     "password.*=.*[A-Za-z0-9]{8,}:Password"
-    "-----BEGIN.*PRIVATE KEY-----:Private Key"
+    "BEGIN.*PRIVATE KEY:Private Key"
     "secret.*=.*[A-Za-z0-9]{20,}:Generic Secret"
     "bearer[[:space:]][A-Za-z0-9._~+/-]+=*:Bearer Token"
 )
