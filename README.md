@@ -14,7 +14,7 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 
 ## Quick Start
 
-### Option 1: Web App (Easiest - No Download Required)
+### Option 1: Web App (Recommended)
 
 Use the web app directly in your browser - no installation needed:
 
@@ -26,23 +26,7 @@ Use the web app directly in your browser - no installation needed:
 - ✅ Privacy-first - no server, no tracking
 - ✅ Export/import projects as JSON
 
-### Option 2: Windows Standalone Executable
-
-Download and run a single executable - no installation or dependencies required:
-
-1. Download [PRD-Assistant-Windows.exe](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0) (5.7 MB)
-2. Double-click to run
-3. Browser opens automatically to http://localhost:8080
-
-**Note**: Windows may show a security warning (app is not code-signed). Click "More info" → "Run anyway".
-
-**What it does:**
-- Starts a local web server
-- Opens your browser automatically
-- All data stored in your browser (privacy-first)
-- No installation, no Python, no dependencies
-
-### Option 3: Manual Setup (For Developers)
+### Option 2: Manual Setup (For Developers)
 
 If you prefer to run from source or need to customize:
 
@@ -82,19 +66,16 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 - **Privacy**: All data stored locally in browser (IndexedDB)
 - **Features**: Full 3-phase workflow, export/import projects
 
-### Windows (Current Release v0.5.0)
-- **Standalone Executable**: Single .exe file (5.7 MB, no dependencies)
-- **Manual Setup**: Run from source with Python 3.8+ and Go backend
-- Download: [v0.5.0 Release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0)
-
 ### Local Development
 - Clone repository and run from source
 - Local testing: `cd web && python3 -m http.server 8000`
-- Deployment: Compatible with CloudFront, GitHub Pages, Netlify, or any static host
+- Deployment: Compatible with GitHub Pages, Netlify, or any static host
 
-### macOS and Linux
-- Build from source (see [Development Guide](docs/development/DEVELOPMENT.md))
+### Desktop Applications (Optional)
+For developers who want to build desktop applications:
 - Electron builds available (see `cmd/electron/`)
+- WebView2 builds available (see `cmd/webview/`)
+- See [Development Guide](docs/development/DEVELOPMENT.md) for build instructions
 
 ## Architecture
 
@@ -109,14 +90,8 @@ See [QUICK_START_WINDOWS.md](QUICK_START_WINDOWS.md) for detailed instructions a
 
 No download required! Works on any device with a modern browser.
 
-### Windows Standalone Executable (v0.5.0)
-- File: `PRD-Assistant-Windows.exe` (5.7 MB)
-- Description: Self-contained executable with embedded web app
-- Requirements: None (no installation, no dependencies)
-- Download: [v0.5.0 Release](https://github.com/bordenet/product-requirements-assistant/releases/tag/v0.5.0)
-
 ### Build from Source
-For developers or other platforms, see:
+For developers who want to build desktop applications or run from source:
 - [Development Guide](docs/development/DEVELOPMENT.md)
 - [Thick Clients Guide](docs/guides/THICK_CLIENTS_GUIDE.md)
 
