@@ -57,3 +57,6 @@ dist/
 cmd/webview/go.sum
 cmd/electron/node_modules/
 cmd/electron/package-lock.json
+
+# Genesis project template system (local development only)
+genesis/
