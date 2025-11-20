@@ -1,0 +1,106 @@
+name: Build Windows Electron Installer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-electron-windows:
+    name: Build Windows Electron Installer
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          cd cmd/electron
+          npm install
+      
+      - name: Build Electron app for Windows
+        run: |
+          cd cmd/electron
+          npm run build:win
+      
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-windows-installer
+          path: dist/electron/*.exe
+      
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v0.5.0
+          name: "Release v0.5.0 - Windows Electron Installer"
+          body: |
+            # PRD Assistant v0.5.0 - Windows Installer
+            
+            ## 🎯 One-Click Install for Windows
+            
+            **Self-contained Windows installer** - No Python, Go, or developer tools required!
+            
+            ### 📦 What's Included
+            
+            - ✅ Complete Electron application (~150MB)
+            - ✅ Backend server (Go)
+            - ✅ Frontend UI (Streamlit)
+            - ✅ All dependencies bundled
+            - ✅ Desktop shortcut
+            - ✅ Start menu entry
+            
+            ### 🚀 How to Install
+            
+            1. **Download** `PRD-Assistant-Setup-0.5.0.exe` below
+            2. **Run** the installer
+            3. **Follow** the installation wizard
+            4. **Launch** from desktop shortcut or Start menu
+            
+            That's it! No Python, no command line, no setup scripts.
+            
+            ### ⚠️ Windows Security Warning
+            
+            Windows may show a security warning because the app is not code-signed.
+            
+            **To proceed:**
+            1. Click "More info"
+            2. Click "Run anyway"
+            
+            This is normal for unsigned applications. Code signing requires a certificate ($474/year).
+            
+            ### 🎯 What You Can Do
+            
+            Create professional Product Requirements Documents using AI:
+            
+            1. **Phase 1:** Generate initial PRD with Claude
+            2. **Phase 2:** Review and improve with Gemini
+            3. **Phase 3:** Compare and finalize with Claude
+            
+            ### 📄 License
+            
+            MIT License - Free to use, modify, and distribute
+          files: |
+            dist/electron/*.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
