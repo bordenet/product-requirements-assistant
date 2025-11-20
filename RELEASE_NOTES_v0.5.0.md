@@ -6,14 +6,14 @@ Create Product Requirements Documents using a 3-phase AI workflow with Claude So
 
 ---
 
-## 🌐 **Recommended: Use the Web App**
+## 🌐 **Web App**
 
 **🚀 [Launch Web App](https://bordenet.github.io/product-requirements-assistant/)**
 
-The web app is the **preferred way** to use PRD Assistant:
+The web app is the **only supported way** to use PRD Assistant:
 
-### Why Web App?
-- ✅ **No download required** - instant access
+### Features
+- ✅ **No download required** - instant access from any browser
 - ✅ **Works everywhere** - Windows, Mac, Linux, mobile, tablets
 - ✅ **Always up-to-date** - no manual updates needed
 - ✅ **100% client-side** - all processing in your browser
@@ -62,76 +62,15 @@ Create professional Product Requirements Documents using a proven 3-phase AI wor
 
 ---
 
-## 📦 Alternative: Windows Standalone Executable
-
-**For users who prefer a local executable:**
-
-Download `PRD-Assistant-Windows.exe` (5.7 MB) from the Assets section below.
-
-### What It Is
-A self-contained Windows executable that runs a local web server and opens the web app in your browser.
-
-### When to Use It
-- You prefer running executables over web apps
-- You want a desktop shortcut
-- You're working in an air-gapped environment
-
-### How to Use It
-
-**Step 1:** Download `PRD-Assistant-Windows.exe`
-
-**Step 2:** Double-click to run
-
-**What happens:**
-1. Console window opens: "Starting PRD Assistant on http://localhost:8080"
-2. Browser opens automatically to the app
-3. Start creating PRDs
-
-**Step 3:** Stop the app by closing the console window or pressing `Ctrl+C`
-
-### Security Warning (Expected)
-
-Windows Defender SmartScreen will show a warning because this app is not code-signed:
-
-```
-Windows protected your PC
-Microsoft Defender SmartScreen prevented an unrecognized app from starting
-```
-
-**To run:**
-1. Click "More info"
-2. Click "Run anyway"
-
-**Why this happens:** Code signing certificates cost $474/year. This is a free, open-source project.
-
-**Is it safe?** Yes. Source code: https://github.com/bordenet/product-requirements-assistant
-
-### Technical Details
-- **Size:** 5.7 MB
-- **Dependencies:** None (Go binary with embedded web app)
-- **Requirements:** Windows 10 or later
-- **Architecture:** Standalone HTTP server on localhost:8080
-
----
-
 ## 📝 System Requirements
 
-### Web App
 - **Browser:** Chrome, Edge, Firefox, or Safari (modern version with ES6 modules support)
 - **Internet:** Required for first load, then works offline
 - **Storage:** Browser must allow IndexedDB (enabled by default)
 
-### Windows Executable
-- **OS:** Windows 10 or later
-- **Browser:** Chrome, Edge, Firefox, or Safari (modern version)
-- **RAM:** 100 MB
-- **Disk:** 10 MB (plus space for your projects)
-
 ---
 
 ## 🐛 Troubleshooting
-
-### Web App Issues
 
 **Problem:** "Failed to load module" errors
 
@@ -140,20 +79,6 @@ Microsoft Defender SmartScreen prevented an unrecognized app from starting
 **Problem:** Projects not saving
 
 **Solution:** Check browser settings - IndexedDB must be enabled (it's enabled by default)
-
-### Windows Executable Issues
-
-**Problem:** Port 8080 already in use
-
-**Solution:** Close other apps using port 8080, or run only one instance
-
-**Problem:** Browser doesn't open automatically
-
-**Solution:** Manually open browser and go to http://localhost:8080
-
-**Problem:** Console window closes immediately
-
-**Solution:** Open Command Prompt, run `PRD-Assistant-Windows.exe`, check error messages
 
 ---
 
@@ -168,27 +93,14 @@ Microsoft Defender SmartScreen prevented an unrecognized app from starting
 
 ## 🏗️ Technical Architecture
 
-### Web App
 - **Frontend:** Vanilla JavaScript (ES6 modules) + Tailwind CSS (CDN)
 - **Storage:** Browser IndexedDB (50MB-10GB capacity)
 - **Deployment:** GitHub Pages (static hosting)
 - **Build:** None required - pure client-side code
-
-### Windows Executable
-- **Backend:** Go 1.21+ with embed.FS
-- **Size:** 5.7 MB (web app embedded in binary)
-- **Server:** HTTP server on localhost:8080
-- **Compilation:** Static binary, zero dependencies
 
 ---
 
 ## 📄 License
 
 MIT License - Free to use, modify, and distribute
-
----
-
-## 🎯 Recommendation
-
-**Use the web app** for the best experience. It's faster to access, works on all platforms, and is always up-to-date. The Windows executable is provided as an alternative for users who prefer local executables or need offline access.
 
