@@ -404,6 +404,42 @@ See [`docs/deployment/RELEASING.md`](docs/deployment/RELEASING.md) for detailed 
 - No version history beyond 3 phases
 - Limited to text-based PRDs
 
+## Future Work
+
+### Planned Improvements (v1.6+)
+
+**Library-Based Architecture**:
+- Refactor core business logic into `internal/core/` package
+- Enable thick clients to run workflows in-process (no HTTP backend required)
+- Reduce memory footprint and startup time for desktop applications
+- See [`internal/README.md`](internal/README.md) for details
+
+**Enhanced Testing**:
+- Property-based testing for validation logic
+- Fuzzing for input sanitization
+- Performance benchmarks for file operations
+- Cross-client end-to-end test matrix
+
+**Developer Experience**:
+- OpenAPI/Swagger specification for REST API
+- GraphQL endpoint for flexible queries
+- WebSocket support for real-time updates
+- Plugin system for custom AI providers
+
+**Deployment Options**:
+- Docker Compose for containerized deployment
+- Kubernetes manifests for cloud deployment
+- Terraform modules for infrastructure as code
+- CI/CD templates for GitHub Actions, GitLab CI, Jenkins
+
+**User Features**:
+- Version history and diff visualization
+- Export to PDF, DOCX, Confluence
+- Template library for common PRD types
+- Collaborative editing with conflict resolution
+
+See [`docs/decisions/REFACTORING_PLAN.md`](docs/decisions/REFACTORING_PLAN.md) for the detailed roadmap.
+
 ## License
 
 MIT License - see [LICENSE](./LICENSE)

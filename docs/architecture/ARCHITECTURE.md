@@ -101,6 +101,71 @@ make clean
 2. **Phase 2**: Review Phase 1 output with Gemini 2.5 Pro
 3. **Phase 3**: Compare both versions and create final PRD with Claude Sonnet 4.5
 
+## Thick Client Applications
+
+The application includes two thick client implementations for desktop deployment:
+
+### 1. WebView2 Native Client (`cmd/webview/`)
+
+**Current Architecture (v1.5)**:
+- Spawns Go backend as subprocess (port 8080)
+- Spawns Streamlit frontend as subprocess (port 8501)
+- Creates native window using OS browser engine (WebView2/WebKit)
+- Navigates to `http://localhost:8501`
+- Communication: HTTP between thick client → backend → frontend
+
+**Bundle Size**: 30-50MB
+**Platforms**: Windows (primary), macOS, Linux
+**Technology**: Go + WebView2/WebKit
+
+**Building**:
+```bash
+# Windows
+./build/webview/build-windows.sh
+
+# macOS
+./build/webview/build-macos.sh
+
+# Linux
+./build/webview/build-linux.sh
+```
+
+### 2. Electron Cross-Platform Client (`cmd/electron/`)
+
+**Current Architecture (v1.5)**:
+- Spawns Go backend as subprocess (port 8080)
+- Spawns Streamlit frontend as subprocess (port 8501)
+- Creates Electron window with embedded Chromium
+- Loads `http://localhost:8501`
+- Communication: HTTP between thick client → backend → frontend
+
+**Bundle Size**: 150-200MB
+**Platforms**: Windows, macOS, Linux
+**Technology**: Electron + Node.js + Chromium
+
+**Building**:
+```bash
+cd cmd/electron
+npm install
+npm run build:all
+```
+
+### Future Architecture (Planned for v1.6)
+
+The `internal/` directory contains a planned refactoring where:
+- Core business logic is extracted to `internal/core/`
+- Thick clients import `internal/core` directly
+- Workflows run in-process (no HTTP backend required)
+- HTTP API becomes a thin wrapper around `internal/core/`
+
+**Benefits**:
+- Faster startup (no subprocess spawning)
+- Lower memory usage (single process)
+- Simpler deployment (no port conflicts)
+- Better error handling (direct function calls)
+
+See [`internal/README.md`](../internal/README.md) and [`docs/decisions/REFACTORING_PLAN.md`](../decisions/REFACTORING_PLAN.md) for details.
+
 ## Files to Note
 - `backend/main.go`: Main server entry point with API routes
 - `backend/handlers.go`: API endpoint implementations

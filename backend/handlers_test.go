@@ -3,9 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -731,5 +734,169 @@ func TestGenerateMockResponsePhase2WithoutPhase1(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", rr.Code)
+	}
+}
+
+func TestGetPromptWithMissingFile(t *testing.T) {
+	tempRoot := t.TempDir()
+	cleanup := withTestProjectRoot(t, tempRoot)
+	defer cleanup()
+
+	// Create prompts directory but no files
+	promptsDir := filepath.Join(tempRoot, "prompts")
+	if err := os.MkdirAll(promptsDir, 0o755); err != nil {
+		t.Fatalf("failed to create prompts dir: %v", err)
+	}
+
+	req, _ := http.NewRequest("GET", "/api/prompts/claude_initial", nil)
+	req = mux.SetURLVars(req, map[string]string{"phase": "claude_initial"})
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(getPrompt)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Fatalf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	var response map[string]string
+	if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+
+	// Should return default prompt
+	if response["content"] == "" {
+		t.Errorf("expected default prompt content, got empty string")
+	}
+}
+
+func TestUpdatePromptWithInvalidPhase(t *testing.T) {
+	tempRoot := t.TempDir()
+	cleanup := withTestProjectRoot(t, tempRoot)
+	defer cleanup()
+
+	promptsDir := filepath.Join(tempRoot, "prompts")
+	if err := os.MkdirAll(promptsDir, 0o755); err != nil {
+		t.Fatalf("failed to create prompts dir: %v", err)
+	}
+
+	reqBody := PromptUpdate{
+		Content: "Updated prompt content",
+	}
+	body, _ := json.Marshal(reqBody)
+
+	req, _ := http.NewRequest("POST", "/api/prompts/invalid_phase", bytes.NewBuffer(body))
+	req = mux.SetURLVars(req, map[string]string{"phase": "invalid_phase"})
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(updatePrompt)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestGenerateMockResponseWithAllPhases(t *testing.T) {
+	tempRoot := t.TempDir()
+	cleanup := withTestProjectRoot(t, tempRoot)
+	defer cleanup()
+
+	outputsDir := filepath.Join(tempRoot, "outputs")
+	if err := os.MkdirAll(outputsDir, 0o755); err != nil {
+		t.Fatalf("failed to create outputs dir: %v", err)
+	}
+
+	// Enable mock AI
+	InitMockAI(true)
+	defer InitMockAI(false)
+
+	// Create a test project with valid UUID
+	project := &Project{
+		ID:    "550e8400-e29b-41d4-a716-446655440000",
+		Title: "Test Project",
+		Phases: []Phase{
+			{Number: 1, Name: "Claude Initial PRD"},
+			{Number: 2, Name: "Gemini Review"},
+			{Number: 3, Name: "Claude Comparison"},
+		},
+	}
+	if err := saveProject(project); err != nil {
+		t.Fatalf("failed to save project: %v", err)
+	}
+
+	phases := []string{"1", "2", "3"}
+	for _, phase := range phases {
+		t.Run(fmt.Sprintf("Phase%s", phase), func(t *testing.T) {
+			req, _ := http.NewRequest("POST", fmt.Sprintf("/api/projects/%s/mock/%s", project.ID, phase), nil)
+			req = mux.SetURLVars(req, map[string]string{
+				"id":    project.ID,
+				"phase": phase,
+			})
+			rr := httptest.NewRecorder()
+
+			handler := http.HandlerFunc(generateMockResponse)
+			handler.ServeHTTP(rr, req)
+
+			if status := rr.Code; status != http.StatusOK {
+				t.Errorf("handler returned wrong status code: got %v want %v, body: %s",
+					status, http.StatusOK, rr.Body.String())
+			}
+
+			var response Project
+			if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+				t.Fatalf("failed to decode response: %v", err)
+			}
+
+			// Verify the appropriate phase has content
+			phaseIdx, _ := strconv.Atoi(phase)
+			if response.Phases[phaseIdx-1].Content == "" {
+				t.Errorf("expected non-empty mock response for phase %s", phase)
+			}
+		})
+	}
+}
+
+func TestEnsurePromptsPopulatedFillsEmptyPrompts(t *testing.T) {
+	tempRoot := t.TempDir()
+	cleanup := withTestProjectRoot(t, tempRoot)
+	defer cleanup()
+
+	promptsDir := filepath.Join(tempRoot, "prompts")
+	if err := os.MkdirAll(promptsDir, 0o755); err != nil {
+		t.Fatalf("failed to create prompts dir: %v", err)
+	}
+
+	project := &Project{
+		ID:          "test-project",
+		Title:       "Test Title",
+		Description: "Test Description",
+		Phases: []Phase{
+			{Number: 1, Name: "Claude Initial PRD", Prompt: ""},
+			{Number: 2, Name: "Gemini Review", Prompt: "", Content: ""},
+			{Number: 3, Name: "Claude Comparison", Prompt: ""},
+		},
+	}
+
+	// Call ensurePromptsPopulated
+	ensurePromptsPopulated(project)
+
+	// Verify phase 1 prompt was populated
+	if project.Phases[0].Prompt == "" {
+		t.Errorf("expected phase 1 prompt to be populated")
+	}
+
+	// Phase 2 should not be populated yet (phase 1 has no content)
+	if project.Phases[1].Prompt != "" {
+		t.Errorf("expected phase 2 prompt to remain empty when phase 1 has no content")
+	}
+
+	// Now add content to phase 1 and call again
+	project.Phases[0].Content = "Phase 1 content"
+	ensurePromptsPopulated(project)
+
+	// Now phase 2 should be populated
+	if project.Phases[1].Prompt == "" {
+		t.Errorf("expected phase 2 prompt to be populated after phase 1 has content")
 	}
 }

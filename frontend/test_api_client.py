@@ -23,7 +23,9 @@ class APIClientTests(unittest.TestCase):
         mock_post.assert_called_once()
 
     @patch("api_client.requests.post", side_effect=requests.exceptions.ConnectionError)
-    def test_create_project_connection_error(self, mock_post: Mock) -> None:  # noqa: ARG001
+    def test_create_project_connection_error(
+        self, mock_post: Mock
+    ) -> None:  # noqa: ARG001
         with self.assertRaises(Exception) as ctx:
             self.client.create_project("title", "problems", "context")
 
@@ -49,7 +51,9 @@ class APIClientTests(unittest.TestCase):
         mock_get.assert_called_once()
 
     @patch("api_client.requests.get", side_effect=Exception("boom"))
-    def test_get_project_generic_error_is_raised(self, mock_get: Mock) -> None:  # noqa: ARG001
+    def test_get_project_generic_error_is_raised(
+        self, mock_get: Mock
+    ) -> None:  # noqa: ARG001
         with self.assertRaises(Exception):
             self.client.get_project("p1")
 
@@ -66,7 +70,9 @@ class APIClientTests(unittest.TestCase):
         mock_post.assert_called_once()
 
     @patch("api_client.requests.post", side_effect=requests.exceptions.ConnectionError)
-    def test_update_phase_connection_error(self, mock_post: Mock) -> None:  # noqa: ARG001
+    def test_update_phase_connection_error(
+        self, mock_post: Mock
+    ) -> None:  # noqa: ARG001
         with self.assertRaises(Exception):
             self.client.update_phase("p1", 1, "content")
 
@@ -86,7 +92,9 @@ class APIClientTests(unittest.TestCase):
         self.assertEqual(projects, [])
 
     @patch("api_client.requests.get", side_effect=requests.exceptions.Timeout)
-    def test_list_projects_timeout_returns_empty(self, mock_get: Mock) -> None:  # noqa: ARG001
+    def test_list_projects_timeout_returns_empty(
+        self, mock_get: Mock
+    ) -> None:  # noqa: ARG001
         projects = self.client.list_projects()
         self.assertEqual(projects, [])
 
@@ -105,7 +113,9 @@ class APIClientTests(unittest.TestCase):
         self.assertEqual(content, "")
 
     @patch("api_client.requests.get", side_effect=requests.exceptions.ConnectionError)
-    def test_get_prompt_connection_error_returns_empty(self, mock_get: Mock) -> None:  # noqa: ARG001
+    def test_get_prompt_connection_error_returns_empty(
+        self, mock_get: Mock
+    ) -> None:  # noqa: ARG001
         content = self.client.get_prompt("claude_initial")
         self.assertEqual(content, "")
 
@@ -120,10 +130,11 @@ class APIClientTests(unittest.TestCase):
         self.assertFalse(self.client.update_prompt("phase", "content"))
 
     @patch("api_client.requests.post", side_effect=requests.exceptions.Timeout)
-    def test_update_prompt_timeout_returns_false(self, mock_post: Mock) -> None:  # noqa: ARG001
+    def test_update_prompt_timeout_returns_false(
+        self, mock_post: Mock
+    ) -> None:  # noqa: ARG001
         self.assertFalse(self.client.update_prompt("phase", "content"))
 
 
 if __name__ == "__main__":
     unittest.main()
-
