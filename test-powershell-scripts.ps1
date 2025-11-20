@@ -99,7 +99,8 @@ $scriptsToCheck = @(
 )
 $allHaveBOM = $true
 foreach ($script in $scriptsToCheck) {
-    $bytes = [System.IO.File]::ReadAllBytes($script)
+    $fullPath = Join-Path $PSScriptRoot $script
+    $bytes = [System.IO.File]::ReadAllBytes($fullPath)
     if ($bytes[0] -ne 0xEF -or $bytes[1] -ne 0xBB -or $bytes[2] -ne 0xBF) {
         Write-Host "  ✗ $script missing UTF-8 BOM" -ForegroundColor Red
         $allHaveBOM = $false
