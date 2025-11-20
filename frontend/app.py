@@ -245,10 +245,10 @@ def show_project_workflow():
     st.header(f"Project: {project['title']}")
 
     # Minimal status indicator
-    status_text = f"Phase 1: {
-        '✓' if project['phases'][0].get('content') else '○'}  |  Phase 2: {
-        '✓' if project['phases'][1].get('content') else '○'}  |  Phase 3: {
-            '✓' if project['phases'][2].get('content') else '○'}"
+    phase1_status = '✓' if project['phases'][0].get('content') else '○'
+    phase2_status = '✓' if project['phases'][1].get('content') else '○'
+    phase3_status = '✓' if project['phases'][2].get('content') else '○'
+    status_text = f"Phase 1: {phase1_status}  |  Phase 2: {phase2_status}  |  Phase 3: {phase3_status}"
     st.caption(status_text)
 
     st.markdown("---")
