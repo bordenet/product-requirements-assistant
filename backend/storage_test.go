@@ -151,3 +151,30 @@ func TestSaveFinalPRD(t *testing.T) {
 		t.Fatalf("Failed to save final PRD: %v", err)
 	}
 }
+
+func TestGetDefaultPrompt(t *testing.T) {
+	tests := []struct {
+		name        string
+		phase       string
+		expectEmpty bool
+	}{
+		{name: "claude initial", phase: "claude_initial", expectEmpty: false},
+		{name: "gemini review", phase: "gemini_review", expectEmpty: false},
+		{name: "claude compare", phase: "claude_compare", expectEmpty: false},
+		{name: "unknown phase", phase: "unknown", expectEmpty: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prompt := getDefaultPrompt(tt.phase)
+
+			if tt.expectEmpty {
+				if prompt != "" {
+					t.Errorf("expected empty prompt for %s, got %q", tt.phase, prompt)
+				}
+			} else if prompt == "" {
+				t.Errorf("expected non-empty prompt for %s", tt.phase)
+			}
+		})
+	}
+}
