@@ -170,11 +170,20 @@ copy_web_files() {
 
     # Copy files
     log_verbose "Copying ${WEB_DIR}/ to ${DOCS_DIR}/"
-    rsync -a --delete \
-        --exclude='.DS_Store' \
-        --exclude='*.swp' \
-        --exclude='README.md' \
-        "${WEB_DIR}/" "${DOCS_DIR}/"
+
+    if [[ ${VERBOSE} -eq 1 ]]; then
+        rsync -a --delete \
+            --exclude='.DS_Store' \
+            --exclude='*.swp' \
+            --exclude='README.md' \
+            "${WEB_DIR}/" "${DOCS_DIR}/"
+    else
+        rsync -a --delete \
+            --exclude='.DS_Store' \
+            --exclude='*.swp' \
+            --exclude='README.md' \
+            "${WEB_DIR}/" "${DOCS_DIR}/" 2>&1 | grep -v "^rsync" || true
+    fi
 
     task_ok "Files copied"
 }
@@ -183,7 +192,7 @@ commit_and_push() {
     task_start "Committing changes"
 
     # Stage changes
-    git add "${DOCS_DIR}"
+    git add "${DOCS_DIR}" 2>&1 | log_verbose_stream
 
     # Check if there are changes to commit
     if git diff --cached --quiet; then
@@ -200,7 +209,11 @@ Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
     log_verbose "Committing with message:"
     log_verbose "${commit_msg}"
 
-    git commit -m "${commit_msg}"
+    if [[ ${VERBOSE} -eq 1 ]]; then
+        git commit -m "${commit_msg}"
+    else
+        git commit -m "${commit_msg}" >/dev/null 2>&1
+    fi
 
     task_ok "Changes committed"
 }
@@ -209,7 +222,12 @@ push_to_remote() {
     task_start "Pushing to origin/main"
 
     log_verbose "Running: git push origin main"
-    git push origin main
+
+    if [[ ${VERBOSE} -eq 1 ]]; then
+        git push origin main
+    else
+        git push origin main >/dev/null 2>&1
+    fi
 
     task_ok "Pushed to origin/main"
 }
