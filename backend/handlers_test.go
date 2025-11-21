@@ -900,3 +900,244 @@ func TestEnsurePromptsPopulatedFillsEmptyPrompts(t *testing.T) {
 		t.Errorf("expected phase 2 prompt to be populated after phase 1 has content")
 	}
 }
+
+// TestSameLLMDetection tests the same-LLM detection logic
+func TestSameLLMDetection(t *testing.T) {
+	tests := []struct {
+		name      string
+		phase1LLM *LLMConfig
+		phase2LLM *LLMConfig
+		expected  bool
+	}{
+		{
+			name:      "Both nil - different LLMs",
+			phase1LLM: nil,
+			phase2LLM: nil,
+			expected:  false,
+		},
+		{
+			name:      "One nil - different LLMs",
+			phase1LLM: &LLMConfig{Provider: "anthropic", Model: "claude-3-sonnet"},
+			phase2LLM: nil,
+			expected:  false,
+		},
+		{
+			name:      "Same provider and model",
+			phase1LLM: &LLMConfig{Provider: "anthropic", Model: "claude-3-sonnet"},
+			phase2LLM: &LLMConfig{Provider: "anthropic", Model: "claude-3-sonnet"},
+			expected:  true,
+		},
+		{
+			name:      "Different provider, same model",
+			phase1LLM: &LLMConfig{Provider: "anthropic", Model: "claude-3-sonnet"},
+			phase2LLM: &LLMConfig{Provider: "google", Model: "claude-3-sonnet"},
+			expected:  false,
+		},
+		{
+			name:      "Same provider, different model",
+			phase1LLM: &LLMConfig{Provider: "anthropic", Model: "claude-3-sonnet"},
+			phase2LLM: &LLMConfig{Provider: "anthropic", Model: "claude-3-opus"},
+			expected:  false,
+		},
+		{
+			name:      "Same URL",
+			phase1LLM: &LLMConfig{URL: "https://librechat.company.com/api/chat"},
+			phase2LLM: &LLMConfig{URL: "https://librechat.company.com/api/chat"},
+			expected:  true,
+		},
+		{
+			name:      "Different URL",
+			phase1LLM: &LLMConfig{URL: "https://librechat.company.com/api/chat"},
+			phase2LLM: &LLMConfig{URL: "https://openai.com/api/chat"},
+			expected:  false,
+		},
+		{
+			name:      "Same endpoint",
+			phase1LLM: &LLMConfig{Endpoint: "localhost:3000"},
+			phase2LLM: &LLMConfig{Endpoint: "localhost:3000"},
+			expected:  true,
+		},
+		{
+			name:      "Different endpoint",
+			phase1LLM: &LLMConfig{Endpoint: "localhost:3000"},
+			phase2LLM: &LLMConfig{Endpoint: "localhost:4000"},
+			expected:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isSameLLM(tt.phase1LLM, tt.phase2LLM)
+			if result != tt.expected {
+				t.Errorf("isSameLLM() = %v, expected %v", result, tt.expected)
+			}
+		})
+	}
+}
+
+// TestGeminiSimulationAugmentation tests that Phase 2 prompt is augmented when same LLM detected
+func TestGeminiSimulationAugmentation(t *testing.T) {
+	// Reset projects map
+	projects = make(map[string]*Project)
+	defer func() { projects = make(map[string]*Project) }()
+
+	// Create a project with same LLM for both phases
+	sameLLMConfig := &LLMConfig{
+		Provider: "anthropic",
+		Model:    "claude-3-sonnet",
+	}
+
+	payload := CreateProjectRequest{
+		Title:     "Test Product",
+		Problems:  "Users need a solution",
+		Context:   "Enterprise environment",
+		Phase1LLM: sameLLMConfig,
+		Phase2LLM: sameLLMConfig,
+	}
+
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", "/api/projects", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(createProject)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Fatalf("Handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	var project Project
+	if err := json.NewDecoder(rr.Body).Decode(&project); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
+
+	// Complete Phase 1
+	updateReq := UpdatePhaseRequest{
+		Content: "This is the Phase 1 PRD content",
+	}
+	body, _ = json.Marshal(updateReq)
+	req, _ = http.NewRequest("PUT", "/api/projects/"+project.ID+"/phases/1", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	rr = httptest.NewRecorder()
+
+	router := mux.NewRouter()
+	router.HandleFunc("/api/projects/{id}/phases/{phase}", updatePhase).Methods("PUT")
+	router.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Fatalf("Handler returned wrong status code: got %v want %v. Body: %s", status, http.StatusOK, rr.Body.String())
+	}
+
+	// Decode updated project
+	if err := json.NewDecoder(rr.Body).Decode(&project); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
+
+	// Check that Phase 2 prompt contains Gemini simulation
+	if !strings.Contains(project.Phases[1].Prompt, "ADVERSARIAL REVIEWER ROLE (GEMINI-STYLE SIMULATION)") {
+		t.Error("Phase 2 prompt should contain Gemini simulation when same LLM detected")
+	}
+
+	if !strings.Contains(project.Phases[1].Prompt, "GEMINI BEHAVIORAL PROFILE") {
+		t.Error("Phase 2 prompt should contain Gemini behavioral profile")
+	}
+
+	// Verify Gemini simulation comes AFTER the forget clause
+	// Check for both possible forget clause variations
+	forgetClauses := []string{
+		"Forget all previous sessions and context.",
+		"Forget our previous sessions-- start fresh with me.",
+	}
+	geminiSimulation := "ADVERSARIAL REVIEWER ROLE (GEMINI-STYLE SIMULATION)"
+
+	geminiIndex := strings.Index(project.Phases[1].Prompt, geminiSimulation)
+
+	if geminiIndex == -1 {
+		t.Error("Phase 2 prompt should contain Gemini simulation")
+	}
+
+	// Find which forget clause is present
+	forgetIndex := -1
+	for _, forgetClause := range forgetClauses {
+		idx := strings.Index(project.Phases[1].Prompt, forgetClause)
+		if idx != -1 {
+			forgetIndex = idx
+			break
+		}
+	}
+
+	if forgetIndex == -1 {
+		t.Error("Phase 2 prompt should contain a forget clause")
+	}
+
+	if forgetIndex >= geminiIndex {
+		t.Error("Gemini simulation should come AFTER forget clause to preserve effectiveness")
+	}
+}
+
+// TestDifferentLLMNoAugmentation tests that Phase 2 prompt is NOT augmented when different LLMs used
+func TestDifferentLLMNoAugmentation(t *testing.T) {
+	// Reset projects map
+	projects = make(map[string]*Project)
+	defer func() { projects = make(map[string]*Project) }()
+
+	// Create a project with different LLMs for each phase
+	payload := CreateProjectRequest{
+		Title:    "Test Product",
+		Problems: "Users need a solution",
+		Context:  "Enterprise environment",
+		Phase1LLM: &LLMConfig{
+			Provider: "anthropic",
+			Model:    "claude-3-sonnet",
+		},
+		Phase2LLM: &LLMConfig{
+			Provider: "google",
+			Model:    "gemini-2.5-pro",
+		},
+	}
+
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", "/api/projects", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(createProject)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Fatalf("Handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	var project Project
+	if err := json.NewDecoder(rr.Body).Decode(&project); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
+
+	// Complete Phase 1
+	updateReq := UpdatePhaseRequest{
+		Content: "This is the Phase 1 PRD content",
+	}
+	body, _ = json.Marshal(updateReq)
+	req, _ = http.NewRequest("PUT", "/api/projects/"+project.ID+"/phases/1", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	rr = httptest.NewRecorder()
+
+	router := mux.NewRouter()
+	router.HandleFunc("/api/projects/{id}/phases/{phase}", updatePhase).Methods("PUT")
+	router.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Fatalf("Handler returned wrong status code: got %v want %v. Body: %s", status, http.StatusOK, rr.Body.String())
+	}
+
+	// Decode updated project
+	if err := json.NewDecoder(rr.Body).Decode(&project); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
+
+	// Check that Phase 2 prompt does NOT contain Gemini simulation
+	if strings.Contains(project.Phases[1].Prompt, "ADVERSARIAL REVIEWER ROLE (GEMINI-STYLE SIMULATION)") {
+		t.Error("Phase 2 prompt should NOT contain Gemini simulation when different LLMs used")
+	}
+}
