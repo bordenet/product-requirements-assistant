@@ -63,7 +63,16 @@ function setupGlobalEventListeners() {
 
     // Theme toggle
     const themeToggle = document.getElementById('theme-toggle');
-    themeToggle.addEventListener('click', toggleTheme);
+    console.log('Theme toggle button:', themeToggle);
+    if (themeToggle) {
+        themeToggle.addEventListener('click', (e) => {
+            console.log('Theme toggle clicked!', e);
+            toggleTheme();
+        });
+        console.log('Theme toggle listener attached');
+    } else {
+        console.error('Theme toggle button not found!');
+    }
 
     // Export all button
     const exportAllBtn = document.getElementById('export-all-btn');
