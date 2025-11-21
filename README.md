@@ -11,6 +11,21 @@ A structured 3-phase workflow tool for creating Product Requirements Documents w
 
 **🌐 Try it now: [https://bordenet.github.io/product-requirements-assistant/](https://bordenet.github.io/product-requirements-assistant/)**
 
+---
+
+## 🤖 For AI Assistants
+
+**READ THIS FIRST**: Before working on this codebase, read [`CLAUDE.md`](CLAUDE.md) for mandatory workflow requirements:
+- ✅ ALWAYS lint code after creating/modifying it (`npm run lint`)
+- ✅ ALWAYS run tests after creating/modifying tests (`npm test`)
+- ✅ ALWAYS proactively communicate "what's left" - don't wait to be asked
+- ❌ NEVER include `node_modules/`, `coverage/`, or build artifacts
+- ❌ NEVER create files without linting and testing them
+
+This ensures high-quality contributions that match Expedia Group engineering standards.
+
+---
+
 ## Quick Start
 
 ### Option 1: Web App (Recommended)

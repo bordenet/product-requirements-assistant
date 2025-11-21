@@ -47,11 +47,15 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// Load initial prompt
-	prompt, err := loadPrompt("claude_initial")
+	// Load initial prompt (try new format first, fall back to legacy)
+	prompt, err := loadPrompt("phase1-claude-initial")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error loading prompt: %v", err), http.StatusInternalServerError)
-		return
+		// Fall back to legacy format
+		prompt, err = loadPrompt("claude_initial")
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error loading prompt: %v", err), http.StatusInternalServerError)
+			return
+		}
 	}
 	project.Phases[0].Prompt = fmt.Sprintf(prompt, req.Title, req.Problems, req.Context)
 
@@ -155,16 +159,22 @@ func updatePhase(w http.ResponseWriter, r *http.Request) {
 		project.Phases[1].Prompt = prompt
 	} else if phaseIndex == 1 && project.Phases[1].Content != "" {
 		// Phase 2 completed, prepare Phase 3 prompt
-		prompt, err := loadPrompt("claude_compare")
+		prompt, err := loadPrompt("phase3-claude-synthesis")
 		if err != nil {
-			// Log error but continue with default prompt
-			fmt.Printf("Warning: Error loading claude_compare prompt: %v\n", err)
-			prompt = getDefaultPrompt("claude_compare")
+			// Fall back to legacy format
+			prompt, err = loadPrompt("claude_compare")
+			if err != nil {
+				// Log error but continue with default prompt
+				fmt.Printf("Warning: Error loading phase3 prompt: %v\n", err)
+				prompt = getDefaultPrompt("claude_compare")
+			}
 		}
 		if project.Phases[0].Content != "" {
 			prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
+			prompt = strings.Replace(prompt, "{phase1Output}", project.Phases[0].Content, 1)
 		}
 		prompt = strings.Replace(prompt, "[PASTE GEMINI'S PRD RENDITION HERE]", project.Phases[1].Content, 1)
+		prompt = strings.Replace(prompt, "{phase2Output}", project.Phases[1].Content, 1)
 		project.Phases[2].Prompt = prompt
 	}
 
@@ -274,31 +284,47 @@ func listProjects(w http.ResponseWriter, r *http.Request) {
 func ensurePromptsPopulated(project *Project) {
 	// Phase 1: Initial prompt (should always be populated at creation)
 	if project.Phases[0].Prompt == "" {
-		prompt, err := loadPrompt("claude_initial")
+		prompt, err := loadPrompt("phase1-claude-initial")
 		if err != nil {
-			prompt = getDefaultPrompt("claude_initial")
+			// Fall back to legacy format
+			prompt, err = loadPrompt("claude_initial")
+			if err != nil {
+				prompt = getDefaultPrompt("claude_initial")
+			}
 		}
 		project.Phases[0].Prompt = fmt.Sprintf(prompt, project.Title, project.Description, "")
 	}
 
 	// Phase 2: Gemini review prompt (populate if Phase 1 is complete)
 	if project.Phases[1].Prompt == "" && project.Phases[0].Content != "" {
-		prompt, err := loadPrompt("gemini_review")
+		prompt, err := loadPrompt("phase2-gemini-review")
 		if err != nil {
-			prompt = getDefaultPrompt("gemini_review")
+			// Fall back to legacy format
+			prompt, err = loadPrompt("gemini_review")
+			if err != nil {
+				prompt = getDefaultPrompt("gemini_review")
+			}
 		}
-		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
+		// Replace both old and new placeholder formats
+		prompt = strings.ReplaceAll(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content)
+		prompt = strings.ReplaceAll(prompt, "{phase1Output}", project.Phases[0].Content)
 		project.Phases[1].Prompt = prompt
 	}
 
 	// Phase 3: Comparison prompt (populate if Phases 1 and 2 are complete)
 	if project.Phases[2].Prompt == "" && project.Phases[0].Content != "" && project.Phases[1].Content != "" {
-		prompt, err := loadPrompt("claude_compare")
+		prompt, err := loadPrompt("phase3-claude-synthesis")
 		if err != nil {
-			prompt = getDefaultPrompt("claude_compare")
+			// Fall back to legacy format
+			prompt, err = loadPrompt("claude_compare")
+			if err != nil {
+				prompt = getDefaultPrompt("claude_compare")
+			}
 		}
 		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
+		prompt = strings.Replace(prompt, "{phase1Output}", project.Phases[0].Content, 1)
 		prompt = strings.Replace(prompt, "[PASTE GEMINI'S PRD RENDITION HERE]", project.Phases[1].Content, 1)
+		prompt = strings.Replace(prompt, "{phase2Output}", project.Phases[1].Content, 1)
 		project.Phases[2].Prompt = prompt
 	}
 }
@@ -371,12 +397,18 @@ func generateMockResponse(w http.ResponseWriter, r *http.Request) {
 		project.Phase = 3
 
 		// Populate Phase 3 prompt
-		prompt, err := loadPrompt("claude_compare")
+		prompt, err := loadPrompt("phase3-claude-synthesis")
 		if err != nil {
-			prompt = getDefaultPrompt("claude_compare")
+			// Fall back to legacy format
+			prompt, err = loadPrompt("claude_compare")
+			if err != nil {
+				prompt = getDefaultPrompt("claude_compare")
+			}
 		}
 		prompt = strings.Replace(prompt, "[PASTE CLAUDE'S ORIGINAL PRD HERE]", project.Phases[0].Content, 1)
+		prompt = strings.Replace(prompt, "{phase1Output}", project.Phases[0].Content, 1)
 		prompt = strings.Replace(prompt, "[PASTE GEMINI'S PRD RENDITION HERE]", mockResponse, 1)
+		prompt = strings.Replace(prompt, "{phase2Output}", mockResponse, 1)
 		project.Phases[2].Prompt = prompt
 
 	case 3:
