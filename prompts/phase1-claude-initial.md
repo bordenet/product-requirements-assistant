@@ -16,6 +16,48 @@ The user has provided the following information:
 
 Generate a comprehensive PRD that focuses on the **"Why"** (business context) and the **"What"** (requirements) while staying completely out of the **"How"** (implementation details).
 
+## ⚠️ CRITICAL RULES - READ FIRST
+
+### Mutation 1: Banned Vague Language
+
+❌ **NEVER use these vague terms without specific quantification:**
+- "improve" → Specify: "increase from X to Y"
+- "enhance" → Specify: "reduce from X to Y" or "add capability to Z"
+- "user-friendly" → Specify: "reduce clicks from X to Y" or "complete task in <N seconds"
+- "efficient" → Specify: "process N items in <X seconds"
+- "scalable" → Specify: "handle N concurrent users with <X ms latency"
+- "better" → Specify: exact metric and target
+- "optimize" → Specify: what metric improves by how much
+- "faster" → Specify: "reduce from X seconds to Y seconds"
+- "easier" → Specify: "reduce steps from X to Y" or "reduce training time from X to Y"
+
+✅ **ALWAYS use:**
+- Baseline + Target: "reduce from 5 hours/week to 30 minutes/week"
+- Quantified outcomes: "increase NPS from 42 to 48"
+- Measurable criteria: "process 100K transactions/day with <100ms p95 latency"
+
+### Mutation 2: Focus on "Why" and "What", NOT "How"
+
+❌ **FORBIDDEN (Implementation Details):**
+- "Use microservices architecture"
+- "Implement OAuth 2.0"
+- "Store data in PostgreSQL"
+- "Build a React dashboard"
+- "Use machine learning model"
+- "Deploy to AWS Lambda"
+- "Implement REST API"
+- "Use Redis for caching"
+
+✅ **ALLOWED (Business Requirements):**
+- "Users must authenticate securely"
+- "System must handle 10K concurrent users"
+- "Data must be accessible within 2 seconds"
+- "Interface must work on mobile and desktop"
+- "System must detect fraudulent transactions with <5% false positive rate"
+- "Deployment must complete without user-facing downtime"
+
+**Rule:** If an engineer could implement it multiple ways, you're describing WHAT. If you're prescribing a specific technology or approach, you're describing HOW (forbidden).
+
 ### Document Structure
 
 Create a well-structured PRD with the following sections:
@@ -45,7 +87,22 @@ Create a well-structured PRD with the following sections:
 {What will users be able to do?}
 
 ### 3.3 Success Metrics
-{How will we measure success? Be specific}
+
+**Mutation 5: Require Quantified Success Metrics**
+
+For EACH metric, provide:
+- **Metric Name:** What we're measuring
+- **Baseline:** Current state (with evidence/source)
+- **Target:** Goal state (specific number)
+- **Timeline:** When we'll achieve it
+- **Measurement Method:** How we'll track it
+
+Example:
+- **Metric:** Manual categorization time
+- **Baseline:** 5 hours/week (measured Q4 2024 via time tracking)
+- **Target:** 30 minutes/week
+- **Timeline:** 3 months post-launch
+- **Measurement:** Weekly time tracking reports from support team
 
 ## 4. Proposed Solution
 {High-level description of what we're building}
@@ -83,16 +140,21 @@ Create a well-structured PRD with the following sections:
 {Technical, business, or regulatory constraints}
 
 ## 7. Stakeholders
-{Who's involved}
 
-### 7.1 Owner
-{Product owner}
+**Mutation 4: Stakeholder Impact Requirements**
 
-### 7.2 Key Stakeholders
-{Decision makers, approvers}
+For EACH stakeholder group, specify:
+- **Role:** What they do
+- **Impact:** How this project affects them (positive/negative, quantified)
+- **Needs:** What they need from this project
+- **Success Criteria:** How they'll measure success
 
-### 7.3 Contributors
-{Engineering, design, QA, etc.}
+Example:
+### 7.2 Customer Support Team
+- **Role:** Handle customer inquiries and feedback
+- **Impact:** Workload reduced from 200 emails/day to 50 emails/day (75% reduction)
+- **Needs:** Training on new feedback categorization system, access to analytics dashboard
+- **Success Criteria:** Average response time <2 hours, customer satisfaction >90%
 
 ## 8. Timeline and Milestones
 {High-level project phases}
@@ -113,6 +175,41 @@ Create a well-structured PRD with the following sections:
 5. **No Metadata Table**: Don't include author/version/date table at the top
 6. **Ask Clarifying Questions**: If information is unclear or missing, ask before proceeding
 7. **Iterate**: Work with the user to refine sections as needed
+
+## Specificity Checklist
+
+Before finalizing your draft, ensure:
+
+### Formulas and Calculations
+- ✅ All scoring mechanisms include explicit formulas (e.g., "engagement score = 0.4×login_freq + 0.3×feature_breadth + 0.3×active_users")
+- ✅ All weighted calculations show percentages and components
+- ❌ Never use undefined terms like "engagement score" without defining the formula
+
+### Integration Requirements
+- ✅ Specify exact APIs and protocols (e.g., "Epic FHIR API", "Stripe Payment Intents API", "SAML 2.0")
+- ✅ Name specific third-party services (e.g., "Google Maps API", "Twilio SMS API")
+- ❌ Avoid vague terms like "integrate with existing systems" without naming them
+
+### Compliance and Security
+- ✅ Identify specific compliance requirements (HIPAA, SOC 2 Type II, PCI-DSS, GDPR, etc.)
+- ✅ Specify data handling requirements (encryption at rest/in transit, audit logging, access controls)
+- ✅ Include regulatory constraints relevant to the industry
+
+### Success Metrics
+- ✅ Include baseline values (e.g., "reduce from 18% to <12%", not just "reduce no-show rate")
+- ✅ Specify measurement methods (e.g., "measured via user survey at 30 and 60 days")
+- ✅ Set specific targets with timeframes (e.g., "80% adoption within 30 days")
+
+### Performance Requirements
+- ✅ Use specific thresholds (e.g., "load within 2 seconds on 10 Mbps connection")
+- ✅ Define acceptable ranges (e.g., "support 500 concurrent users without degradation")
+- ❌ Avoid vague terms: "fast", "scalable", "high-performance", "near-real-time"
+- ✅ Instead use: "within X seconds", "support X users", "latency <X ms", "refresh every X minutes"
+
+### Requirements Quality
+- ✅ Each functional requirement must be testable (include acceptance criteria)
+- ✅ Each non-functional requirement must include measurable thresholds
+- ✅ Number all requirements (FR1, FR2, NFR1, NFR2, etc.) for traceability
 
 ## Interactive Refinement
 
