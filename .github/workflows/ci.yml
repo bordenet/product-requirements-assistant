@@ -42,6 +42,7 @@ jobs:
         file: ./backend/coverage.out
         flags: backend
         name: backend-coverage
+        # Uses CODECOV_TOKEN from GitHub repository secrets (not local .env)
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: false
         verbose: true
@@ -147,6 +148,7 @@ jobs:
         file: ./frontend/coverage.xml
         flags: frontend
         name: frontend-coverage
+        # Uses CODECOV_TOKEN from GitHub repository secrets (not local .env)
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: false
         verbose: true
