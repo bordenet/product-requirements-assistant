@@ -130,12 +130,14 @@ function setupGlobalEventListeners() {
 function toggleTheme() {
     const html = document.documentElement;
     const isDark = html.classList.contains('dark');
-    
+
     if (isDark) {
         html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
         storage.saveSetting('theme', 'light');
     } else {
         html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
         storage.saveSetting('theme', 'dark');
     }
 }
@@ -143,9 +145,10 @@ function toggleTheme() {
 /**
  * Load saved theme
  */
-async function loadTheme() {
-    const theme = await storage.getSetting('theme');
-    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+function loadTheme() {
+    // Use localStorage for immediate synchronous access
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
     }
 }
