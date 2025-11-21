@@ -47,6 +47,20 @@ async function init() {
  * Setup global event listeners
  */
 function setupGlobalEventListeners() {
+    // Related projects dropdown
+    const relatedProjectsBtn = document.getElementById('related-projects-btn');
+    const relatedProjectsMenu = document.getElementById('related-projects-menu');
+
+    relatedProjectsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        relatedProjectsMenu.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
+        relatedProjectsMenu.classList.add('hidden');
+    });
+
     // Theme toggle
     const themeToggle = document.getElementById('theme-toggle');
     themeToggle.addEventListener('click', toggleTheme);
