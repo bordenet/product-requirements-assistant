@@ -192,7 +192,11 @@ commit_and_push() {
     task_start "Committing changes"
 
     # Stage changes
-    git add "${DOCS_DIR}" 2>&1 | log_verbose_stream
+    if [[ ${VERBOSE} -eq 1 ]]; then
+        git add "${DOCS_DIR}"
+    else
+        git add "${DOCS_DIR}" >/dev/null 2>&1
+    fi
 
     # Check if there are changes to commit
     if git diff --cached --quiet; then
