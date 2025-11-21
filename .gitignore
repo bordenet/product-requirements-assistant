@@ -60,3 +60,6 @@ cmd/electron/package-lock.json
 
 # Genesis project template system (local development only)
 genesis/
+
+# Temporary documentation (scheduled for review/deletion)
+temp-docs-*/
