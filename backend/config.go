@@ -149,18 +149,29 @@ func ValidateDirectoryStructure() error {
 // ValidatePromptFiles validates that required prompt files exist
 func ValidatePromptFiles() error {
 	promptsDir := getPromptsDir()
-	requiredPrompts := []string{
-		"claude_initial.txt",
-		"gemini_review.txt",
-		"claude_compare.txt",
+	requiredPrompts := []struct {
+		name    string
+		formats []string
+	}{
+		{"phase1-claude-initial", []string{".md", ".txt"}},
+		{"phase2-gemini-review", []string{".md", ".txt"}},
+		{"phase3-claude-synthesis", []string{".md", ".txt"}},
+		{"claude_initial", []string{".txt"}},
+		{"gemini_review", []string{".txt"}},
+		{"claude_compare", []string{".txt"}},
 	}
 
-	for _, promptFile := range requiredPrompts {
-		path := filepath.Join(promptsDir, promptFile)
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			log.Printf("Warning: Prompt file %s not found, will use default", promptFile)
-		} else if err != nil {
-			return fmt.Errorf("error accessing prompt file %s: %v", path, err)
+	for _, prompt := range requiredPrompts {
+		found := false
+		for _, ext := range prompt.formats {
+			path := filepath.Join(promptsDir, prompt.name+ext)
+			if _, err := os.Stat(path); err == nil {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Printf("Warning: Prompt file %s not found (tried %v), will use default", prompt.name, prompt.formats)
 		}
 	}
 

@@ -18,11 +18,62 @@ Each phase has a corresponding prompt template that guides the AI's behavior.
 
 ## 📄 Prompt Files
 
-### [`claude_initial.txt`](./claude_initial.txt)
+### New Format (Recommended)
 
-**Phase:** 1 (Initial Draft)  
-**AI Model:** Claude Sonnet 4.5  
+**Markdown-formatted prompts** with structured sections, guidelines, and examples:
+
+#### [`phase1-claude-initial.md`](./phase1-claude-initial.md)
+
+**Phase:** 1 (Initial Draft)
+**AI Model:** Claude Sonnet 4.5
 **Purpose:** Generate the first version of the PRD
+**Format:** Markdown with structured sections, document template, and guidelines
+
+**Key Features:**
+- Clear role definition for the AI
+- Comprehensive document structure template
+- Specific guidelines (avoid implementation details, use section numbering, etc.)
+- Interactive refinement instructions
+- Placeholder syntax: `{title}`, `{problems}`, `{context}`
+
+#### [`phase2-gemini-review.md`](./phase2-gemini-review.md)
+
+**Phase:** 2 (Review and Refinement)
+**AI Model:** Gemini 2.5 Pro
+**Purpose:** Review and improve the Phase 1 PRD
+**Format:** Markdown with review criteria and structured process
+
+**Key Features:**
+- Clear role definition (senior PM who doesn't code)
+- 6 review criteria with scoring (1-10)
+- Step-by-step review process
+- Critical rules (no code, no metadata table, use section numbering)
+- Placeholder syntax: `{phase1Output}`
+
+#### [`phase3-claude-synthesis.md`](./phase3-claude-synthesis.md)
+
+**Phase:** 3 (Final Synthesis)
+**AI Model:** Claude Sonnet 4.5
+**Purpose:** Synthesize the best elements from both versions
+**Format:** Markdown with synthesis guidelines and process
+
+**Key Features:**
+- 5-step synthesis process
+- Clear guidelines for choosing between versions
+- Conflict resolution strategies
+- Citation requirement
+- Placeholder syntax: `{phase1Output}`, `{phase2Output}`
+
+### Legacy Format (Backward Compatible)
+
+**Plain text prompts** for backward compatibility:
+
+#### [`claude_initial.txt`](./claude_initial.txt)
+
+**Phase:** 1 (Initial Draft)
+**AI Model:** Claude Sonnet 4.5
+**Purpose:** Generate the first version of the PRD
+**Format:** Plain text with `%s` placeholders
 
 **Template Variables:**
 - `%s` (1st occurrence) - Project title
@@ -142,6 +193,43 @@ When user enters "Mobile App Redesign", this becomes:
 ```
 The title of the document will be: Mobile App Redesign
 ```
+
+---
+
+## 🔄 Migration Guide
+
+### Using the New Markdown Format
+
+The new `.md` format provides:
+- **Better structure** - Clear sections and guidelines
+- **More context** - Detailed instructions for the AI
+- **Easier editing** - Markdown formatting for readability
+- **Template placeholders** - `{variable}` syntax instead of `%s`
+
+### Backward Compatibility
+
+The system supports both formats:
+1. **New format** (`.md` files) - Loaded first if available
+2. **Legacy format** (`.txt` files) - Used as fallback
+
+You can:
+- Use the new `.md` files for better results
+- Keep the old `.txt` files for backward compatibility
+- Gradually migrate by creating `.md` versions
+
+### Customizing Prompts
+
+**For `.md` files:**
+1. Edit the markdown file directly
+2. Modify sections, guidelines, or templates
+3. Use `{variableName}` for placeholders
+4. Save and the system will use the updated version
+
+**For `.txt` files:**
+1. Edit the plain text file
+2. Use `%s` for placeholders (replaced in order)
+3. Use `[PASTE ... HERE]` for manual placeholders
+4. Save and the system will use the updated version
 
 ---
 
