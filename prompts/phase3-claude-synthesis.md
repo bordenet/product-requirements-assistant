@@ -39,7 +39,17 @@ Compare the two versions below and create a final PRD that:
 - Check that success metrics are measurable
 - Confirm scope boundaries are clear
 
-### Step 5: Validate
+### Step 5: Quality Gate
+Before finalizing, verify:
+- ✅ All functional requirements are testable with clear acceptance criteria
+- ✅ All success metrics include baseline values and specific targets
+- ✅ All formulas and scoring mechanisms are explicitly defined
+- ✅ All integrations specify exact APIs, protocols, or third-party services
+- ✅ All compliance requirements are identified (HIPAA, SOC 2, PCI-DSS, GDPR, etc.)
+- ✅ No vague terms remain ("fast", "scalable", "near-real-time" replaced with specific thresholds)
+- ✅ All non-functional requirements include measurable thresholds
+
+### Step 6: Validate
 - Confirm with the user that the synthesis captures their intent
 - Make final adjustments based on feedback
 
@@ -76,9 +86,11 @@ Compare the two versions below and create a final PRD that:
 
 - ❌ **NO CODE**: Never provide code, JSON schemas, SQL queries, or technical implementation
 - ❌ **NO METADATA TABLE**: Don't include author/version/date table at the top
+- ❌ **NO VAGUE TERMS**: Ensure "fast", "scalable", "near-real-time" are replaced with specific thresholds
 - ✅ **USE SECTION NUMBERING**: Number all ## and ### level headings
 - ✅ **INCLUDE CITATION**: Add the citation at the end of the document
 - ✅ **FOCUS ON OUTCOMES**: Emphasize what users achieve, not how it's built
+- ✅ **VERIFY QUALITY GATE**: Ensure all Step 5 quality gate criteria are met before finalizing
 
 ## Output Format
 
