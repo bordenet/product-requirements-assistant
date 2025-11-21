@@ -63,15 +63,8 @@ function setupGlobalEventListeners() {
 
     // Theme toggle
     const themeToggle = document.getElementById('theme-toggle');
-    console.log('Theme toggle button:', themeToggle);
     if (themeToggle) {
-        themeToggle.addEventListener('click', (e) => {
-            console.log('Theme toggle clicked!', e);
-            toggleTheme();
-        });
-        console.log('Theme toggle listener attached');
-    } else {
-        console.error('Theme toggle button not found!');
+        themeToggle.addEventListener('click', toggleTheme);
     }
 
     // Export all button
@@ -137,20 +130,16 @@ function setupGlobalEventListeners() {
  * Toggle dark/light theme
  */
 function toggleTheme() {
-    console.log('toggleTheme called');
     const html = document.documentElement;
     const isDark = html.classList.contains('dark');
-    console.log('Current theme:', isDark ? 'dark' : 'light');
 
     if (isDark) {
         html.classList.remove('dark');
         localStorage.setItem('theme', 'light');
-        console.log('Switched to light mode');
         storage.saveSetting('theme', 'light');
     } else {
         html.classList.add('dark');
         localStorage.setItem('theme', 'dark');
-        console.log('Switched to dark mode');
         storage.saveSetting('theme', 'dark');
     }
 }
