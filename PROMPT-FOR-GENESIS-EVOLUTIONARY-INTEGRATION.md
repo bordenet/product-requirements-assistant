@@ -1,9 +1,88 @@
 # Prompt: Integrate Evolutionary Prompt Optimization into Genesis
 
-**For:** Claude working in https://github.com/bordenet/genesis repository  
-**From:** product-requirements-assistant (authoritative source)  
-**Repository:** https://github.com/bordenet/product-requirements-assistant  
+**For:** Claude working in https://github.com/bordenet/genesis repository
+**From:** product-requirements-assistant (authoritative source)
+**Repository:** https://github.com/bordenet/product-requirements-assistant
 **Status:** ✅ Production-validated, out-of-the-box tooling, +31% quality improvements proven
+
+---
+
+## ⚠️ CRITICAL: DO NOT RECREATE - COPY AND ADOPT
+
+**YOU MUST:**
+1. ✅ **CLONE** the product-requirements-assistant repository to review the reference implementation
+2. ✅ **COPY** the existing, tested tools EXACTLY as they are (do NOT rewrite them)
+3. ✅ **ADOPT** the proven methodology without modification
+4. ✅ **REFERENCE** the code in https://github.com/bordenet/product-requirements-assistant for all questions
+
+**YOU MUST NOT:**
+1. ❌ **DO NOT** recreate `evolutionary-optimizer.js` from scratch
+2. ❌ **DO NOT** rewrite `prd-scorer.js` or other core tools
+3. ❌ **DO NOT** "improve" or "enhance" the existing tools
+4. ❌ **DO NOT** generate code without first reviewing the reference implementation
+
+**Why:** These tools are production-validated with 526 lines of battle-tested code. Recreating them will introduce bugs and lose proven optimizations.
+
+**How to Proceed:**
+```bash
+# ═══════════════════════════════════════════════════════════════
+# STEP 0: CLONE AND REVIEW THE REFERENCE IMPLEMENTATION FIRST
+# ═══════════════════════════════════════════════════════════════
+
+cd /tmp
+git clone https://github.com/bordenet/product-requirements-assistant.git
+cd product-requirements-assistant
+
+# ═══════════════════════════════════════════════════════════════
+# REVIEW EACH FILE BEFORE PROCEEDING
+# ═══════════════════════════════════════════════════════════════
+
+# Core optimizer (526 lines) - This is battle-tested code
+cat tools/evolutionary-optimizer.js
+# ↑ READ THIS ENTIRE FILE - You will COPY it, not recreate it
+
+# PRD Scorer - This is the template for all scorers
+cat tools/prd-scorer.js
+# ↑ READ THIS ENTIRE FILE - You will ADAPT it for other project types
+
+# Simulation runner - This orchestrates the optimization
+cat tools/run-simulation.js
+# ↑ READ THIS ENTIRE FILE - You will COPY it, not recreate it
+
+# Batch executor - This runs multiple simulations
+cat tools/run-simulations.sh
+# ↑ READ THIS ENTIRE FILE - You will COPY it, not recreate it
+
+# Test cases - This is the format for all test scenarios
+cat evolutionary-optimization/test-cases.json
+# ↑ READ THIS ENTIRE FILE - You will COPY it as a template
+
+# Configuration - These are production-validated settings
+cat evolutionary-optimization/config.example.json
+# ↑ READ THIS ENTIRE FILE - You will COPY it, not recreate it
+
+# Proven mutations - These are data-backed improvements
+cat evolutionary-optimization/README.md
+cat evolutionary-optimization/FINAL-REPORT.md
+# ↑ READ THESE FILES - They contain the proven mutations to document
+
+# ═══════════════════════════════════════════════════════════════
+# ONLY AFTER REVIEWING ALL FILES ABOVE, PROCEED WITH INTEGRATION
+# ═══════════════════════════════════════════════════════════════
+```
+
+**Your Job is to:**
+1. ✅ **COPY** these files into Genesis module structure
+2. ✅ **ADAPT** prd-scorer.js for one-pager and COE (keep the structure, change the criteria)
+3. ✅ **INTEGRATE** the copied files into Genesis spawn scripts
+4. ✅ **DOCUMENT** the proven mutations from the reports
+5. ✅ **CREATE** cross-project comparison tools (new functionality)
+
+**Your Job is NOT to:**
+1. ❌ Recreate evolutionary-optimizer.js
+2. ❌ Rewrite the scoring logic from scratch
+3. ❌ "Improve" the existing tools
+4. ❌ Generate code without reviewing the reference first
 
 ---
 
@@ -17,8 +96,8 @@ Embed evolutionary prompt optimization machinery into Genesis bootstrapper so th
 4. ✅ Generate comprehensive optimization reports
 5. ✅ Compare quality across Genesis-spawned projects
 
-**Time Investment:** ~4-6 hours  
-**Expected ROI:** 8+ hours saved per project per optimization cycle  
+**Time Investment:** ~4-6 hours
+**Expected ROI:** 8+ hours saved per project per optimization cycle
 **Cross-Project Impact:** All Genesis projects (one-pager, COE generator, PRD assistant, etc.)
 
 ---
@@ -97,82 +176,210 @@ genesis/
 
 ### Step 2: Copy Core Files from product-requirements-assistant
 
+**⚠️ CRITICAL: COPY THESE FILES EXACTLY - DO NOT RECREATE OR MODIFY**
+
 **Source Repository:** https://github.com/bordenet/product-requirements-assistant
+
+**Before You Start:**
+```bash
+# Clone the reference implementation if you haven't already
+cd /tmp
+git clone https://github.com/bordenet/product-requirements-assistant.git
+cd product-requirements-assistant
+
+# Review each file BEFORE copying to understand what you're working with
+```
 
 **Files to Copy (Use Exactly As-Is):**
 
-1. **Core Optimizer:**
+1. **Core Optimizer (526 lines - DO NOT RECREATE):**
    - Source: `tools/evolutionary-optimizer.js`
    - Destination: `modules/evolutionary-optimization/core/evolutionary-optimizer.js`
-   - Status: ✅ Production-ready, no modifications needed
+   - Status: ✅ Production-ready, battle-tested, no modifications needed
+   - **Action:** `cp` this file EXACTLY as-is
+   - **Review First:** `cat tools/evolutionary-optimizer.js` to see the implementation
 
-2. **Simulation Runner:**
+2. **Simulation Runner (DO NOT RECREATE):**
    - Source: `tools/run-simulation.js`
    - Destination: `modules/evolutionary-optimization/scripts/run-simulation.js`
    - Status: ✅ Production-ready, no modifications needed
+   - **Action:** `cp` this file EXACTLY as-is
+   - **Review First:** `cat tools/run-simulation.js` to see the implementation
 
-3. **Batch Simulation Script:**
+3. **Batch Simulation Script (236 lines - DO NOT RECREATE):**
    - Source: `tools/run-simulations.sh`
    - Destination: `modules/evolutionary-optimization/scripts/run-simulations.sh`
    - Status: ✅ Production-ready, follows shell script style guide
+   - **Action:** `cp` this file EXACTLY as-is
+   - **Review First:** `cat tools/run-simulations.sh` to see the implementation
 
-4. **PRD Scorer (Template for Other Scorers):**
+4. **PRD Scorer (Template for Other Scorers - DO NOT RECREATE):**
    - Source: `tools/prd-scorer.js`
    - Destination: `modules/evolutionary-optimization/scorers/prd-scorer.js`
    - Status: ✅ Production-ready, use as template for one-pager-scorer.js and coe-scorer.js
+   - **Action:** `cp` this file EXACTLY as-is, then ADAPT (don't rewrite) for other scorers
+   - **Review First:** `cat tools/prd-scorer.js` to understand the scoring structure
 
-5. **Test Cases Template:**
+5. **Test Cases Template (108 lines - DO NOT RECREATE):**
    - Source: `evolutionary-optimization/test-cases.json`
    - Destination: `modules/evolutionary-optimization/templates/test-cases.example.json`
    - Status: ✅ 8 diverse scenarios, proven effective
+   - **Action:** `cp` this file EXACTLY as-is
+   - **Review First:** `cat evolutionary-optimization/test-cases.json` to see the format
 
-6. **Configuration Template:**
+6. **Configuration Template (DO NOT RECREATE):**
    - Source: `evolutionary-optimization/config.example.json`
    - Destination: `modules/evolutionary-optimization/templates/config.example.json`
    - Status: ✅ Production-validated settings
+   - **Action:** `cp` this file EXACTLY as-is
+   - **Review First:** `cat evolutionary-optimization/config.example.json` to see the settings
 
-7. **Documentation:**
+7. **Documentation (268 lines - DO NOT RECREATE):**
    - Source: `tools/README.md`
    - Destination: `modules/evolutionary-optimization/docs/GETTING-STARTED.md`
-   - Status: ✅ Comprehensive guide (268 lines)
+   - Status: ✅ Comprehensive guide
+   - **Action:** `cp` this file EXACTLY as-is
+   - **Review First:** `cat tools/README.md` to understand the methodology
+
+**Copy Commands:**
+```bash
+# From the product-requirements-assistant repo directory
+cd /tmp/product-requirements-assistant
+
+# Navigate to your Genesis repo
+cd /path/to/genesis
+
+# Create directory structure
+mkdir -p modules/evolutionary-optimization/{core,scorers,templates,scripts,docs}
+
+# Copy core files EXACTLY as-is
+cp /tmp/product-requirements-assistant/tools/evolutionary-optimizer.js \
+   modules/evolutionary-optimization/core/
+
+cp /tmp/product-requirements-assistant/tools/run-simulation.js \
+   modules/evolutionary-optimization/scripts/
+
+cp /tmp/product-requirements-assistant/tools/run-simulations.sh \
+   modules/evolutionary-optimization/scripts/
+
+cp /tmp/product-requirements-assistant/tools/prd-scorer.js \
+   modules/evolutionary-optimization/scorers/
+
+cp /tmp/product-requirements-assistant/evolutionary-optimization/test-cases.json \
+   modules/evolutionary-optimization/templates/test-cases.example.json
+
+cp /tmp/product-requirements-assistant/evolutionary-optimization/config.example.json \
+   modules/evolutionary-optimization/templates/
+
+cp /tmp/product-requirements-assistant/tools/README.md \
+   modules/evolutionary-optimization/docs/GETTING-STARTED.md
+
+# Verify files were copied
+ls -lh modules/evolutionary-optimization/core/
+ls -lh modules/evolutionary-optimization/scripts/
+ls -lh modules/evolutionary-optimization/scorers/
+ls -lh modules/evolutionary-optimization/templates/
+ls -lh modules/evolutionary-optimization/docs/
+```
 
 ### Step 3: Create Project-Type-Specific Scorers
 
-You need to create scorers for each Genesis project type. Use `prd-scorer.js` as the template.
+**⚠️ IMPORTANT: ADAPT, DON'T RECREATE**
+
+You need to create scorers for each Genesis project type by **ADAPTING** the existing `prd-scorer.js`, not recreating from scratch.
+
+**Process:**
+1. ✅ **FIRST:** Review `prd-scorer.js` in the reference repo to understand the structure
+2. ✅ **THEN:** Copy `prd-scorer.js` as a starting point for each new scorer
+3. ✅ **FINALLY:** Modify ONLY the scoring criteria and logic, keep the structure
+
+```bash
+# Review the reference implementation FIRST
+cat /tmp/product-requirements-assistant/tools/prd-scorer.js
+
+# Study the structure:
+# - How it exports the scorer
+# - How it implements each scoring criterion
+# - How it calculates the final score
+# - How it handles edge cases
+```
 
 #### A. One-Pager Scorer (`scorers/one-pager-scorer.js`)
 
-Create a scorer that evaluates one-pager documents based on:
+**Action:**
+```bash
+# Copy prd-scorer.js as starting point
+cp modules/evolutionary-optimization/scorers/prd-scorer.js \
+   modules/evolutionary-optimization/scorers/one-pager-scorer.js
+```
 
-**Scoring Criteria:**
+**Then Adapt (Don't Rewrite) for One-Pager Scoring:**
+
+**Scoring Criteria to Implement:**
 1. **Clarity** (1-5): Problem statement is unambiguous and specific
 2. **Conciseness** (1-5): Fits on one page, no fluff
 3. **Actionability** (1-5): Clear next steps and success criteria
 4. **Stakeholder Alignment** (1-5): Addresses all stakeholder concerns
 5. **Business Impact** (1-5): Quantified value proposition
 
-**Reference Implementation:**
-- Study `prd-scorer.js` structure
-- Adapt scoring logic for one-pager format
-- Use same objective keep/discard methodology
+**What to Change:**
+- Criterion names and weights
+- Scoring logic for each criterion
+- Document structure expectations
+
+**What to Keep:**
+- Overall class structure
+- Export format
+- Error handling
+- Score calculation methodology
 
 #### B. COE Scorer (`scorers/coe-scorer.js`)
 
-Create a scorer that evaluates Center of Excellence documents based on:
+**Action:**
+```bash
+# Copy prd-scorer.js as starting point
+cp modules/evolutionary-optimization/scorers/prd-scorer.js \
+   modules/evolutionary-optimization/scorers/coe-scorer.js
+```
 
-**Scoring Criteria:**
+**Then Adapt (Don't Rewrite) for COE Scoring:**
+
+**Scoring Criteria to Implement:**
 1. **Comprehensiveness** (1-5): Covers all COE aspects (governance, standards, training)
 2. **Clarity** (1-5): Roles and responsibilities unambiguous
 3. **Practicality** (1-5): Implementable processes, not theoretical
 4. **Measurability** (1-5): Clear KPIs and success metrics
 5. **Scalability** (1-5): Works for current and future team sizes
 
-**Reference Implementation:**
-- Study `prd-scorer.js` structure
-- Adapt scoring logic for COE format
-- Ensure objective, repeatable scoring
+**What to Change:**
+- Criterion names and weights
+- Scoring logic for each criterion
+- Document structure expectations
+
+**What to Keep:**
+- Overall class structure
+- Export format
+- Error handling
+- Score calculation methodology
+
+**Reference the Code:**
+When adapting scorers, constantly reference the original `prd-scorer.js` in:
+https://github.com/bordenet/product-requirements-assistant/blob/main/tools/prd-scorer.js
 
 ### Step 4: Create Mutation Library
+
+**⚠️ REFERENCE THE PROVEN MUTATIONS FROM THE REFERENCE REPO**
+
+Before creating the mutation library, review the actual mutations that were proven effective:
+
+```bash
+# Review the optimization reports to see what mutations worked
+cat /tmp/product-requirements-assistant/evolutionary-optimization/FINAL-REPORT.md
+cat /tmp/product-requirements-assistant/evolutionary-optimization/README.md
+
+# Look for the "Top 5 Mutations" section
+# These are PROVEN with data, not theoretical
+```
 
 Create `templates/mutations-library.md` documenting proven mutations:
 
@@ -767,16 +974,58 @@ Before pushing to Genesis main:
 
 ## 📝 Final Notes
 
-### Reference Implementation
+### ⚠️ CRITICAL REMINDER: USE THE REFERENCE IMPLEMENTATION
+
+**DO NOT GENERATE CODE FROM SCRATCH**
 
 **Authoritative Source:** https://github.com/bordenet/product-requirements-assistant
 
-This repo contains:
-- Production-validated tooling (526 lines of core optimizer)
-- Proven results (+31.1% improvement in 20 rounds)
-- Complete documentation (277 lines README, 272 lines final report)
-- 8 diverse test cases
-- Comprehensive mutation library
+**Before writing ANY code, you MUST:**
+1. ✅ Clone the reference repo: `git clone https://github.com/bordenet/product-requirements-assistant.git`
+2. ✅ Review the existing implementation: `cat tools/evolutionary-optimizer.js`
+3. ✅ Copy the files EXACTLY as they are
+4. ✅ Reference the code when you have questions
+
+**This repo contains:**
+- ✅ Production-validated tooling (526 lines of core optimizer) - **COPY THIS, don't recreate**
+- ✅ Proven results (+31.1% improvement in 20 rounds) - **These are real results, not estimates**
+- ✅ Complete documentation (277 lines README, 272 lines final report) - **COPY THIS**
+- ✅ 8 diverse test cases - **COPY THIS**
+- ✅ Comprehensive mutation library - **REFERENCE THIS**
+
+**Key Files to Review Before Starting:**
+```bash
+# Clone and review FIRST
+git clone https://github.com/bordenet/product-requirements-assistant.git
+cd product-requirements-assistant
+
+# Core optimizer (526 lines) - READ THIS FIRST
+cat tools/evolutionary-optimizer.js
+
+# Scorer implementation - READ THIS BEFORE creating new scorers
+cat tools/prd-scorer.js
+
+# Simulation runner - READ THIS FIRST
+cat tools/run-simulation.js
+
+# Shell script - READ THIS FIRST
+cat tools/run-simulations.sh
+
+# Test cases format - READ THIS FIRST
+cat evolutionary-optimization/test-cases.json
+
+# Configuration format - READ THIS FIRST
+cat evolutionary-optimization/config.example.json
+
+# Proven mutations - READ THIS BEFORE creating mutation library
+cat evolutionary-optimization/README.md
+cat evolutionary-optimization/FINAL-REPORT.md
+```
+
+**If you find yourself writing more than 50 lines of new code, STOP and ask:**
+- "Should I be copying this from the reference repo instead?"
+- "Am I recreating something that already exists?"
+- "Have I reviewed the reference implementation?"
 
 ### Key Learnings to Preserve
 
