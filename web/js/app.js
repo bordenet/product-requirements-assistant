@@ -128,16 +128,20 @@ function setupGlobalEventListeners() {
  * Toggle dark/light theme
  */
 function toggleTheme() {
+    console.log('toggleTheme called');
     const html = document.documentElement;
     const isDark = html.classList.contains('dark');
+    console.log('Current theme:', isDark ? 'dark' : 'light');
 
     if (isDark) {
         html.classList.remove('dark');
         localStorage.setItem('theme', 'light');
+        console.log('Switched to light mode');
         storage.saveSetting('theme', 'light');
     } else {
         html.classList.add('dark');
         localStorage.setItem('theme', 'dark');
+        console.log('Switched to dark mode');
         storage.saveSetting('theme', 'dark');
     }
 }
