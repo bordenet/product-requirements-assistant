@@ -45,7 +45,7 @@ EXAMPLES:
   $(basename "$0") -v -f        # Verbose + force reinstall
 
 PERFORMANCE:
-  First run:  ~2-3 minutes (installs everything)
+  First run:  ~30-60 seconds (installs npm packages)
   Subsequent: ~5-10 seconds (checks only, skips installed)
 
 EOF
@@ -81,108 +81,43 @@ mark_cached() {
     touch "$CACHE_DIR/$pkg"
 }
 
-# Step 1: System dependencies
-task_start "Checking system dependencies"
+# Step 1: Check Node.js
+task_start "Checking Node.js"
 
-# Check Homebrew
-if ! command -v brew &>/dev/null; then
-    task_fail "Homebrew not installed"
-    echo "Install Homebrew from: https://brew.sh/"
+if ! command -v node &>/dev/null; then
+    task_fail "Node.js not installed"
+    echo "Install Node.js from: https://nodejs.org/ or use Homebrew: brew install node"
     exit 1
 fi
-verbose "Homebrew $(brew --version | head -1)"
+verbose "Node.js $(node --version)"
+verbose "npm $(npm --version)"
+task_ok "Node.js ready"
 
-# Check Go
-if ! command -v go &>/dev/null; then
-    task_start "Installing Go"
-    brew install go 2>&1 | verbose
-    mark_cached "go"
-    task_ok "Go installed"
+# Step 2: Install npm dependencies
+PACKAGE_HASH=$(md5 -q package.json 2>/dev/null || echo "none")
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "npm-deps-$PACKAGE_HASH"; then
+    task_start "Installing npm dependencies"
+    npm install 2>&1 | verbose
+    mark_cached "npm-deps-$PACKAGE_HASH"
+    task_ok "npm dependencies installed"
 else
-    verbose "Go $(go version | awk '{print $3}' | sed 's/go//')"
+    task_skip "npm dependencies"
 fi
 
-# Check Python
-if ! command -v python3 &>/dev/null; then
-    task_start "Installing Python"
-    brew install python 2>&1 | verbose
-    mark_cached "python3"
-    task_ok "Python installed"
+# Step 3: Run linter
+task_start "Running linter"
+if npm run lint 2>&1 | verbose; then
+    task_ok "Linter passed"
 else
-    verbose "Python $(python3 --version | awk '{print $2}')"
+    task_warn "Linter found issues (run 'npm run lint:fix' to auto-fix)"
 fi
 
-# Check Node.js
-if ! command -v node &>/dev/null; then
-    task_start "Installing Node.js"
-    brew install node 2>&1 | verbose
-    mark_cached "node"
-    task_ok "Node.js installed"
+# Step 4: Run tests
+task_start "Running tests"
+if npm test 2>&1 | verbose; then
+    task_ok "Tests passed"
 else
-    verbose "Node.js $(node --version)"
-fi
-
-task_ok "System dependencies ready"
-
-# Step 2: Go dependencies
-if [[ $FORCE_INSTALL == true ]] || ! is_cached "go-deps"; then
-    task_start "Installing Go dependencies"
-    cd backend
-    go mod download 2>&1 | verbose
-    cd ..
-    mark_cached "go-deps"
-    task_ok "Go dependencies installed"
-else
-    task_skip "Go dependencies"
-fi
-
-# Step 3: Python virtual environment
-if [ ! -d "venv" ]; then
-    task_start "Creating Python virtual environment"
-    python3 -m venv venv 2>&1 | verbose
-    task_ok "Virtual environment created"
-else
-    task_skip "Python virtual environment"
-fi
-
-# Step 4: Python dependencies (smart check)
-REQUIREMENTS_HASH=$(md5 -q requirements.txt 2>/dev/null || echo "none")
-if [[ $FORCE_INSTALL == true ]] || ! is_cached "py-deps-$REQUIREMENTS_HASH"; then
-    task_start "Installing Python dependencies"
-    source venv/bin/activate
-    
-    if [[ $FORCE_INSTALL == true ]]; then
-        pip install -q -r requirements.txt 2>&1 | verbose
-    else
-        # Check each package individually (faster than full install)
-        while IFS= read -r pkg; do
-            [[ -z "$pkg" ]] && continue
-            [[ "$pkg" =~ ^# ]] && continue
-            pkg_name=$(echo "$pkg" | cut -d'=' -f1 | cut -d'>' -f1 | cut -d'<' -f1 | tr -d ' ')
-            if ! pip show "$pkg_name" &>/dev/null; then
-                verbose "Installing $pkg_name..."
-                pip install -q "$pkg" 2>&1 | verbose
-            fi
-        done < requirements.txt
-    fi
-    
-    deactivate
-    mark_cached "py-deps-$REQUIREMENTS_HASH"
-    task_ok "Python dependencies installed"
-else
-    task_skip "Python dependencies"
-fi
-
-# Step 5: Quick validation
-task_start "Validating setup"
-cd backend
-if go build -o /tmp/prd-test . 2>&1 | verbose; then
-    rm -f /tmp/prd-test
-    cd ..
-    task_ok "Setup validated"
-else
-    cd ..
-    task_fail "Validation failed"
+    task_fail "Tests failed"
     exit 1
 fi
 
@@ -191,9 +126,9 @@ echo ""
 print_header "✓ Setup complete! $(get_elapsed_time)"
 echo ""
 echo "Next steps:"
-echo "  make run-backend    # Start Go backend (port 8080)"
-echo "  make run-frontend   # Start Streamlit frontend (port 8501)"
-echo "  ./run-thick-clients.sh  # Launch desktop clients"
+echo "  npm run serve       # Start local development server"
+echo "  npm test            # Run tests"
+echo "  npm run lint        # Run linter"
 echo ""
 echo "Run with -v for verbose output, -f to force reinstall"
 

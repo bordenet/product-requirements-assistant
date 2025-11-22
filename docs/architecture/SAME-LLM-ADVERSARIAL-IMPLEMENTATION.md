@@ -157,9 +157,9 @@ All success criteria have been met:
 
 - `backend/adversarial_validator.go` - Adversarial validation logic
 - `backend/adversarial_validator_test.go` - Adversarial validation tests
-- `PROMPT-FOR-CLAUDE-IN-ONE-PAGER-REPO.md` - Prompt for upgrading one-pager repo
-- `PROMPT-FOR-CLAUDE-IN-GENESIS-REPO.md` - Prompt for implementing in Genesis repo
-- `SAME-LLM-ADVERSARIAL-IMPLEMENTATION.md` - This document
+- `docs/cross-project-prompts/PROMPT-FOR-CLAUDE-IN-ONE-PAGER-REPO.md` - Prompt for upgrading one-pager repo
+- `docs/cross-project-prompts/PROMPT-FOR-CLAUDE-IN-GENESIS-REPO.md` - Prompt for implementing in Genesis repo
+- `docs/architecture/SAME-LLM-ADVERSARIAL-IMPLEMENTATION.md` - This document
 
 ## References
 

@@ -91,6 +91,41 @@ For developers who want to build desktop applications:
 - WebView2 builds available (see `cmd/webview/`)
 - See [Development Guide](docs/development/DEVELOPMENT.md) for build instructions
 
+## Evolutionary Prompt Optimization
+
+**⚠️ This repository is the authoritative source for evolutionary prompt optimization methodology.**
+
+We've developed production-validated tooling for optimizing LLM prompts through rigorous evolutionary testing:
+
+- **+31.1% quality improvement** in 20 rounds (proven with data)
+- **Objective scoring** with keep/discard logic (no subjective judgment)
+- **Proven mutation library** (Top 5 mutations deliver 71-73% of improvement)
+- **Out-of-the-box tooling** ready for Genesis-spawned projects
+
+### For Genesis Integration
+
+**Use:** [`PROMPT-FOR-GENESIS-EVOLUTIONARY-INTEGRATION.md`](PROMPT-FOR-GENESIS-EVOLUTIONARY-INTEGRATION.md) (1,063 lines)
+
+This comprehensive prompt guides Claude in the Genesis repository to:
+- ✅ **COPY** existing tools (don't recreate 526 lines of battle-tested code)
+- ✅ Integrate optimization into all spawned projects
+- ✅ Create project-type-specific scorers (PRD, one-pager, COE)
+- ✅ Enable cross-project quality comparison
+
+### For Other Projects
+
+See [`docs/cross-project-prompts/`](docs/cross-project-prompts/) for integration guides:
+- One-pager integration
+- Legacy Genesis prompts (reference only)
+
+### Key Files
+
+- `tools/evolutionary-optimizer.js` - Core optimization engine (526 lines)
+- `tools/prd-scorer.js` - Objective PRD quality scorer
+- `tools/run-simulations.sh` - Batch simulation executor
+- `evolutionary-optimization/` - Test cases, results, documentation
+- `docs/continuous-improvement/SIMULATION-RESULTS-SUMMARY.md` - Complete analysis
+
 ## Architecture
 
 - **Backend**: Go REST API on port 8080
@@ -460,6 +495,33 @@ See [`docs/deployment/RELEASING.md`](docs/deployment/RELEASING.md) for detailed 
 - Collaborative editing with conflict resolution
 
 See [`docs/decisions/REFACTORING_PLAN.md`](docs/decisions/REFACTORING_PLAN.md) for the detailed roadmap.
+
+## Documentation
+
+### Project Root
+- `README.md` - This file (main project documentation)
+- `CLAUDE.md` - AI assistant instructions (mandatory reading for AI contributors)
+- `CONTRIBUTING.md` - Contribution guidelines
+- `RELEASES.md` - Release notes
+- `PROMPT-FOR-GENESIS-EVOLUTIONARY-INTEGRATION.md` - Comprehensive Genesis integration guide
+
+### docs/
+- `docs/architecture/` - Architecture documentation and design decisions
+  - `SAME-LLM-ADVERSARIAL-IMPLEMENTATION.md` - Same-LLM adversarial configuration
+- `docs/continuous-improvement/` - Optimization results and analysis
+  - `SIMULATION-RESULTS-SUMMARY.md` - Evolutionary optimization results
+- `docs/cross-project-prompts/` - Integration prompts for other Genesis projects
+  - Genesis integration prompts (current and legacy)
+  - One-pager integration prompts
+- `docs/deployment/` - Deployment guides
+- `docs/development/` - Development guides
+- `docs/guides/` - User guides
+
+### Code Documentation
+- `tools/README.md` - Evolutionary optimization tools documentation
+- `evolutionary-optimization/README.md` - Optimization methodology overview
+- `evolutionary-optimization/FINAL-REPORT.md` - Complete optimization analysis
+- `prompts/README.md` - LLM prompt documentation
 
 ## License
 

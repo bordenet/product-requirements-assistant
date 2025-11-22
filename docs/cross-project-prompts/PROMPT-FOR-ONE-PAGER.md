@@ -251,7 +251,7 @@ After simulation completes:
 **Documentation:**
 - `evolutionary-optimization/README.md` - Overview
 - `evolutionary-optimization/results-20round/optimization-report.md` - Latest results
-- `SIMULATION-RESULTS-SUMMARY.md` - Complete analysis
+- `docs/continuous-improvement/SIMULATION-RESULTS-SUMMARY.md` - Complete analysis
 
 ---
 

@@ -81,165 +81,48 @@ mark_cached() {
     touch "$CACHE_DIR/$pkg"
 }
 
-# Step 1: System dependencies
-task_start "Checking system dependencies"
+# Step 1: Check Node.js
+task_start "Checking Node.js"
 
-# Update apt cache only if needed (once per day)
-if [[ $FORCE_INSTALL == true ]] || ! is_cached "apt-updated-$(date +%Y%m%d)"; then
-    verbose "Updating package list..."
-    sudo apt-get update -qq 2>&1 | verbose
-    mark_cached "apt-updated-$(date +%Y%m%d)"
-fi
-
-# Check/Install Go
-if ! command -v go &>/dev/null; then
-    task_start "Installing Go"
-    GO_VERSION="1.21.5"
-    GO_ARCH="linux-amd64"
-    GO_TAR="go${GO_VERSION}.${GO_ARCH}.tar.gz"
-
-    cd /tmp
-    wget -q "https://go.dev/dl/${GO_TAR}" 2>&1 | verbose
-    sudo rm -rf /usr/local/go
-    sudo tar -C /usr/local -xzf "${GO_TAR}" 2>&1 | verbose
-    rm "${GO_TAR}"
-    cd - >/dev/null
-
-    # Add to PATH if not already there
-    if ! grep -q '/usr/local/go/bin' ~/.bashrc; then
-        echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-    fi
-    export PATH=$PATH:/usr/local/go/bin
-
-    mark_cached "go-${GO_VERSION}"
-    task_ok "Go ${GO_VERSION} installed"
-fi
-verbose "Go $(go version | awk '{print $3}' | sed 's/go//')"
-
-# Check Python
-if ! command -v python3 &>/dev/null; then
-    task_start "Installing Python"
-    sudo apt-get install -y -qq python3 python3-pip python3-venv 2>&1 | verbose
-    mark_cached "python3"
-    task_ok "Python installed"
-fi
-verbose "Python $(python3 --version | awk '{print $2}')"
-
-# Check Node.js
 if ! command -v node &>/dev/null; then
     task_start "Installing Node.js"
+    # Update apt cache
+    sudo apt-get update -qq 2>&1 | verbose
+    # Install Node.js from NodeSource
     curl -fsSL https://deb.nodesource.com/setup_20.x 2>&1 | verbose | sudo -E bash - 2>&1 | verbose
     sudo apt-get install -y -qq nodejs 2>&1 | verbose
     mark_cached "nodejs"
     task_ok "Node.js installed"
 fi
 verbose "Node.js $(node --version)"
+verbose "npm $(npm --version)"
+task_ok "Node.js ready"
 
-# Check build tools (needed for Python packages like Pillow)
-if ! command -v gcc &>/dev/null; then
-    task_start "Installing build tools"
-    sudo apt-get install -y -qq build-essential gcc python3-dev 2>&1 | verbose
-    mark_cached "build-essential"
-    task_ok "Build tools installed"
-fi
-verbose "GCC $(gcc --version | head -1 | awk '{print $NF}')"
-
-# Check image processing libraries (for Pillow)
-if [[ $FORCE_INSTALL == true ]] || ! is_cached "pillow-deps"; then
-    if ! dpkg -l | grep -q libjpeg-dev 2>/dev/null; then
-        task_start "Installing image processing libraries"
-        sudo apt-get install -y -qq \
-            libjpeg-dev \
-            zlib1g-dev \
-            libtiff-dev \
-            libfreetype6-dev \
-            liblcms2-dev \
-            libwebp-dev \
-            libopenjp2-7-dev 2>&1 | verbose
-        mark_cached "pillow-deps"
-        task_ok "Image processing libraries installed"
-    else
-        task_skip "Image processing libraries"
-    fi
+# Step 2: Install npm dependencies
+PACKAGE_HASH=$(md5sum package.json 2>/dev/null | awk '{print $1}' || echo "none")
+if [[ $FORCE_INSTALL == true ]] || ! is_cached "npm-deps-$PACKAGE_HASH"; then
+    task_start "Installing npm dependencies"
+    npm install 2>&1 | verbose
+    mark_cached "npm-deps-$PACKAGE_HASH"
+    task_ok "npm dependencies installed"
 else
-    task_skip "Image processing libraries"
+    task_skip "npm dependencies"
 fi
 
-# Check WebView2/GTK dependencies
-if [[ $FORCE_INSTALL == true ]] || ! is_cached "webview-deps"; then
-    if ! dpkg -l | grep -q libwebkit2gtk-4.1-dev 2>/dev/null; then
-        task_start "Installing WebView2/GTK dependencies"
-        sudo apt-get install -y -qq libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config 2>&1 | verbose
-        mark_cached "webview-deps"
-        task_ok "WebView2/GTK dependencies installed"
-    else
-        task_skip "WebView2/GTK dependencies"
-    fi
+# Step 3: Run linter
+task_start "Running linter"
+if npm run lint 2>&1 | verbose; then
+    task_ok "Linter passed"
 else
-    task_skip "WebView2/GTK dependencies"
+    task_warn "Linter found issues (run 'npm run lint:fix' to auto-fix)"
 fi
 
-task_ok "System dependencies ready"
-
-# Step 2: Go dependencies
-if [[ $FORCE_INSTALL == true ]] || ! is_cached "go-deps"; then
-    task_start "Installing Go dependencies"
-    cd backend
-    go mod download 2>&1 | verbose
-    cd ..
-    mark_cached "go-deps"
-    task_ok "Go dependencies installed"
+# Step 4: Run tests
+task_start "Running tests"
+if npm test 2>&1 | verbose; then
+    task_ok "Tests passed"
 else
-    task_skip "Go dependencies"
-fi
-
-# Step 3: Python virtual environment
-if [ ! -d "venv" ]; then
-    task_start "Creating Python virtual environment"
-    python3 -m venv venv 2>&1 | verbose
-    task_ok "Virtual environment created"
-else
-    task_skip "Python virtual environment"
-fi
-
-# Step 4: Python dependencies (smart check)
-REQUIREMENTS_HASH=$(md5sum requirements.txt | awk '{print $1}')
-if [[ $FORCE_INSTALL == true ]] || ! is_cached "py-deps-$REQUIREMENTS_HASH"; then
-    task_start "Installing Python dependencies"
-    source venv/bin/activate
-
-    if [[ $FORCE_INSTALL == true ]]; then
-        pip install -q -r requirements.txt 2>&1 | verbose
-    else
-        # Check each package individually (faster than full install)
-        while IFS= read -r pkg; do
-            [[ -z "$pkg" ]] && continue
-            [[ "$pkg" =~ ^# ]] && continue
-            pkg_name=$(echo "$pkg" | cut -d'=' -f1 | cut -d'>' -f1 | cut -d'<' -f1 | tr -d ' ')
-            if ! pip show "$pkg_name" &>/dev/null; then
-                verbose "Installing $pkg_name..."
-                pip install -q "$pkg" 2>&1 | verbose
-            fi
-        done < requirements.txt
-    fi
-
-    deactivate
-    mark_cached "py-deps-$REQUIREMENTS_HASH"
-    task_ok "Python dependencies installed"
-else
-    task_skip "Python dependencies"
-fi
-
-# Step 5: Quick validation
-task_start "Validating setup"
-cd backend
-if go build -o /tmp/prd-test . 2>&1 | verbose; then
-    rm -f /tmp/prd-test
-    cd ..
-    task_ok "Setup validated"
-else
-    cd ..
-    task_fail "Validation failed"
+    task_fail "Tests failed"
     exit 1
 fi
 
@@ -248,9 +131,9 @@ echo ""
 print_header "✓ Setup complete! $(get_elapsed_time)"
 echo ""
 echo "Next steps:"
-echo "  make run-backend    # Start Go backend (port 8080)"
-echo "  make run-frontend   # Start Streamlit frontend (port 8501)"
-echo "  ./run-thick-clients.sh  # Launch desktop clients"
+echo "  npm run serve       # Start local development server"
+echo "  npm test            # Run tests"
+echo "  npm run lint        # Run linter"
 echo ""
 echo "Run with -v for verbose output, -f to force reinstall"
 
