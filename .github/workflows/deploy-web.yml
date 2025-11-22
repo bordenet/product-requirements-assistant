@@ -1,57 +1,36 @@
-name: Deploy Web App to CloudFront
+name: Deploy Web App to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'web/**'
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Deploy to S3
+      - name: Copy files to docs/ directory
         run: |
-          # Sync web files to S3
-          aws s3 sync web/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --delete \
-            --exclude ".git/*" \
-            --exclude ".gitignore" \
-            --exclude "README.md" \
-            --cache-control "public, max-age=31536000, immutable" \
-            --exclude "index.html" \
-            --exclude "*.json"
-          
-          # Upload index.html with short cache
-          aws s3 cp web/index.html s3://${{ secrets.S3_BUCKET_NAME }}/index.html \
-            --cache-control "public, max-age=300"
-          
-          # Upload JSON files with short cache
-          aws s3 sync web/data/ s3://${{ secrets.S3_BUCKET_NAME }}/data/ \
-            --cache-control "public, max-age=3600"
+          # Copy web app files to docs/ for GitHub Pages
+          cp -f index.html docs/
+          cp -rf js/* docs/js/
+          cp -rf css/* docs/css/
 
-      - name: Invalidate CloudFront cache
+          echo "✅ Files copied to docs/ directory"
+
+      - name: Commit and push changes
         run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add docs/
+          git commit -m "docs: Deploy web app to GitHub Pages [skip ci]" || echo "No changes to commit"
+          git push origin main
 
       - name: Deployment summary
         run: |
           echo "✅ Web app deployed successfully!"
-          echo "📦 S3 Bucket: ${{ secrets.S3_BUCKET_NAME }}"
-          echo "🌐 CloudFront Distribution: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}"
-          echo "🔗 URL: https://${{ secrets.CLOUDFRONT_DOMAIN }}"
+          echo "🌐 GitHub Pages will update in 2-5 minutes"
+          echo "🔗 URL: https://bordenet.github.io/product-requirements-assistant/"
 
