@@ -62,10 +62,10 @@ print_timer() {
     local pos=$((cols - timer_len))
 
     # Save cursor, move to position, print timer, restore cursor
-    printf "%s" "${ANSI_CURSOR_SAVE}"
+    printf "%b" "${ANSI_CURSOR_SAVE}"
     printf "\033[%dG" "$pos"  # Move to column
     printf "%b" "${timer_text}"
-    printf "%s" "${ANSI_CURSOR_RESTORE}"
+    printf "%b" "${ANSI_CURSOR_RESTORE}"
 }
 
 # Update status line in place
@@ -153,11 +153,11 @@ print_section() {
 
 # Show cursor on exit
 cleanup_display() {
-    printf "%s" "${ANSI_SHOW_CURSOR}"
+    printf "%b" "${ANSI_SHOW_CURSOR}"
 }
 
 trap cleanup_display EXIT
 
 # Hide cursor for cleaner updates
-printf "%s" "${ANSI_HIDE_CURSOR}"
+printf "%b" "${ANSI_HIDE_CURSOR}"
 
