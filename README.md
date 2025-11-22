@@ -95,7 +95,7 @@ For developers who want to build desktop applications:
 
 **⚠️ This repository is the authoritative source for evolutionary prompt optimization methodology.**
 
-We've developed production-validated tooling for optimizing LLM prompts through rigorous evolutionary testing:
+We've developed tooling for optimizing LLM prompts through evolutionary testing:
 
 - **+31.1% quality improvement** in 20 rounds (proven with data)
 - **Objective scoring** with keep/discard logic (no subjective judgment)
