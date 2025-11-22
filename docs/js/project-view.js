@@ -12,16 +12,16 @@ import { navigateTo } from './router.js';
  * Render the project detail view
  */
 export async function renderProjectView(projectId) {
-    const project = await getProject(projectId);
+  const project = await getProject(projectId);
     
-    if (!project) {
-        showToast('Project not found', 'error');
-        navigateTo('home');
-        return;
-    }
+  if (!project) {
+    showToast('Project not found', 'error');
+    navigateTo('home');
+    return;
+  }
 
-    const container = document.getElementById('app-container');
-    container.innerHTML = `
+  const container = document.getElementById('app-container');
+  container.innerHTML = `
         <div class="mb-6">
             <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center mb-4">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,17 +49,17 @@ export async function renderProjectView(projectId) {
         <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex space-x-1">
                 ${[1, 2, 3].map(phase => {
-                    const meta = getPhaseMetadata(phase);
-                    const isActive = project.phase === phase;
-                    const isCompleted = project.phases[phase].completed;
+    const meta = getPhaseMetadata(phase);
+    const isActive = project.phase === phase;
+    const isCompleted = project.phases[phase].completed;
                     
-                    return `
+    return `
                         <button 
                             class="phase-tab px-6 py-3 font-medium transition-colors ${
-                                isActive 
-                                    ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' 
-                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                            }"
+  isActive 
+    ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' 
+    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+}"
                             data-phase="${phase}"
                         >
                             <span class="mr-2">${meta.icon}</span>
@@ -67,7 +67,7 @@ export async function renderProjectView(projectId) {
                             ${isCompleted ? '<span class="ml-2 text-green-500">✓</span>' : ''}
                         </button>
                     `;
-                }).join('')}
+  }).join('')}
             </div>
         </div>
 
@@ -77,30 +77,30 @@ export async function renderProjectView(projectId) {
         </div>
     `;
 
-    // Event listeners
-    document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
-    document.getElementById('export-prd-btn').addEventListener('click', () => exportFinalPRD(project));
+  // Event listeners
+  document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
+  document.getElementById('export-prd-btn').addEventListener('click', () => exportFinalPRD(project));
     
-    document.querySelectorAll('.phase-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            const phase = parseInt(tab.dataset.phase);
-            project.phase = phase;
-            document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase);
-            attachPhaseEventListeners(project, phase);
-        });
+  document.querySelectorAll('.phase-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const phase = parseInt(tab.dataset.phase);
+      project.phase = phase;
+      document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase);
+      attachPhaseEventListeners(project, phase);
     });
+  });
 
-    attachPhaseEventListeners(project, project.phase);
+  attachPhaseEventListeners(project, project.phase);
 }
 
 /**
  * Render content for a specific phase
  */
 function renderPhaseContent(project, phase) {
-    const meta = getPhaseMetadata(phase);
-    const phaseData = project.phases[phase];
+  const meta = getPhaseMetadata(phase);
+  const phaseData = project.phases[phase];
     
-    return `
+  return `
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -177,44 +177,44 @@ function renderPhaseContent(project, phase) {
  * Attach event listeners for phase interactions
  */
 function attachPhaseEventListeners(project, phase) {
-    const copyPromptBtn = document.getElementById('copy-prompt-btn');
-    const saveResponseBtn = document.getElementById('save-response-btn');
-    const responseTextarea = document.getElementById('response-textarea');
-    const prevPhaseBtn = document.getElementById('prev-phase-btn');
-    const nextPhaseBtn = document.getElementById('next-phase-btn');
+  const copyPromptBtn = document.getElementById('copy-prompt-btn');
+  const saveResponseBtn = document.getElementById('save-response-btn');
+  const responseTextarea = document.getElementById('response-textarea');
+  const prevPhaseBtn = document.getElementById('prev-phase-btn');
+  const nextPhaseBtn = document.getElementById('next-phase-btn');
 
-    copyPromptBtn.addEventListener('click', async () => {
-        const prompt = await generatePromptForPhase(project, phase);
-        await copyToClipboard(prompt);
-        await updatePhase(project.id, phase, prompt, project.phases[phase].response);
-        renderProjectView(project.id);
-    });
+  copyPromptBtn.addEventListener('click', async () => {
+    const prompt = await generatePromptForPhase(project, phase);
+    await copyToClipboard(prompt);
+    await updatePhase(project.id, phase, prompt, project.phases[phase].response);
+    renderProjectView(project.id);
+  });
 
-    saveResponseBtn.addEventListener('click', async () => {
-        const response = responseTextarea.value.trim();
-        if (response) {
-            await updatePhase(project.id, phase, project.phases[phase].prompt, response);
-            showToast('Response saved successfully!', 'success');
-            renderProjectView(project.id);
-        } else {
-            showToast('Please enter a response', 'warning');
-        }
-    });
-
-    if (prevPhaseBtn) {
-        prevPhaseBtn.addEventListener('click', () => {
-            project.phase = phase - 1;
-            document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase - 1);
-            attachPhaseEventListeners(project, phase - 1);
-        });
+  saveResponseBtn.addEventListener('click', async () => {
+    const response = responseTextarea.value.trim();
+    if (response) {
+      await updatePhase(project.id, phase, project.phases[phase].prompt, response);
+      showToast('Response saved successfully!', 'success');
+      renderProjectView(project.id);
+    } else {
+      showToast('Please enter a response', 'warning');
     }
+  });
 
-    if (nextPhaseBtn && project.phases[phase].completed) {
-        nextPhaseBtn.addEventListener('click', () => {
-            project.phase = phase + 1;
-            document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase + 1);
-            attachPhaseEventListeners(project, phase + 1);
-        });
-    }
+  if (prevPhaseBtn) {
+    prevPhaseBtn.addEventListener('click', () => {
+      project.phase = phase - 1;
+      document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase - 1);
+      attachPhaseEventListeners(project, phase - 1);
+    });
+  }
+
+  if (nextPhaseBtn && project.phases[phase].completed) {
+    nextPhaseBtn.addEventListener('click', () => {
+      project.phase = phase + 1;
+      document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase + 1);
+      attachPhaseEventListeners(project, phase + 1);
+    });
+  }
 }
 
