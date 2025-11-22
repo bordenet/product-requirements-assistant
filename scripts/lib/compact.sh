@@ -62,10 +62,10 @@ print_timer() {
     local pos=$((cols - timer_len))
 
     # Save cursor, move to position, print timer, restore cursor
-    printf "%b" "${ANSI_CURSOR_SAVE}"
+    printf "\033[s"
     printf "\033[%dG" "$pos"  # Move to column
     printf "%b" "${timer_text}"
-    printf "%b" "${ANSI_CURSOR_RESTORE}"
+    printf "\033[u"
 }
 
 # Update status line in place
@@ -99,7 +99,7 @@ task_skip() {
 task_start() {
     CURRENT_TASK="$1"
     update_status "${SYM_RUN}" "${CURRENT_TASK}..."
-    
+
     if [[ $VERBOSE -eq 1 ]]; then
         finalize_status
     fi
@@ -160,4 +160,3 @@ trap cleanup_display EXIT
 
 # Hide cursor for cleaner updates
 printf "%b" "${ANSI_HIDE_CURSOR}"
-

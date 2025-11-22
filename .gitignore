@@ -11,6 +11,14 @@ inputs/*
 # Environment variables
 .env
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+
 # Node.js / JavaScript
 node_modules/
 npm-debug.log*
@@ -51,3 +59,8 @@ temp-docs-*/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Build artifacts
+build/
+dist/
+*.log
