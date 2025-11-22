@@ -22,11 +22,10 @@ source "${SCRIPT_DIR}/lib/compact.sh"
 ################################################################################
 
 readonly DOCS_DIR="docs"
-readonly WEB_DIR="web"
 readonly REQUIRED_FILES=(
-    "${WEB_DIR}/index.html"
-    "${WEB_DIR}/css/styles.css"
-    "${WEB_DIR}/js/app.js"
+    "index.html"
+    "css/styles.css"
+    "js/app.js"
 )
 
 ################################################################################
@@ -56,7 +55,7 @@ SYNOPSIS
     deploy-web.sh [OPTIONS]
 
 DESCRIPTION
-    Deploys the web application to GitHub Pages by copying files from web/
+    Deploys the web application to GitHub Pages by copying files from root
     to docs/ directory. The docs/ directory is configured as the GitHub Pages
     source in repository settings.
 
@@ -86,7 +85,7 @@ EXAMPLES
         $ ./scripts/deploy-web.sh -n -v
 
 DEPLOYMENT PROCESS
-    1. Validates required files exist in web/ directory
+    1. Validates required files exist in root directory
     2. Copies web app files to docs/ directory
     3. Stages changes in git
     4. Commits with deployment message
@@ -168,21 +167,31 @@ copy_web_files() {
     # Create docs directory if it doesn't exist
     mkdir -p "${DOCS_DIR}"
 
-    # Copy files
-    log_verbose "Copying ${WEB_DIR}/ to ${DOCS_DIR}/"
+    # Copy files (index.html, css/, js/)
+    log_verbose "Copying web app files to ${DOCS_DIR}/"
 
+    # Copy index.html
+    cp -f index.html "${DOCS_DIR}/"
+
+    # Copy css/ and js/ directories
     if [[ ${VERBOSE} -eq 1 ]]; then
         rsync -a --delete \
             --exclude='.DS_Store' \
             --exclude='*.swp' \
-            --exclude='README.md' \
-            "${WEB_DIR}/" "${DOCS_DIR}/"
+            css/ "${DOCS_DIR}/css/"
+        rsync -a --delete \
+            --exclude='.DS_Store' \
+            --exclude='*.swp' \
+            js/ "${DOCS_DIR}/js/"
     else
         rsync -a --delete \
             --exclude='.DS_Store' \
             --exclude='*.swp' \
-            --exclude='README.md' \
-            "${WEB_DIR}/" "${DOCS_DIR}/" 2>&1 | grep -v "^rsync" || true
+            css/ "${DOCS_DIR}/css/" 2>&1 | grep -v "^rsync" || true
+        rsync -a --delete \
+            --exclude='.DS_Store' \
+            --exclude='*.swp' \
+            js/ "${DOCS_DIR}/js/" 2>&1 | grep -v "^rsync" || true
     fi
 
     task_ok "Files copied"
@@ -207,7 +216,7 @@ commit_and_push() {
     # Commit
     local commit_msg="Deploy web app to GitHub Pages
 
-Automated deployment from web/ to docs/
+Automated deployment from root to docs/
 Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
 
     log_verbose "Committing with message:"
