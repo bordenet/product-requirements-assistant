@@ -599,7 +599,7 @@ cd your-project
 **Key Files:**
 - `tools/evolutionary-optimizer.js`
 - `tools/prd-scorer.js`
-- `SIMULATION-RESULTS-SUMMARY.md`
+- `docs/continuous-improvement/SIMULATION-RESULTS-SUMMARY.md`
 
 ---
 

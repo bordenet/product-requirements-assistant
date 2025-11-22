@@ -393,7 +393,7 @@ cd one-pager
 - `tools/evolutionary-optimizer.js` - Core optimizer
 - `tools/prd-scorer.js` - Template for one-pager-scorer.js
 - `prompts/phase1-claude-initial.md` - Example of mutations applied
-- `SIMULATION-RESULTS-SUMMARY.md` - Complete analysis
+- `docs/continuous-improvement/SIMULATION-RESULTS-SUMMARY.md` - Complete analysis
 
 ---
 

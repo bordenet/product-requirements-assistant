@@ -419,7 +419,7 @@ cd your-project
 - `tools/evolutionary-optimizer.js` - Core optimizer
 - `tools/prd-scorer.js` - Scoring implementation
 - `tools/run-simulation.js` - Simulation runner
-- `SIMULATION-RESULTS-SUMMARY.md` - Complete analysis
+- `docs/continuous-improvement/SIMULATION-RESULTS-SUMMARY.md` - Complete analysis
 
 ---
 

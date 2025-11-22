@@ -1,5 +1,0 @@
-{
-  "title": "Mobile Offline Data Synchronization",
-  "problems": "Our mobile app users frequently work in areas with poor or no internet connectivity, causing data loss and frustration. Current implementation requires constant internet connection, leading to poor user experience in rural areas, underground locations, or during travel. Users report losing work when connection drops unexpectedly.",
-  "context": "We have a React Native mobile app that currently relies on real-time API calls. The app handles customer data, forms, and media uploads. We need to maintain data integrity and handle conflicts when multiple devices sync the same data. The solution should work across iOS and Android platforms and integrate with our existing SQLite local storage."
-}
