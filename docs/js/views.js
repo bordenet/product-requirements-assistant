@@ -11,10 +11,10 @@ import { navigateTo } from './router.js';
  * Render the projects list view
  */
 export async function renderProjectsList() {
-    const projects = await getAllProjects();
+  const projects = await getAllProjects();
     
-    const container = document.getElementById('app-container');
-    container.innerHTML = `
+  const container = document.getElementById('app-container');
+  container.innerHTML = `
         <div class="mb-6 flex items-center justify-between">
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
                 My Projects
@@ -82,43 +82,43 @@ export async function renderProjectsList() {
         `}
     `;
 
-    // Event listeners
-    const newProjectBtns = container.querySelectorAll('#new-project-btn, #new-project-btn-empty');
-    newProjectBtns.forEach(btn => {
-        btn.addEventListener('click', () => navigateTo('new-project'));
-    });
+  // Event listeners
+  const newProjectBtns = container.querySelectorAll('#new-project-btn, #new-project-btn-empty');
+  newProjectBtns.forEach(btn => {
+    btn.addEventListener('click', () => navigateTo('new-project'));
+  });
 
-    const projectCards = container.querySelectorAll('[data-project-id]');
-    projectCards.forEach(card => {
-        card.addEventListener('click', (e) => {
-            if (!e.target.closest('.delete-project-btn')) {
-                navigateTo('project', card.dataset.projectId);
-            }
-        });
+  const projectCards = container.querySelectorAll('[data-project-id]');
+  projectCards.forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (!e.target.closest('.delete-project-btn')) {
+        navigateTo('project', card.dataset.projectId);
+      }
     });
+  });
 
-    const deleteBtns = container.querySelectorAll('.delete-project-btn');
-    deleteBtns.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const projectId = btn.dataset.projectId;
-            const project = projects.find(p => p.id === projectId);
+  const deleteBtns = container.querySelectorAll('.delete-project-btn');
+  deleteBtns.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const projectId = btn.dataset.projectId;
+      const project = projects.find(p => p.id === projectId);
             
-            if (await confirm(`Are you sure you want to delete "${project.title}"?`, 'Delete Project')) {
-                await deleteProject(projectId);
-                showToast('Project deleted', 'success');
-                renderProjectsList();
-            }
-        });
+      if (await confirm(`Are you sure you want to delete "${project.title}"?`, 'Delete Project')) {
+        await deleteProject(projectId);
+        showToast('Project deleted', 'success');
+        renderProjectsList();
+      }
     });
+  });
 }
 
 /**
  * Render the new project form
  */
 export function renderNewProjectForm() {
-    const container = document.getElementById('app-container');
-    container.innerHTML = `
+  const container = document.getElementById('app-container');
+  container.innerHTML = `
         <div class="max-w-3xl mx-auto">
             <div class="mb-6">
                 <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center">
@@ -189,21 +189,21 @@ export function renderNewProjectForm() {
         </div>
     `;
 
-    // Event listeners
-    document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
-    document.getElementById('cancel-btn').addEventListener('click', () => navigateTo('home'));
+  // Event listeners
+  document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
+  document.getElementById('cancel-btn').addEventListener('click', () => navigateTo('home'));
     
-    document.getElementById('new-project-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
+  document.getElementById('new-project-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
         
-        const formData = new FormData(e.target);
-        const title = formData.get('title');
-        const problems = formData.get('problems');
-        const context = formData.get('context') || '';
+    const formData = new FormData(e.target);
+    const title = formData.get('title');
+    const problems = formData.get('problems');
+    const context = formData.get('context') || '';
 
-        const project = await createProject(title, problems, context);
-        showToast('Project created successfully!', 'success');
-        navigateTo('project', project.id);
-    });
+    const project = await createProject(title, problems, context);
+    showToast('Project created successfully!', 'success');
+    navigateTo('project', project.id);
+  });
 }
 
