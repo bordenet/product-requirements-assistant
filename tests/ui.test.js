@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
-import { showToast, showLoading, hideLoading, copyToClipboard, formatDate, formatBytes } from '../js/ui.js';
+import { showToast, showLoading, hideLoading, copyToClipboard, formatDate, formatBytes, confirm } from '../js/ui.js';
 
 describe('UI Module', () => {
   beforeEach(() => {
@@ -149,6 +149,67 @@ describe('UI Module', () => {
 
     test('should handle zero', () => {
       expect(formatBytes(0)).toBe('0 Bytes');
+    });
+  });
+
+  describe('confirm', () => {
+    test('should create confirmation modal', async () => {
+      const promise = confirm('Test Title', 'Test Message');
+
+      const modal = document.querySelector('.fixed.inset-0');
+      expect(modal).toBeTruthy();
+      expect(modal.textContent).toContain('Test Title');
+      expect(modal.textContent).toContain('Test Message');
+
+      // Click confirm button
+      const confirmBtn = modal.querySelector('#confirm-btn');
+      confirmBtn.click();
+
+      const result = await promise;
+      expect(result).toBe(true);
+      expect(document.querySelector('.fixed.inset-0')).toBeFalsy();
+    });
+
+    test('should return true when confirm button clicked', async () => {
+      const promise = confirm('Delete?', 'Are you sure?');
+
+      const confirmBtn = document.querySelector('#confirm-btn');
+      confirmBtn.click();
+
+      const result = await promise;
+      expect(result).toBe(true);
+    });
+
+    test('should return false when cancel button clicked', async () => {
+      const promise = confirm('Delete?', 'Are you sure?');
+
+      const cancelBtn = document.querySelector('#cancel-btn');
+      cancelBtn.click();
+
+      const result = await promise;
+      expect(result).toBe(false);
+    });
+
+    test('should return false when background clicked', async () => {
+      const promise = confirm('Delete?', 'Are you sure?');
+
+      const modal = document.querySelector('.fixed.inset-0');
+      modal.click();
+
+      const result = await promise;
+      expect(result).toBe(false);
+    });
+
+    test('should remove modal after interaction', async () => {
+      const promise = confirm('Test', 'Message');
+
+      expect(document.querySelector('.fixed.inset-0')).toBeTruthy();
+
+      const confirmBtn = document.querySelector('#confirm-btn');
+      confirmBtn.click();
+
+      await promise;
+      expect(document.querySelector('.fixed.inset-0')).toBeFalsy();
     });
   });
 });

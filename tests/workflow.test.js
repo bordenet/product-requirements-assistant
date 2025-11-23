@@ -1,6 +1,6 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
-import { getPrompt, savePrompt, resetPrompt, generatePhase1Prompt, generatePhase2Prompt, generatePhase3Prompt, generatePromptForPhase, getPhaseMetadata } from '../js/workflow.js';
-import { createProject } from '../js/projects.js';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
+import { getPrompt, savePrompt, resetPrompt, generatePhase1Prompt, generatePhase2Prompt, generatePhase3Prompt, generatePromptForPhase, getPhaseMetadata, exportFinalPRD, copyPromptToClipboard, loadDefaultPrompts } from '../js/workflow.js';
+import { createProject, updatePhase } from '../js/projects.js';
 import storage from '../js/storage.js';
 
 describe('Workflow Module', () => {
@@ -10,6 +10,53 @@ describe('Workflow Module', () => {
 
     // Clear prompts to avoid test interference
     // We'll let each test set up its own prompts
+  });
+
+  describe('loadDefaultPrompts', () => {
+    test('should load default prompts from JSON file', async () => {
+      // Mock fetch
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          json: () => Promise.resolve({
+            '1': 'Default prompt for phase 1',
+            '2': 'Default prompt for phase 2',
+            '3': 'Default prompt for phase 3'
+          })
+        })
+      );
+
+      await loadDefaultPrompts();
+
+      expect(global.fetch).toHaveBeenCalledWith('data/prompts.json');
+    });
+
+    test('should handle fetch errors gracefully', async () => {
+      // Mock fetch to fail
+      global.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
+
+      // Should not throw
+      await expect(loadDefaultPrompts()).resolves.not.toThrow();
+    });
+
+    test('should not overwrite existing prompts', async () => {
+      // Save a custom prompt first
+      await savePrompt(1, 'Custom prompt');
+
+      // Mock fetch
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          json: () => Promise.resolve({
+            '1': 'Default prompt for phase 1'
+          })
+        })
+      );
+
+      await loadDefaultPrompts();
+
+      // Custom prompt should still be there
+      const retrieved = await getPrompt(1);
+      expect(retrieved).toBe('Custom prompt');
+    });
   });
 
   describe('getPrompt and savePrompt', () => {
@@ -258,6 +305,78 @@ describe('Workflow Module', () => {
     test('should return empty object for invalid phase', () => {
       const metadata = getPhaseMetadata(99);
       expect(metadata).toEqual({});
+    });
+  });
+
+  describe('exportFinalPRD', () => {
+    beforeEach(() => {
+      // Mock DOM elements needed for export
+      document.body.innerHTML = '<div id="toast-container"></div>';
+
+      // Mock URL.createObjectURL and URL.revokeObjectURL
+      global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+      global.URL.revokeObjectURL = jest.fn();
+    });
+
+    test('should export PRD from phase 3 if available', async () => {
+      const project = await createProject('Test Project', 'Problems', 'Context');
+      await updatePhase(project.id, 3, 'prompt', 'Final PRD content');
+
+      const updatedProject = await storage.getProject(project.id);
+      await exportFinalPRD(updatedProject);
+
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+      expect(global.URL.revokeObjectURL).toHaveBeenCalled();
+    });
+
+    test('should export PRD from phase 2 if phase 3 not available', async () => {
+      const project = await createProject('Test Project', 'Problems', 'Context');
+      await updatePhase(project.id, 2, 'prompt', 'Phase 2 PRD content');
+
+      const updatedProject = await storage.getProject(project.id);
+      await exportFinalPRD(updatedProject);
+
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    test('should export PRD from phase 1 if others not available', async () => {
+      const project = await createProject('Test Project', 'Problems', 'Context');
+      await updatePhase(project.id, 1, 'prompt', 'Phase 1 PRD content');
+
+      const updatedProject = await storage.getProject(project.id);
+      await exportFinalPRD(updatedProject);
+
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    test('should show warning if no PRD content available', async () => {
+      const project = await createProject('Test Project', 'Problems', 'Context');
+
+      await exportFinalPRD(project);
+
+      expect(global.URL.createObjectURL).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('copyPromptToClipboard', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '<div id="toast-container"></div>';
+
+      // Mock clipboard API
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: jest.fn(() => Promise.resolve())
+        }
+      });
+    });
+
+    test('should copy prompt to clipboard and save to project', async () => {
+      const project = await createProject('Test Project', 'Problems', 'Context');
+
+      await copyPromptToClipboard(project, 1);
+
+      // Verify clipboard was called
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
     });
   });
 
