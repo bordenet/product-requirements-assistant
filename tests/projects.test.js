@@ -1,5 +1,5 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
-import { createProject, getAllProjects, getProject, updatePhase, updateProject, deleteProject, importProjects } from '../js/projects.js';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
+import { createProject, getAllProjects, getProject, updatePhase, updateProject, deleteProject, importProjects, exportProject, exportAllProjects } from '../js/projects.js';
 import storage from '../js/storage.js';
 
 describe('Projects Module', () => {
@@ -169,6 +169,39 @@ describe('Projects Module', () => {
       expect(retrieved).toBeTruthy();
       expect(retrieved.title).toBe(original.title);
     });
+
+    test('should import multiple projects from backup file', async () => {
+      const backupData = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        projects: [
+          await createProject('Project 1', 'Problems 1', 'Context 1'),
+          await createProject('Project 2', 'Problems 2', 'Context 2')
+        ]
+      };
+
+      const blob = new Blob([JSON.stringify(backupData)], { type: 'application/json' });
+      const file = new File([blob], 'backup.json', { type: 'application/json' });
+
+      const imported = await importProjects(file);
+
+      expect(imported).toBe(2);
+    });
+
+    test('should reject invalid file format', async () => {
+      const invalidData = { invalid: 'data' };
+      const blob = new Blob([JSON.stringify(invalidData)], { type: 'application/json' });
+      const file = new File([blob], 'invalid.json', { type: 'application/json' });
+
+      await expect(importProjects(file)).rejects.toThrow('Invalid file format');
+    });
+
+    test('should reject malformed JSON', async () => {
+      const blob = new Blob(['not valid json'], { type: 'application/json' });
+      const file = new File([blob], 'malformed.json', { type: 'application/json' });
+
+      await expect(importProjects(file)).rejects.toThrow();
+    });
   });
 
   describe('updateProject', () => {
@@ -188,6 +221,57 @@ describe('Projects Module', () => {
     test('should throw error for non-existent project', async () => {
       await expect(updateProject('non-existent-id', { title: 'Test' }))
         .rejects.toThrow('Project not found');
+    });
+  });
+
+  describe('exportProject', () => {
+    beforeEach(() => {
+      // Mock URL.createObjectURL and URL.revokeObjectURL
+      global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+      global.URL.revokeObjectURL = jest.fn();
+    });
+
+    test('should export single project as JSON', async () => {
+      const project = await createProject('Export Test', 'Problems', 'Context');
+
+      await exportProject(project.id);
+
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+      expect(global.URL.revokeObjectURL).toHaveBeenCalled();
+    });
+
+    test('should throw error for non-existent project', async () => {
+      await expect(exportProject('non-existent-id'))
+        .rejects.toThrow('Project not found');
+    });
+  });
+
+  describe('exportAllProjects', () => {
+    beforeEach(() => {
+      global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+      global.URL.revokeObjectURL = jest.fn();
+    });
+
+    test('should export all projects as backup JSON', async () => {
+      await createProject('Project 1', 'Problems 1', 'Context 1');
+      await createProject('Project 2', 'Problems 2', 'Context 2');
+
+      await exportAllProjects();
+
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+      expect(global.URL.revokeObjectURL).toHaveBeenCalled();
+    });
+
+    test('should export empty backup if no projects', async () => {
+      // Clear all projects
+      const projects = await getAllProjects();
+      for (const project of projects) {
+        await deleteProject(project.id);
+      }
+
+      await exportAllProjects();
+
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
     });
   });
 });
