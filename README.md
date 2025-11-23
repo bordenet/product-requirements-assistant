@@ -23,45 +23,81 @@ No installation required. Works on any device with a modern browser. All data st
 
 ## Screenshots
 
-See the workflow in action with our light-hearted "MonkeyMoonshot" example project:
+See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phase 1 workflow):
 
 <details>
-<summary>🤖 <strong>Step 1: Phase 1 - Initial Draft with Claude</strong> - Copy the prompt to Claude Sonnet 4.5</summary>
+<summary>📋 <strong>Step 1: Generate Phase 1 Prompt</strong> - Our tool creates the optimized prompt</summary>
 
-![Phase 1 Prompt](docs/MonkeyMoonshot/02-phase1-prompt.png)
+![Tool Phase 1 Prompt](docs/MonkeyMoonshot/01-tool-phase1-prompt.png)
 
-*Copy the generated prompt and paste it into Claude Sonnet 4.5. The prompt is optimized through evolutionary testing.*
+*The tool generates a Phase 1 prompt optimized through evolutionary testing. Copy this prompt.*
 
 </details>
 
 <details>
-<summary>📝 <strong>Step 2: Paste Claude's Response</strong> - Capture the initial PRD draft</summary>
+<summary>🤖 <strong>Step 2: Paste into Claude Code</strong> - Claude generates the initial PRD draft</summary>
 
-![Phase 1 Response](docs/MonkeyMoonshot/03-phase1-response.png)
+![Claude Phase 1 Draft](docs/MonkeyMoonshot/02-claude-phase1-draft.png)
 
-*Paste Claude's response back into the app. Your initial PRD draft is now saved and ready for review.*
-
-</details>
-
-<details>
-<summary>🔍 <strong>Step 3: Phase 2 - Review with Gemini</strong> - Get a second perspective</summary>
-
-![Phase 2 Prompt](docs/MonkeyMoonshot/04-phase2-prompt.png)
-
-*Copy the Phase 2 prompt to Gemini 2.5 Pro for an independent review and refinement of the draft.*
+*Paste the prompt into Claude Code (or Claude Sonnet 4.5). Claude begins generating the PRD.*
 
 </details>
 
 <details>
-<summary>✨ <strong>Step 4: Continue the Workflow</strong> - Complete Phase 2 and Phase 3</summary>
+<summary>✍️ <strong>Step 3: Claude Continues</strong> - The PRD draft continues</summary>
 
-![Phase 2 in Progress](docs/MonkeyMoonshot/05-phase2-in-progress.png)
+![Claude Phase 1 Continued](docs/MonkeyMoonshot/03-claude-phase1-continued.png)
 
-*Continue by pasting Gemini's response, then proceed to Phase 3 for final comparison and synthesis.*
+*Claude continues writing the PRD draft with detailed sections.*
 
 </details>
 
-> **Note:** These screenshots demonstrate the copy/paste workflow pattern through Phase 1 and the start of Phase 2. The same pattern continues through Phase 2 completion and Phase 3 for final PRD synthesis.
+<details>
+<summary>✅ <strong>Step 4: Claude Completes Draft</strong> - The initial PRD is complete</summary>
+
+![Claude Phase 1 Complete](docs/MonkeyMoonshot/04-claude-phase1-complete.png)
+
+*Claude finishes the initial PRD draft. Now copy this entire response.*
+
+</details>
+
+<details>
+<summary>📥 <strong>Step 5: Paste Back into Tool</strong> - Begin pasting Claude's response</summary>
+
+![Tool Paste Phase 1 Start](docs/MonkeyMoonshot/05-tool-paste-phase1-start.png)
+
+*Paste Claude's PRD draft back into our tool. The tool captures the response.*
+
+</details>
+
+<details>
+<summary>📥 <strong>Step 6: Continue Pasting</strong> - The response continues</summary>
+
+![Tool Paste Phase 1 Continued](docs/MonkeyMoonshot/06-tool-paste-phase1-continued.png)
+
+*Continue pasting the full response from Claude.*
+
+</details>
+
+<details>
+<summary>📥 <strong>Step 7: More Pasting</strong> - Nearly complete</summary>
+
+![Tool Paste Phase 1 More](docs/MonkeyMoonshot/07-tool-paste-phase1-more.png)
+
+*The paste continues - make sure to capture the entire PRD draft.*
+
+</details>
+
+<details>
+<summary>🎉 <strong>Step 8: Phase 1 Complete</strong> - Ready for Phase 2</summary>
+
+![Tool Paste Phase 1 Complete](docs/MonkeyMoonshot/08-tool-paste-phase1-complete.png)
+
+*Phase 1 is complete! The tool now has Claude's initial PRD draft and is ready for Phase 2 (Gemini review).*
+
+</details>
+
+> **Note:** These screenshots demonstrate the complete Phase 1 workflow: generate prompt in our tool → paste into Claude Code → paste Claude's response back into our tool. The same copy/paste pattern continues for Phase 2 (Gemini review) and Phase 3 (final synthesis).
 
 ## How It Works
 
