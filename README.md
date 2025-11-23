@@ -80,20 +80,11 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>📥 <strong>Step 7: More Pasting</strong> - Nearly complete</summary>
+<summary>🎯 <strong>Step 7: Ready for Phase 2</strong> - Phase 1 complete, starting Phase 2</summary>
 
-![Tool Paste Phase 1 More](docs/MonkeyMoonshot/07-tool-paste-phase1-more.png)
+![Phase 2 Ready](docs/MonkeyMoonshot/07-phase2-ready.png)
 
-*The paste continues - make sure to capture the entire PRD draft.*
-
-</details>
-
-<details>
-<summary>🎉 <strong>Step 8: Phase 1 Complete</strong> - Ready for Phase 2</summary>
-
-![Tool Paste Phase 1 Complete](docs/MonkeyMoonshot/08-tool-paste-phase1-complete.png)
-
-*Phase 1 is complete! The tool now has Claude's initial PRD draft and is ready for Phase 2 (Gemini review).*
+*Phase 1 is complete! The tool now has Claude's initial PRD draft and you're starting Phase 2 (Gemini review).*
 
 </details>
 

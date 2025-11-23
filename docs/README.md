@@ -260,15 +260,14 @@ This example demonstrates the complete Phase 1 workflow:
 3. **Claude generates PRD** - Claude creates the initial PRD draft
 4. **Copy back to tool** - User pastes Claude's complete response back into our tool
 
-**Screenshots** (8 total):
+**Screenshots** (7 total):
 1. `01-tool-phase1-prompt.png` - Tool generates Phase 1 prompt
 2. `02-claude-phase1-draft.png` - Claude begins generating PRD
 3. `03-claude-phase1-continued.png` - Claude continues the PRD
 4. `04-claude-phase1-complete.png` - Claude completes the PRD draft
 5. `05-tool-paste-phase1-start.png` - Begin pasting Claude's response into tool
 6. `06-tool-paste-phase1-continued.png` - Continue pasting
-7. `07-tool-paste-phase1-more.png` - More pasting
-8. `08-tool-paste-phase1-complete.png` - Phase 1 complete, ready for Phase 2
+7. `07-phase2-ready.png` - Phase 1 complete, starting Phase 2
 
 These screenshots are embedded in the main [README.md](../README.md) as expandable `<details>` sections for an elegant, interactive documentation experience.
 
