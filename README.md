@@ -7,6 +7,8 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/bordenet/product-requirements-assistant)](https://github.com/bordenet/product-requirements-assistant/releases/latest)
 
+> **📊 QUALITY STATUS**: Test coverage: 63.19% (target: 70%). Workflow module needs additional testing (37.25% coverage). See [QUALITY_ASSESSMENT.md](QUALITY_ASSESSMENT.md) for details.
+
 A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.
 
 **🌐 Try it now: [https://bordenet.github.io/product-requirements-assistant/](https://bordenet.github.io/product-requirements-assistant/)**
