@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
-import { createProject, getAllProjects, getProject, updatePhase, deleteProject, importProjects } from '../js/projects.js';
+import { createProject, getAllProjects, getProject, updatePhase, updateProject, deleteProject, importProjects } from '../js/projects.js';
 import storage from '../js/storage.js';
 
 describe('Projects Module', () => {
@@ -168,6 +168,26 @@ describe('Projects Module', () => {
       const retrieved = await getProject(original.id);
       expect(retrieved).toBeTruthy();
       expect(retrieved.title).toBe(original.title);
+    });
+  });
+
+  describe('updateProject', () => {
+    test('should update project fields', async () => {
+      const project = await createProject('Original Title', 'Problems', 'Context');
+
+      const updated = await updateProject(project.id, {
+        title: 'Updated Title',
+        problems: 'Updated Problems'
+      });
+
+      expect(updated.title).toBe('Updated Title');
+      expect(updated.problems).toBe('Updated Problems');
+      expect(updated.context).toBe('Context'); // Unchanged
+    });
+
+    test('should throw error for non-existent project', async () => {
+      await expect(updateProject('non-existent-id', { title: 'Test' }))
+        .rejects.toThrow('Project not found');
     });
   });
 });

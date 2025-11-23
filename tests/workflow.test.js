@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
-import { getPrompt, savePrompt, resetPrompt, generatePhase1Prompt, generatePhase2Prompt, generatePhase3Prompt } from '../js/workflow.js';
+import { getPrompt, savePrompt, resetPrompt, generatePhase1Prompt, generatePhase2Prompt, generatePhase3Prompt, generatePromptForPhase, getPhaseMetadata } from '../js/workflow.js';
 import { createProject } from '../js/projects.js';
 import storage from '../js/storage.js';
 
@@ -191,4 +191,74 @@ describe('Workflow Module', () => {
       expect(phase3Prompt.length).toBeGreaterThan(0);
     });
   });
+
+  describe('generatePromptForPhase', () => {
+    test('should generate prompt for phase 1', async () => {
+      await savePrompt(1, 'Phase 1 template');
+      const project = await createProject('Test', 'Problems', 'Context');
+
+      const prompt = await generatePromptForPhase(project, 1);
+      expect(typeof prompt).toBe('string');
+      expect(prompt.length).toBeGreaterThan(0);
+    });
+
+    test('should generate prompt for phase 2', async () => {
+      await savePrompt(2, 'Phase 2 template');
+      const project = await createProject('Test', 'Problems', 'Context');
+      project.phases[1].response = 'Phase 1 response';
+
+      const prompt = await generatePromptForPhase(project, 2);
+      expect(typeof prompt).toBe('string');
+      expect(prompt.length).toBeGreaterThan(0);
+    });
+
+    test('should generate prompt for phase 3', async () => {
+      await savePrompt(3, 'Phase 3 template');
+      const project = await createProject('Test', 'Problems', 'Context');
+      project.phases[1].response = 'Phase 1 response';
+      project.phases[2].response = 'Phase 2 response';
+
+      const prompt = await generatePromptForPhase(project, 3);
+      expect(typeof prompt).toBe('string');
+      expect(prompt.length).toBeGreaterThan(0);
+    });
+
+    test('should throw error for invalid phase', async () => {
+      const project = await createProject('Test', 'Problems', 'Context');
+
+      await expect(generatePromptForPhase(project, 99)).rejects.toThrow('Invalid phase: 99');
+    });
+  });
+
+  describe('getPhaseMetadata', () => {
+    test('should return metadata for phase 1', () => {
+      const metadata = getPhaseMetadata(1);
+      expect(metadata.title).toBe('Phase 1: Initial Draft');
+      expect(metadata.ai).toBe('Claude Sonnet 4.5');
+      expect(metadata.color).toBe('blue');
+      expect(metadata.icon).toBe('📝');
+    });
+
+    test('should return metadata for phase 2', () => {
+      const metadata = getPhaseMetadata(2);
+      expect(metadata.title).toBe('Phase 2: Review & Refine');
+      expect(metadata.ai).toBe('Gemini 2.5 Pro');
+      expect(metadata.color).toBe('purple');
+      expect(metadata.icon).toBe('🔍');
+    });
+
+    test('should return metadata for phase 3', () => {
+      const metadata = getPhaseMetadata(3);
+      expect(metadata.title).toBe('Phase 3: Final Comparison');
+      expect(metadata.ai).toBe('Claude Sonnet 4.5');
+      expect(metadata.color).toBe('green');
+      expect(metadata.icon).toBe('✨');
+    });
+
+    test('should return empty object for invalid phase', () => {
+      const metadata = getPhaseMetadata(99);
+      expect(metadata).toEqual({});
+    });
+  });
+
 });
