@@ -150,4 +150,3 @@ When ready, provide your improved version in this format:
 ## Your Review
 
 Start by providing your initial assessment scores, then work with the user to create an improved version.
-

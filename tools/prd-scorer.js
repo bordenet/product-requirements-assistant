@@ -2,7 +2,7 @@
 
 /**
  * PRD Scorer
- * 
+ *
  * Evaluates PRD quality using objective criteria:
  * - Comprehensiveness: Covers all necessary PRD aspects
  * - Clarity: Requirements unambiguous and specific
@@ -129,7 +129,7 @@ class PRDScorer {
     const hasGoals = /##\s+3\.\s+Goals/i.test(content);
     const hasMetrics = /Success Metrics/i.test(content);
     const metricsHaveBaseline = /baseline|current state|from \d+/i.test(content);
-    
+
     return hasGoals && hasMetrics && metricsHaveBaseline;
   }
 
@@ -140,7 +140,7 @@ class PRDScorer {
     const hasSolution = /##\s+4\.\s+.*Solution/i.test(content);
     const hasRequirements = /##\s+6\.\s+Requirements/i.test(content);
     const requirementsAreNumbered = /FR\d+|NFR\d+|REQ-\d+/i.test(content);
-    
+
     return hasSolution && hasRequirements && requirementsAreNumbered;
   }
 
@@ -150,7 +150,7 @@ class PRDScorer {
   checkStakeholderRequirements(content) {
     const hasStakeholders = /##\s+7\.\s+Stakeholders/i.test(content);
     const stakeholdersHaveRoles = /Role:|Impact:|Needs:/i.test(content);
-    
+
     return hasStakeholders && stakeholdersHaveRoles;
   }
 
@@ -189,7 +189,7 @@ class PRDScorer {
   generateReport(scores) {
     let report = '# PRD Quality Score Report\n\n';
     report += `**Overall Score:** ${scores.overall.toFixed(2)}/5.0\n\n`;
-    
+
     report += '## Scores by Criterion\n\n';
     for (const [criterion, score] of Object.entries(scores)) {
       if (criterion !== 'overall' && criterion !== 'details') {
@@ -197,7 +197,7 @@ class PRDScorer {
         report += `- **${this.formatCriterionName(criterion)}:** ${score.toFixed(2)}/5.0 (${percentage}%)\n`;
       }
     }
-    
+
     report += '\n## Detailed Checks\n\n';
     for (const [criterion, checks] of Object.entries(scores.details)) {
       report += `### ${this.formatCriterionName(criterion)}\n\n`;
@@ -207,7 +207,7 @@ class PRDScorer {
       }
       report += '\n';
     }
-    
+
     return report;
   }
 
@@ -238,4 +238,3 @@ if (require.main === module) {
 
   console.log(report);
 }
-

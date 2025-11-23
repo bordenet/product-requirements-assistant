@@ -183,4 +183,3 @@ echo "  3. Deploy winners: cp evolutionary-optimization/working/*.md prompts/"
 echo ""
 
 show_timer
-

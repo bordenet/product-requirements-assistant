@@ -281,4 +281,3 @@ init_script() {
     log_debug "Working directory: $(pwd)"
     log_debug "User: $(whoami)"
 }
-

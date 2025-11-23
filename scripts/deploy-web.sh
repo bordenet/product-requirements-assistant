@@ -112,13 +112,13 @@ EOF
 
 validate_environment() {
     task_start "Validating environment"
-    
+
     # Check if we're in a git repository
     if ! git rev-parse --git-dir > /dev/null 2>&1; then
         task_fail "Not in a git repository"
         return 1
     fi
-    
+
     # Check if on main branch
     local current_branch
     current_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -126,26 +126,26 @@ validate_environment() {
         task_fail "Must be on main branch (currently on ${current_branch})"
         return 1
     fi
-    
+
     # Check for uncommitted changes
     if [[ -n $(git status --porcelain) ]]; then
         task_fail "Uncommitted changes detected. Commit or stash first"
         return 1
     fi
-    
+
     task_ok "Environment validated"
 }
 
 validate_files() {
     task_start "Validating web app files"
-    
+
     local missing_files=()
     for file in "${REQUIRED_FILES[@]}"; do
         if [[ ! -f "${file}" ]]; then
             missing_files+=("${file}")
         fi
     done
-    
+
     if [[ ${#missing_files[@]} -gt 0 ]]; then
         task_fail "Missing required files:"
         for file in "${missing_files[@]}"; do
@@ -153,7 +153,7 @@ validate_files() {
         done
         return 1
     fi
-    
+
     task_ok "All required files present"
 }
 
@@ -320,4 +320,3 @@ main() {
 trap 'echo -e "${ANSI_SHOW_CURSOR}"' EXIT
 
 main "$@"
-

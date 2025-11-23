@@ -55,7 +55,7 @@ class Storage {
     const tx = this.db.transaction('projects', 'readonly');
     const store = tx.objectStore('projects');
     const index = store.index('updatedAt');
-        
+
     return new Promise((resolve, reject) => {
       const request = index.openCursor(null, 'prev'); // Descending order
       const projects = [];
@@ -80,7 +80,7 @@ class Storage {
   async getProject(id) {
     const tx = this.db.transaction('projects', 'readonly');
     const store = tx.objectStore('projects');
-        
+
     return new Promise((resolve, reject) => {
       const request = store.get(id);
       request.onsuccess = () => resolve(request.result);
@@ -93,10 +93,10 @@ class Storage {
      */
   async saveProject(project) {
     project.updatedAt = new Date().toISOString();
-        
+
     const tx = this.db.transaction('projects', 'readwrite');
     const store = tx.objectStore('projects');
-        
+
     return new Promise((resolve, reject) => {
       const request = store.put(project);
       request.onsuccess = () => resolve(project);
@@ -110,7 +110,7 @@ class Storage {
   async deleteProject(id) {
     const tx = this.db.transaction('projects', 'readwrite');
     const store = tx.objectStore('projects');
-        
+
     return new Promise((resolve, reject) => {
       const request = store.delete(id);
       request.onsuccess = () => resolve();
@@ -124,7 +124,7 @@ class Storage {
   async getPrompt(phase) {
     const tx = this.db.transaction('prompts', 'readonly');
     const store = tx.objectStore('prompts');
-        
+
     return new Promise((resolve, reject) => {
       const request = store.get(phase);
       request.onsuccess = () => resolve(request.result?.content || null);
@@ -138,7 +138,7 @@ class Storage {
   async savePrompt(phase, content) {
     const tx = this.db.transaction('prompts', 'readwrite');
     const store = tx.objectStore('prompts');
-        
+
     return new Promise((resolve, reject) => {
       const request = store.put({ phase, content });
       request.onsuccess = () => resolve();
@@ -152,7 +152,7 @@ class Storage {
   async getSetting(key) {
     const tx = this.db.transaction('settings', 'readonly');
     const store = tx.objectStore('settings');
-        
+
     return new Promise((resolve, reject) => {
       const request = store.get(key);
       request.onsuccess = () => resolve(request.result?.value);
@@ -166,7 +166,7 @@ class Storage {
   async saveSetting(key, value) {
     const tx = this.db.transaction('settings', 'readwrite');
     const store = tx.objectStore('settings');
-        
+
     return new Promise((resolve, reject) => {
       const request = store.put({ key, value });
       request.onsuccess = () => resolve();
@@ -186,4 +186,3 @@ class Storage {
 }
 
 export default new Storage();
-

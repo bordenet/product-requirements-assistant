@@ -173,7 +173,7 @@ evolutionary-optimization/
 
 ### 3. More Rounds ≠ Better Results
 
-**20-Round:** 4.80/5 (96%) in 28 minutes  
+**20-Round:** 4.80/5 (96%) in 28 minutes
 **40-Round:** 4.90/5 (98%) in 56 minutes
 
 **Marginal Gain:** Only +2% for 100% more effort.
@@ -273,4 +273,3 @@ Evolutionary prompt optimization successfully transformed the product-requiremen
 **Ready for Production Deployment.**
 
 For questions or details, see `FINAL-REPORT.md`.
-

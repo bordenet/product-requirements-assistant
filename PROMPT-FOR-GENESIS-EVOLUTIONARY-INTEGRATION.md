@@ -1059,5 +1059,3 @@ You now have complete instructions to integrate evolutionary optimization into G
 4. Any issues or questions encountered
 
 Good luck! 🚀
-
-

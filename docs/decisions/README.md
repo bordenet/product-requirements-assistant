@@ -201,24 +201,24 @@ When documenting a new architectural decision:
 2. **Use this template:**
    ```markdown
    # [Decision Title]
-   
+
    **Date:** YYYY-MM-DD
    **Status:** Proposed | Accepted | Deprecated
-   
+
    ## Context
    What problem are we solving?
-   
+
    ## Options Considered
    1. Option A
    2. Option B
    3. Option C
-   
+
    ## Decision
    What did we choose and why?
-   
+
    ## Consequences
    What are the trade-offs?
-   
+
    ## Alternatives
    What did we NOT choose and why?
    ```
@@ -234,4 +234,3 @@ When documenting a new architectural decision:
 - **[Deployment](../deployment/)** - How decisions are implemented
 - **[Development](../development/)** - Development workflows
 - **[Project Plan](../PROJECT_PLAN.md)** - Roadmap and version history
-

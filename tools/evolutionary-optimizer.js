@@ -2,7 +2,7 @@
 
 /**
  * Evolutionary Prompt Optimizer
- * 
+ *
  * Supports rigorous evolutionary optimization with:
  * - Objective scoring at each round
  * - Keep/discard logic based on score improvements
@@ -68,14 +68,14 @@ class EvolutionaryOptimizer {
   async establishBaseline() {
     console.log('📊 Establishing baseline...');
     const testCases = this.loadTestCases();
-    
+
     const scores = await this.scoreAllTestCases(testCases, this.config.baselineDir);
-    
+
     this.state.baselineScore = this.calculateAverageScore(scores);
     this.state.currentScore = this.state.baselineScore;
-    
+
     this.saveState();
-    
+
     console.log(`✅ Baseline established: ${this.state.baselineScore.toFixed(2)}/5.0`);
     return this.state.baselineScore;
   }
@@ -85,12 +85,12 @@ class EvolutionaryOptimizer {
    */
   async scoreAllTestCases(testCases, promptDir) {
     const scores = [];
-    
+
     for (const testCase of testCases) {
       const score = await this.scoreTestCase(testCase, promptDir);
       scores.push(score);
     }
-    
+
     return scores;
   }
 
@@ -276,15 +276,15 @@ class EvolutionaryOptimizer {
     console.log(`\n🧬 Round ${this.state.currentRound + 1}: ${mutation.name}`);
     console.log(`   Target: ${mutation.target}`);
     console.log(`   Change: ${mutation.description}`);
-    
+
     // Backup current prompts
     this.backupPrompts();
-    
+
     // Apply mutation
     for (const change of mutation.changes) {
       await this.applyPromptChange(change);
     }
-    
+
     this.state.mutations.push(mutation);
   }
 
@@ -294,7 +294,7 @@ class EvolutionaryOptimizer {
   async applyPromptChange(change) {
     const filePath = path.join(this.config.workingDir, change.file);
     let content = fs.readFileSync(filePath, 'utf8');
-    
+
     if (change.type === 'insert') {
       content = this.insertContent(content, change.position, change.content);
     } else if (change.type === 'replace') {
@@ -302,7 +302,7 @@ class EvolutionaryOptimizer {
     } else if (change.type === 'append') {
       content += '\n' + change.content;
     }
-    
+
     fs.writeFileSync(filePath, content, 'utf8');
   }
 
@@ -522,4 +522,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-

@@ -17,7 +17,7 @@ export async function loadDefaultPrompts() {
   try {
     const response = await fetch('data/prompts.json');
     defaultPrompts = await response.json();
-        
+
     // Save to IndexedDB if not already saved
     for (const [phase, content] of Object.entries(defaultPrompts)) {
       const existing = await storage.getPrompt(parseInt(phase));
@@ -61,13 +61,13 @@ export async function resetPrompt(phase) {
  */
 export async function generatePhase1Prompt(project) {
   const template = await getPrompt(1);
-    
+
   // Replace placeholders
   const prompt = template
     .replace('%s', project.title)
     .replace('%s', project.problems)
     .replace('%s', project.context);
-    
+
   return prompt;
 }
 
@@ -77,10 +77,10 @@ export async function generatePhase1Prompt(project) {
 export async function generatePhase2Prompt(project) {
   const template = await getPrompt(2);
   const phase1Response = project.phases[1].response;
-    
+
   // Replace placeholder
   const prompt = template.replace('[PASTE CLAUDE\'S ORIGINAL PRD HERE]', phase1Response);
-    
+
   return prompt;
 }
 
@@ -91,12 +91,12 @@ export async function generatePhase3Prompt(project) {
   const template = await getPrompt(3);
   const phase1Response = project.phases[1].response;
   const phase2Response = project.phases[2].response;
-    
+
   // Replace placeholders
   const prompt = template
     .replace('[PASTE CLAUDE\'S ORIGINAL PRD HERE]', phase1Response)
     .replace('[PASTE GEMINI\'S PRD RENDITION HERE]', phase2Response);
-    
+
   return prompt;
 }
 
@@ -122,7 +122,7 @@ export async function generatePromptForPhase(project, phase) {
 export async function copyPromptToClipboard(project, phase) {
   const prompt = await generatePromptForPhase(project, phase);
   await copyToClipboard(prompt);
-    
+
   // Save the generated prompt to the project
   await updatePhase(project.id, phase, prompt, project.phases[phase].response);
 }
@@ -154,7 +154,7 @@ export function getPhaseMetadata(phase) {
       icon: '✨'
     }
   };
-    
+
   return metadata[phase] || {};
 }
 
@@ -163,7 +163,7 @@ export function getPhaseMetadata(phase) {
  */
 export async function exportFinalPRD(project) {
   const finalResponse = project.phases[3].response || project.phases[2].response || project.phases[1].response;
-    
+
   if (!finalResponse) {
     showToast('No PRD content to export', 'warning');
     return;
@@ -176,7 +176,7 @@ export async function exportFinalPRD(project) {
   a.download = `${sanitizeFilename(project.title)}-PRD.md`;
   a.click();
   URL.revokeObjectURL(url);
-    
+
   showToast('PRD exported successfully!', 'success');
 }
 
@@ -191,4 +191,3 @@ function sanitizeFilename(filename) {
     .toLowerCase()
     .substring(0, 50);
 }
-

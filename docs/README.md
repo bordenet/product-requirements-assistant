@@ -15,7 +15,7 @@ This is the browser-based version of the Product Requirements Assistant. All dat
    # Using Python
    cd web
    python3 -m http.server 8000
-   
+
    # OR using Node.js
    npx http-server -p 8000
    ```
@@ -251,4 +251,3 @@ MIT License - Same as the main project
 - **Main Project:** [GitHub](https://github.com/bordenet/product-requirements-assistant)
 - **Desktop Apps:** [Releases](https://github.com/bordenet/product-requirements-assistant/releases)
 - **Documentation:** [docs/](../docs/)
-

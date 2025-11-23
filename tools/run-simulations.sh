@@ -232,4 +232,3 @@ echo "  📄 Analysis: $RESULTS_DIR/comparative-analysis.md"
 echo ""
 
 show_timer
-

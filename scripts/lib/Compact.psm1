@@ -48,12 +48,12 @@ function Get-ElapsedTime {
 function Write-Timer {
     $cols = $Host.UI.RawUI.WindowSize.Width
     if ($cols -eq 0) { $cols = 80 }
-    
+
     $timer = Get-ElapsedTime
     $timerText = "${C_GRAY}[$timer]${C_RESET}"
     $timerLen = 11  # Length of [HH:MM:SS]
     $pos = $cols - $timerLen
-    
+
     # Save cursor, move to position, print timer, restore cursor
     Write-Host -NoNewline "${ANSI_CURSOR_SAVE}"
     Write-Host -NoNewline ("`e[${pos}G")
@@ -96,7 +96,7 @@ function Start-Task {
 # Complete task successfully
 function Complete-Task {
     param([string]$Message = $script:CurrentTask)
-    
+
     Update-Status $script:SYM_OK $Message
     Complete-Status
 }
@@ -121,7 +121,7 @@ function Write-TaskWarning {
 # Skip task (already done)
 function Skip-Task {
     param([string]$Message = $script:CurrentTask)
-    
+
     Update-Status "${script:SYM_SKIP}" "$Message ${C_GRAY}(cached)${C_RESET}"
     Complete-Status
 }
@@ -129,7 +129,7 @@ function Skip-Task {
 # Verbose-only output
 function Write-Verbose-Line {
     param([string]$Message)
-    
+
     if ($script:Verbose) {
         Write-Host "  ${C_GRAY}$Message${C_RESET}"
     }
@@ -138,14 +138,14 @@ function Write-Verbose-Line {
 # Print compact header
 function Write-CompactHeader {
     param([string]$Message)
-    
+
     Write-Host "${C_CYAN}${C_BOLD}$Message${C_RESET}"
 }
 
 # Print section
 function Write-CompactSection {
     param([string]$Message)
-    
+
     Write-Host "${C_BLUE}▸${C_RESET} ${C_BOLD}$Message${C_RESET}"
 }
 
@@ -179,4 +179,3 @@ Export-ModuleMember -Function @(
     'Enable-VerboseMode',
     'Show-Cursor'
 )
-

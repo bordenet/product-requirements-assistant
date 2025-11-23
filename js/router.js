@@ -21,7 +21,7 @@ let currentParams = null;
 export function navigateTo(route, ...params) {
   currentRoute = route;
   currentParams = params;
-    
+
   // Update URL hash
   if (route === 'home') {
     window.location.hash = '';
@@ -30,7 +30,7 @@ export function navigateTo(route, ...params) {
   } else if (route === 'project' && params[0]) {
     window.location.hash = `#project/${params[0]}`;
   }
-    
+
   // Render the route
   const handler = routes[route];
   if (handler) {
@@ -47,7 +47,7 @@ export function navigateTo(route, ...params) {
 export function initRouter() {
   // Handle hash changes
   window.addEventListener('hashchange', handleHashChange);
-    
+
   // Handle initial load
   handleHashChange();
 }
@@ -57,7 +57,7 @@ export function initRouter() {
  */
 function handleHashChange() {
   const hash = window.location.hash.slice(1); // Remove #
-    
+
   if (!hash) {
     navigateTo('home');
   } else if (hash === 'new') {
@@ -76,4 +76,3 @@ function handleHashChange() {
 export function getCurrentRoute() {
   return { route: currentRoute, params: currentParams };
 }
-

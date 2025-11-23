@@ -229,4 +229,3 @@ Provide the final PRD as a downloadable markdown document with proper section nu
 ---
 
 **Remember**: This is Phase 1 of a 3-phase process. Your draft will be reviewed by Gemini 2.5 Pro in Phase 2, then you'll synthesize both versions in Phase 3.
-

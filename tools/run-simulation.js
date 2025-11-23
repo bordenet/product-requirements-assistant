@@ -2,7 +2,7 @@
 
 /**
  * Simulation Runner
- * 
+ *
  * Runs evolutionary optimization simulation with realistic PRD scoring
  */
 
@@ -164,38 +164,38 @@ const MUTATIONS = [
 
 async function runSimulation(configPath, maxRounds) {
   console.log(`🚀 Starting ${maxRounds}-round simulation\n`);
-  
+
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   const testCases = JSON.parse(fs.readFileSync(config.testCasesFile, 'utf8'));
-  
+
   // Baseline score (simulated based on current prompts)
   const baselineScore = 3.66; // From previous analysis
   let currentScore = baselineScore;
-  
+
   const results = [];
   let keptMutations = 0;
   let discardedMutations = 0;
-  
+
   console.log(`📊 Baseline Score: ${baselineScore.toFixed(2)}/5.0\n`);
-  
+
   for (let round = 0; round < maxRounds && round < MUTATIONS.length; round++) {
     const mutation = MUTATIONS[round];
     const roundNum = round + 1;
-    
+
     // Simulate mutation effect with some randomness
     const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
     const improvement = mutation.expectedImprovement * randomFactor;
     const newScore = currentScore + improvement;
-    
+
     const decision = improvement > 0 ? 'KEEP' : 'DISCARD';
-    
+
     if (decision === 'KEEP') {
       currentScore = newScore;
       keptMutations++;
     } else {
       discardedMutations++;
     }
-    
+
     results.push({
       round: roundNum,
       mutation: mutation.name,
@@ -205,17 +205,17 @@ async function runSimulation(configPath, maxRounds) {
       improvement: improvement,
       decision: decision
     });
-    
+
     console.log(`Round ${roundNum}: ${mutation.name}`);
     console.log(`  Score: ${(currentScore - (decision === 'KEEP' ? improvement : 0)).toFixed(2)} → ${currentScore.toFixed(2)} (${decision === 'KEEP' ? '+' : ''}${improvement.toFixed(3)})`);
     console.log(`  Decision: ${decision}\n`);
   }
-  
+
   // Generate report
   const finalScore = currentScore;
   const totalImprovement = finalScore - baselineScore;
   const improvementPercent = (totalImprovement / baselineScore * 100).toFixed(1);
-  
+
   console.log(`\n✅ Simulation Complete\n`);
   console.log(`📊 Results:`);
   console.log(`  Baseline:    ${baselineScore.toFixed(2)}/5.0`);
@@ -223,16 +223,16 @@ async function runSimulation(configPath, maxRounds) {
   console.log(`  Improvement: +${totalImprovement.toFixed(2)} (+${improvementPercent}%)`);
   console.log(`  Kept:        ${keptMutations} mutations`);
   console.log(`  Discarded:   ${discardedMutations} mutations\n`);
-  
+
   // Save detailed report
   const report = generateReport(baselineScore, finalScore, results, maxRounds);
   const reportPath = path.join(config.resultsDir, 'optimization-report.md');
-  
+
   fs.mkdirSync(config.resultsDir, { recursive: true });
   fs.writeFileSync(reportPath, report, 'utf8');
-  
+
   console.log(`📄 Report saved: ${reportPath}\n`);
-  
+
   return {
     baselineScore,
     finalScore,
@@ -247,7 +247,7 @@ async function runSimulation(configPath, maxRounds) {
 function generateReport(baseline, final, results, maxRounds) {
   const improvement = final - baseline;
   const percent = (improvement / baseline * 100).toFixed(1);
-  
+
   let report = `# ${maxRounds}-Round Evolutionary Optimization Report\n\n`;
   report += `**Date:** ${new Date().toISOString().split('T')[0]}\n`;
   report += `**Methodology:** Simulated Evolutionary Optimization\n\n`;
@@ -261,7 +261,7 @@ function generateReport(baseline, final, results, maxRounds) {
   report += `| **Rounds Completed** | ${results.length} |\n`;
   report += `| **Mutations Kept** | ${results.filter(r => r.decision === 'KEEP').length} |\n`;
   report += `| **Mutations Discarded** | ${results.filter(r => r.decision === 'DISCARD').length} |\n\n`;
-  
+
   report += `## Round-by-Round Results\n\n`;
   results.forEach(r => {
     report += `### Round ${r.round}: ${r.mutation}\n\n`;
@@ -271,7 +271,7 @@ function generateReport(baseline, final, results, maxRounds) {
     report += `- **Improvement:** ${r.improvement >= 0 ? '+' : ''}${r.improvement.toFixed(3)}\n`;
     report += `- **Decision:** ${r.decision}\n\n`;
   });
-  
+
   return report;
 }
 
@@ -279,12 +279,12 @@ function generateReport(baseline, final, results, maxRounds) {
 if (require.main === module) {
   const configPath = process.argv[2];
   const maxRounds = parseInt(process.argv[3]) || 20;
-  
+
   if (!configPath) {
     console.error('Usage: node run-simulation.js <config.json> [maxRounds]');
     process.exit(1);
   }
-  
+
   runSimulation(configPath, maxRounds).catch(err => {
     console.error('❌ Simulation failed:', err.message);
     process.exit(1);
@@ -292,4 +292,3 @@ if (require.main === module) {
 }
 
 module.exports = { runSimulation };
-

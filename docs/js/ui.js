@@ -8,7 +8,7 @@
  */
 export function showToast(message, type = 'info', duration = 3000) {
   const container = document.getElementById('toast-container');
-    
+
   const colors = {
     success: 'bg-green-500',
     error: 'bg-red-500',
@@ -121,11 +121,11 @@ export function formatDate(isoString) {
   if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
   if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
   if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
   });
 }
 
@@ -134,11 +134,11 @@ export function formatDate(isoString) {
  */
 export function formatBytes(bytes) {
   if (bytes === 0) return '0 Bytes';
-    
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
@@ -164,4 +164,3 @@ export async function copyToClipboard(text) {
     return false;
   }
 }
-

@@ -104,7 +104,7 @@ export async function exportProject(projectId) {
  */
 export async function exportAllProjects() {
   const projects = await storage.getAllProjects();
-    
+
   const backup = {
     version: '1.0',
     exportedAt: new Date().toISOString(),
@@ -127,7 +127,7 @@ export async function exportAllProjects() {
 export async function importProjects(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-        
+
     reader.onload = async (e) => {
       try {
         const content = JSON.parse(e.target.result);
@@ -169,4 +169,3 @@ function sanitizeFilename(filename) {
     .toLowerCase()
     .substring(0, 50);
 }
-

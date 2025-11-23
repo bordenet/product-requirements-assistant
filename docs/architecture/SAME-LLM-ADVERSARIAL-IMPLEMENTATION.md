@@ -165,4 +165,3 @@ All success criteria have been met:
 
 - **Design Spec**: https://github.com/bordenet/one-pager/blob/main/SAME_LLM_ADVERSARIAL_DESIGN_SPEC.md
 - **One-Pager Implementation**: Referenced for same-LLM detection and Gemini simulation patterns
-

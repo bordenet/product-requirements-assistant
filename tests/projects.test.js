@@ -171,4 +171,3 @@ describe('Projects Module', () => {
     });
   });
 });
-

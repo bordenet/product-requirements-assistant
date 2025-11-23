@@ -134,4 +134,3 @@ Work with the user to create the final version by:
 4. Refining until the user is satisfied
 
 Start by identifying the key differences and asking which approach the user prefers for conflicting sections.
-

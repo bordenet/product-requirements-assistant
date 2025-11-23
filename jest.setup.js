@@ -115,4 +115,3 @@ global.FileReader = class FileReader {
 // Mock URL.createObjectURL and revokeObjectURL
 global.URL.createObjectURL = () => 'blob:mock-url';
 global.URL.revokeObjectURL = () => {};
-

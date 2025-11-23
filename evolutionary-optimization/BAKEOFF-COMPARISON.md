@@ -221,4 +221,3 @@ Both methodologies are effective, but serve different purposes:
 - `evolutionary-optimization/BAKEOFF-COMPARISON.md` - This document
 - `evolutionary-optimization/20-round-mutation-log.md` - Detailed mutation history
 - `evolutionary-optimization/40-round-mutation-log.md` - Extended analysis
-

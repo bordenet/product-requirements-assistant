@@ -12,7 +12,7 @@ import { navigateTo } from './router.js';
  */
 export async function renderProjectsList() {
   const projects = await getAllProjects();
-    
+
   const container = document.getElementById('app-container');
   container.innerHTML = `
         <div class="mb-6 flex items-center justify-between">
@@ -52,7 +52,7 @@ export async function renderProjectsList() {
                                     </svg>
                                 </button>
                             </div>
-                            
+
                             <div class="mb-4">
                                 <div class="flex items-center space-x-2 mb-2">
                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Phase ${project.phase}/3</span>
@@ -66,11 +66,11 @@ export async function renderProjectsList() {
                                     `).join('')}
                                 </div>
                             </div>
-                            
+
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
                                 ${escapeHtml(project.problems)}
                             </p>
-                            
+
                             <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                                 <span>Updated ${formatDate(project.updatedAt)}</span>
                                 <span>${Object.values(project.phases).filter(p => p.completed).length}/3 complete</span>
@@ -103,7 +103,7 @@ export async function renderProjectsList() {
       e.stopPropagation();
       const projectId = btn.dataset.projectId;
       const project = projects.find(p => p.id === projectId);
-            
+
       if (await confirm(`Are you sure you want to delete "${project.title}"?`, 'Delete Project')) {
         await deleteProject(projectId);
         showToast('Project deleted', 'success');
@@ -139,10 +139,10 @@ export function renderNewProjectForm() {
                         <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Project Title *
                         </label>
-                        <input 
-                            type="text" 
-                            id="title" 
-                            name="title" 
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
                             required
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             placeholder="e.g., User Authentication System"
@@ -153,9 +153,9 @@ export function renderNewProjectForm() {
                         <label for="problems" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Problems to Solve *
                         </label>
-                        <textarea 
-                            id="problems" 
-                            name="problems" 
+                        <textarea
+                            id="problems"
+                            name="problems"
                             required
                             rows="4"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -167,9 +167,9 @@ export function renderNewProjectForm() {
                         <label for="context" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Additional Context
                         </label>
-                        <textarea 
-                            id="context" 
-                            name="context" 
+                        <textarea
+                            id="context"
+                            name="context"
                             rows="6"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             placeholder="Any simplifications, considerations, constraints, or other context..."
@@ -192,10 +192,10 @@ export function renderNewProjectForm() {
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
   document.getElementById('cancel-btn').addEventListener('click', () => navigateTo('home'));
-    
+
   document.getElementById('new-project-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-        
+
     const formData = new FormData(e.target);
     const title = formData.get('title');
     const problems = formData.get('problems');
@@ -206,4 +206,3 @@ export function renderNewProjectForm() {
     navigateTo('project', project.id);
   });
 }
-

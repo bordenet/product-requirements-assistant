@@ -161,7 +161,7 @@ function loadTheme() {
 async function updateStorageInfo() {
   const estimate = await storage.getStorageEstimate();
   const storageInfo = document.getElementById('storage-info');
-    
+
   if (estimate) {
     const used = formatBytes(estimate.usage || 0);
     const quota = formatBytes(estimate.quota || 0);
@@ -217,4 +217,3 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
-
