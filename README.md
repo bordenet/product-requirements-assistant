@@ -80,15 +80,15 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>🎯 <strong>Step 7: Ready for Phase 2</strong> - Phase 1 complete, starting Phase 2</summary>
+<summary>🎯 <strong>Step 7: Ready for Phase 3</strong> - Phase 1 and 2 complete, starting Phase 3</summary>
 
-![Phase 2 Ready](docs/MonkeyMoonshot/07-phase2-ready.png)
+![Phase 3 Ready](docs/MonkeyMoonshot/07-phase2-ready.png)
 
-*Phase 1 is complete! The tool now has Claude's initial PRD draft and you're starting Phase 2 (Gemini review).*
+*Phases 1 and 2 are complete! The tool now has both Claude's initial PRD and Gemini's review. You're ready to start Phase 3 (final synthesis).*
 
 </details>
 
-> **Note:** These screenshots demonstrate the complete Phase 1 workflow: generate prompt in our tool → paste into Claude Code → paste Claude's response back into our tool. The same copy/paste pattern continues for Phase 2 (Gemini review) and Phase 3 (final synthesis).
+> **Note:** These screenshots demonstrate the complete Phase 1 workflow: generate prompt in our tool → paste into Claude Code → paste Claude's response back into our tool. The final screenshot shows the tool ready to start Phase 3 after completing Phases 1 and 2. The same copy/paste pattern continues throughout all phases.
 
 ## How It Works
 

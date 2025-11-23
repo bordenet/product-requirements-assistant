@@ -267,11 +267,11 @@ This example demonstrates the complete Phase 1 workflow:
 4. `04-claude-phase1-complete.png` - Claude completes the PRD draft
 5. `05-tool-paste-phase1-start.png` - Begin pasting Claude's response into tool
 6. `06-tool-paste-phase1-continued.png` - Continue pasting
-7. `07-phase2-ready.png` - Phase 1 complete, starting Phase 2
+7. `07-phase2-ready.png` - Phases 1 and 2 complete, ready to start Phase 3
 
 These screenshots are embedded in the main [README.md](../README.md) as expandable `<details>` sections for an elegant, interactive documentation experience.
 
-**Purpose:** This example helps new users understand the copy/paste workflow pattern without needing to read lengthy documentation. The whimsical "MonkeyMoonshot" theme makes the process approachable and memorable. The same pattern continues for Phase 2 (Gemini review) and Phase 3 (final synthesis).
+**Purpose:** This example helps new users understand the copy/paste workflow pattern without needing to read lengthy documentation. The whimsical "MonkeyMoonshot" theme makes the process approachable and memorable. Screenshots 1-6 show the complete Phase 1 workflow, and screenshot 7 shows the tool ready to start Phase 3 after completing Phases 1 and 2.
 
 ---
 
