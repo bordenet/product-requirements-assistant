@@ -252,25 +252,27 @@ MIT License - Same as the main project
 
 ### MonkeyMoonshot Example
 
-The `docs/MonkeyMoonshot/` directory contains a walkthrough of the 3-phase workflow using a light-hearted example project: "MonkeyMoonshot - Simian Space Program."
+The `docs/MonkeyMoonshot/` directory contains a complete Phase 1 walkthrough using a light-hearted example project: "MonkeyMoonshot - Simian Space Program."
 
-This example demonstrates:
-- **Project Setup:** Creating a new project with title, problems, and context
-- **Phase 1 Complete:** Generating initial PRD with Claude Sonnet 4.5 and capturing the response
-- **Phase 2 Start:** Beginning the review process with Gemini 2.5 Pro
-- **Workflow Continuation:** The pattern for completing Phase 2 and Phase 3
+This example demonstrates the complete Phase 1 workflow:
+1. **Tool generates prompt** - Our tool creates an optimized Phase 1 prompt
+2. **Copy to Claude Code** - User pastes prompt into Claude Code (or Claude Sonnet 4.5)
+3. **Claude generates PRD** - Claude creates the initial PRD draft
+4. **Copy back to tool** - User pastes Claude's complete response back into our tool
 
-**Screenshots** demonstrate the workflow pattern:
-1. `02-phase1-prompt.png` - Phase 1 prompt generation
-2. `03-phase1-response.png` - Phase 1 response capture
-3. `04-phase2-prompt.png` - Phase 2 prompt generation
-4. `05-phase2-in-progress.png` - Phase 2 in progress
-5. `06-workflow-continuation.png` - Workflow continuation
-6. `07-workflow-steps.png` - Further workflow steps
+**Screenshots** (8 total):
+1. `01-tool-phase1-prompt.png` - Tool generates Phase 1 prompt
+2. `02-claude-phase1-draft.png` - Claude begins generating PRD
+3. `03-claude-phase1-continued.png` - Claude continues the PRD
+4. `04-claude-phase1-complete.png` - Claude completes the PRD draft
+5. `05-tool-paste-phase1-start.png` - Begin pasting Claude's response into tool
+6. `06-tool-paste-phase1-continued.png` - Continue pasting
+7. `07-tool-paste-phase1-more.png` - More pasting
+8. `08-tool-paste-phase1-complete.png` - Phase 1 complete, ready for Phase 2
 
 These screenshots are embedded in the main [README.md](../README.md) as expandable `<details>` sections for an elegant, interactive documentation experience.
 
-**Purpose:** This example helps new users understand the workflow pattern without needing to read lengthy documentation. The whimsical "MonkeyMoonshot" theme makes the process approachable and memorable. While the screenshots cover Phase 1 completely and the start of Phase 2, they clearly demonstrate the copy/paste pattern that continues through all three phases.
+**Purpose:** This example helps new users understand the copy/paste workflow pattern without needing to read lengthy documentation. The whimsical "MonkeyMoonshot" theme makes the process approachable and memorable. The same pattern continues for Phase 2 (Gemini review) and Phase 3 (final synthesis).
 
 ---
 
