@@ -35,20 +35,20 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>🤖 <strong>Step 2: Paste into Claude Code</strong> - Claude generates the initial PRD draft</summary>
+<summary>🤖 <strong>Step 2: Generate prompt for Claude</strong> - Claude generates the initial PRD draft</summary>
 
 ![Claude Phase 1 Draft](docs/MonkeyMoonshot/02-claude-phase1-draft.png)
 
-*Paste the prompt into Claude Code (or Claude Sonnet 4.5). Claude begins generating the PRD.*
+*Copy the prompt the tool generates for Claude. This instructs Claude (eg Opus or Sonnet 4.5) to generate a first draft PRD.*
 
 </details>
 
 <details>
-<summary>✍️ <strong>Step 3: Claude Continues</strong> - The PRD draft continues</summary>
+<summary>✍️ <strong>Step 3: Claude Disambiguation</strong> - The PRD draft continues</summary>
 
 ![Claude Phase 1 Continued](docs/MonkeyMoonshot/03-claude-phase1-continued.png)
 
-*Claude continues writing the PRD draft with detailed sections.*
+*Claude asks clarifying questions to arrive at a working PRD draft with detailed sections.*
 
 </details>
 
