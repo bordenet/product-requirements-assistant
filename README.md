@@ -525,6 +525,24 @@ See [`docs/decisions/REFACTORING_PLAN.md`](docs/decisions/REFACTORING_PLAN.md) f
 - `evolutionary-optimization/FINAL-REPORT.md` - Complete optimization analysis
 - `prompts/README.md` - LLM prompt documentation
 
+---
+
+## Code Coverage
+
+Product Requirements Assistant maintains **63.19% test coverage** with ongoing improvements. The coverage visualization below shows detailed coverage by module:
+
+[![Coverage Grid](https://codecov.io/gh/bordenet/product-requirements-assistant/graphs/tree.svg?token=13a4e0d2-5d04-4b4e-9b0e-d07f16280fa1)](https://codecov.io/gh/bordenet/product-requirements-assistant)
+
+**What this means:**
+- **Green**: Well-tested code (>80% coverage)
+- **Yellow**: Moderate coverage (60-80%)
+- **Red**: Needs more tests (<60%)
+- **Size**: Larger boxes = more lines of code
+
+Click the image to explore detailed coverage reports on Codecov, including line-by-line coverage, branch coverage, and historical trends.
+
+---
+
 ## License
 
 MIT License - see [LICENSE](./LICENSE)
