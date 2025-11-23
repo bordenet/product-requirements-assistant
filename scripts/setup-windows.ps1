@@ -87,7 +87,7 @@ function Test-PortInUse {
 function Stop-PortProcess {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     param([int]$Port)
-    
+
     if (Test-PortInUse $Port) {
         Write-Verbose-Line "Stopping process on port $Port..."
         $connections = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
@@ -313,5 +313,3 @@ Write-Host ''
 Write-Host 'Or use the launcher scripts:'
 Write-Host '  .\run-thick-clients.ps1 -Mode dev'
 Write-Host ''
-
-

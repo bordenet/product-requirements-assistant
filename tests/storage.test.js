@@ -109,7 +109,7 @@ describe('Storage Module', () => {
 
       const projects = await storage.getAllProjects();
       expect(projects.length).toBeGreaterThanOrEqual(2);
-      
+
       const ids = projects.map(p => p.id);
       expect(ids).toContain(project1.id);
       expect(ids).toContain(project2.id);

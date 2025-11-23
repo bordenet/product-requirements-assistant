@@ -253,4 +253,3 @@ python3 -m http.server 8000
 - **[Prompts](../../prompts/)** - Prompt templates
 - **[Web App](../../web/)** - Web application
 - **[Main README](../../README.md)** - Project overview
-

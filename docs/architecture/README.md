@@ -128,4 +128,3 @@ Export (JSON or Markdown)
 - **[Development](../development/)** - Development tools and workflows
 - **[Guides](../guides/)** - User-facing documentation
 - **[Main README](../../README.md)** - Project overview
-

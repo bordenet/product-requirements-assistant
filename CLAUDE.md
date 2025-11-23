@@ -15,7 +15,7 @@ When asked to do a task, you MUST:
 5. ✅ Check coverage if applicable
 6. ✅ **PROACTIVELY tell the user what's left** - don't wait to be asked
 
-**BAD**: "I've created the files."  
+**BAD**: "I've created the files."
 **GOOD**: "I've created the files, linted them (0 errors), ran tests (37/37 passing), and verified coverage (73%). What's left: [specific list]"
 
 ### 2. **NEVER Include Build Artifacts**
@@ -173,10 +173,10 @@ npm run lint:fix
 ### Recent Issues
 1. **Forgot to lint** - User had to ask "did you lint?"
    - **Fix**: ALWAYS run `npm run lint` after creating code
-   
+
 2. **Included node_modules** - 55MB bloat in genesis
    - **Fix**: ALWAYS create `.gitignore`, verify size with `du -sh`
-   
+
 3. **User asked "what's left?" 3+ times**
    - **Fix**: ALWAYS end responses with specific "What's left" section
 
@@ -189,4 +189,3 @@ npm run lint:fix
 ---
 
 **Remember**: The user is a principal engineer at Expedia Group with high standards. Match that level of professionalism and completeness.
-

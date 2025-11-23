@@ -288,4 +288,3 @@ echo ""
 echo "For thick clients:"
 echo "  ./run-thick-clients.sh"
 echo ""
-

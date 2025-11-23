@@ -82,4 +82,3 @@ These prompts were moved from the project root to `docs/cross-project-prompts/` 
 2. **Reference the authoritative source** - Clone product-requirements-assistant before starting
 3. **Don't recreate code** - Copy existing tools, adapt as needed
 4. **Follow the checklist** - Each prompt includes success criteria
-

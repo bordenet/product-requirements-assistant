@@ -219,4 +219,3 @@ python3 -m http.server 8000
 - **[Development](../development/)** - Development tools and workflows
 - **[Scripts](../../scripts/)** - Automation scripts
 - **[Web App](../../web/)** - Web application source code
-

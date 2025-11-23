@@ -136,4 +136,3 @@ echo "  npm test            # Run tests"
 echo "  npm run lint        # Run linter"
 echo ""
 echo "Run with -v for verbose output, -f to force reinstall"
-

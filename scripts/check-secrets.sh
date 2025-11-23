@@ -98,4 +98,3 @@ fi
 
 echo -e "${GREEN}✅ No secrets detected${NC}"
 exit 0
-

@@ -100,8 +100,8 @@ Context: Target audience is 18-35 year olds, iOS and Android
 
 ### [`gemini_review.txt`](./gemini_review.txt)
 
-**Phase:** 2 (Review & Refine)  
-**AI Model:** Gemini 2.5 Pro  
+**Phase:** 2 (Review & Refine)
+**AI Model:** Gemini 2.5 Pro
 **Purpose:** Review Claude's draft and create an improved version
 
 **Template Variables:**
@@ -127,8 +127,8 @@ Context: Target audience is 18-35 year olds, iOS and Android
 
 ### [`claude_compare.txt`](./claude_compare.txt)
 
-**Phase:** 3 (Final Comparison)  
-**AI Model:** Claude Sonnet 4.5  
+**Phase:** 3 (Final Comparison)
+**AI Model:** Claude Sonnet 4.5
 **Purpose:** Compare both versions and create the final PRD
 
 **Template Variables:**
@@ -312,4 +312,3 @@ Write in a formal tone suitable for executive review.
 - **[API Reference](../docs/architecture/API.md)** - Prompt endpoints
 - **[Mock AI](../docs/development/MOCK_AI.md)** - Testing with mock responses
 - **[Web App](../web/README.md)** - How prompts work in the web version
-

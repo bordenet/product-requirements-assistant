@@ -1,8 +1,8 @@
 # Prompt: Apply Evolutionary Optimization to One-Pager Project
 
-**For:** Claude working in the one-pager repository  
-**From:** product-requirements-assistant (authoritative source)  
-**Repository:** https://github.com/bordenet/product-requirements-assistant  
+**For:** Claude working in the one-pager repository
+**From:** product-requirements-assistant (authoritative source)
+**Repository:** https://github.com/bordenet/product-requirements-assistant
 **Status:** ✅ Production-validated with out-of-the-box tooling
 
 ---
@@ -17,7 +17,7 @@ Apply **5 proven, production-validated mutations** to the one-pager project's LL
 - ✅ **Proven to deliver** 71-73% of total achievable improvement
 - ✅ **Tooling works "out of the box"** - no customization needed
 
-**Time Investment:** ~2 hours  
+**Time Investment:** ~2 hours
 **Expected ROI:** 8+ hours saved per future optimization cycle
 
 ---
@@ -273,4 +273,3 @@ After completing these steps, the one-pager project will have:
 **Status:** Ready to execute
 **Last Updated:** 2025-11-21
 **Version:** 2.0 (Production-validated with out-of-the-box tooling)
-

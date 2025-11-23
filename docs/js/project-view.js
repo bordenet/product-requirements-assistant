@@ -13,7 +13,7 @@ import { navigateTo } from './router.js';
  */
 export async function renderProjectView(projectId) {
   const project = await getProject(projectId);
-    
+
   if (!project) {
     showToast('Project not found', 'error');
     navigateTo('home');
@@ -29,7 +29,7 @@ export async function renderProjectView(projectId) {
                 </svg>
                 Back to Projects
             </button>
-            
+
             <div class="flex items-start justify-between">
                 <div>
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -52,12 +52,12 @@ export async function renderProjectView(projectId) {
     const meta = getPhaseMetadata(phase);
     const isActive = project.phase === phase;
     const isCompleted = project.phases[phase].completed;
-                    
+
     return `
-                        <button 
+                        <button
                             class="phase-tab px-6 py-3 font-medium transition-colors ${
-  isActive 
-    ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' 
+  isActive
+    ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
 }"
                             data-phase="${phase}"
@@ -80,7 +80,7 @@ export async function renderProjectView(projectId) {
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
   document.getElementById('export-prd-btn').addEventListener('click', () => exportFinalPRD(project));
-    
+
   document.querySelectorAll('.phase-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       const phase = parseInt(tab.dataset.phase);
@@ -99,7 +99,7 @@ export async function renderProjectView(projectId) {
 function renderPhaseContent(project, phase) {
   const meta = getPhaseMetadata(phase);
   const phaseData = project.phases[phase];
-    
+
   return `
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="mb-6">
@@ -143,13 +143,13 @@ function renderPhaseContent(project, phase) {
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                     Step 2: Paste AI Response
                 </h4>
-                <textarea 
-                    id="response-textarea" 
+                <textarea
+                    id="response-textarea"
                     rows="12"
                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
                     placeholder="Paste the AI's response here..."
                 >${escapeHtml(phaseData.response || '')}</textarea>
-                
+
                 <div class="mt-3 flex justify-between items-center">
                     <span class="text-sm text-gray-600 dark:text-gray-400">
                         ${phaseData.completed ? '✓ Phase completed' : 'Paste response to complete this phase'}
@@ -217,4 +217,3 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 }
-

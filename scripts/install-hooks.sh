@@ -36,7 +36,7 @@ main() {
 
     # Create pre-commit hook
     log_section "Creating pre-commit hook"
-    
+
     cat > "$HOOKS_DIR/pre-commit" << 'EOF'
 #!/usr/bin/env bash
 ################################################################################
@@ -98,4 +98,3 @@ EOF
 }
 
 main "$@"
-

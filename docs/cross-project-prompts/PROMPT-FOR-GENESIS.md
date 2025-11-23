@@ -1,8 +1,8 @@
 # Prompt: Integrate Evolutionary Optimization into Genesis
 
-**For:** Claude working in the Genesis repository  
-**From:** product-requirements-assistant (authoritative source)  
-**Repository:** https://github.com/bordenet/product-requirements-assistant  
+**For:** Claude working in the Genesis repository
+**From:** product-requirements-assistant (authoritative source)
+**Repository:** https://github.com/bordenet/product-requirements-assistant
 **Status:** ✅ Production-validated with out-of-the-box tooling
 
 ---
@@ -18,7 +18,7 @@ Embed evolutionary prompt optimization machinery into Genesis so that **all spaw
 - ✅ **Proven methodology** achieving +20-30% quality improvements
 - ✅ **Cross-project quality comparison** tools
 
-**Time Investment:** ~4 hours  
+**Time Investment:** ~4 hours
 **Expected ROI:** 8+ hours saved per project per optimization cycle
 
 ---
@@ -176,7 +176,7 @@ class BaseScorer {
   scoreCriterion(content, config) {
     let passed = 0;
     const total = config.checks.length;
-    
+
     for (const check of config.checks) {
       if (check.scorer) {
         if (check.scorer(content)) passed++;
@@ -186,7 +186,7 @@ class BaseScorer {
         if (matches === shouldMatch) passed++;
       }
     }
-    
+
     return 1 + (passed / total) * 4; // Convert to 1-5 scale
   }
 
@@ -441,4 +441,3 @@ After completing these steps, Genesis will:
 **Status:** Ready to execute
 **Last Updated:** 2025-11-21
 **Version:** 2.0 (Production-validated with out-of-the-box tooling)
-

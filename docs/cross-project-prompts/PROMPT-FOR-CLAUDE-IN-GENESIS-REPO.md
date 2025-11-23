@@ -118,7 +118,7 @@ class BaseScorer {
   scoreCriterion(content, config) {
     let passed = 0;
     const total = config.checks.length;
-    
+
     for (const check of config.checks) {
       if (check.scorer) {
         // Custom scoring function
@@ -130,7 +130,7 @@ class BaseScorer {
         if (matches === shouldMatch) passed++;
       }
     }
-    
+
     // Convert to 1-5 scale
     return 1 + (passed / total) * 4;
   }
@@ -174,7 +174,7 @@ class BaseScorer {
           const matches = check.pattern.test(content);
           passed = check.inverse ? !matches : matches;
         }
-        
+
         breakdown[criterion].checks.push({
           name: check.name,
           passed
@@ -241,7 +241,7 @@ class OnePagerScorer extends BaseScorer {
         ]
       }
     };
-    
+
     super(criteria);
   }
 }
@@ -607,4 +607,3 @@ cd your-project
 
 **Status:** Ready to execute
 **Version:** 1.0 (Production-validated)
-

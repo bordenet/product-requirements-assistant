@@ -73,10 +73,10 @@ When you encounter a continuous improvement document:
 
 ### [web-deployment-script.md](./web-deployment-script.md)
 
-**Issue**: Missing automated web deployment script for GitHub Pages  
-**Severity**: Major oversight  
-**Status**: ✅ Resolved in product-requirements-assistant  
-**Action Required**: 
+**Issue**: Missing automated web deployment script for GitHub Pages
+**Severity**: Major oversight
+**Status**: ✅ Resolved in product-requirements-assistant
+**Action Required**:
 - Implement in `one-pager` repository
 - Implement in `genesis` repository (CRITICAL)
 
@@ -135,6 +135,5 @@ This directory is the embodiment of that philosophy.
 
 ---
 
-**Last Updated**: 2025-11-21  
+**Last Updated**: 2025-11-21
 **Maintainer**: Matt J Bordenet (@bordenet)
-

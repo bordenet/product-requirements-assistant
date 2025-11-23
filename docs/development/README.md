@@ -275,4 +275,3 @@ tail -f frontend.log
 - **[Deployment](../deployment/)** - Deployment and release guides
 - **[Scripts](../../scripts/)** - Automation scripts
 - **[Contributing](../../CONTRIBUTING.md)** - Contribution guidelines
-

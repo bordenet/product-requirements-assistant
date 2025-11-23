@@ -33,4 +33,3 @@ jobs:
           echo "✅ Web app deployed successfully!"
           echo "🌐 GitHub Pages will update in 2-5 minutes"
           echo "🔗 URL: https://bordenet.github.io/product-requirements-assistant/"
-

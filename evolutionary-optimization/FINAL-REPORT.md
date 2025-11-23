@@ -86,19 +86,19 @@ Successfully optimized LLM prompts for **product-requirements-assistant** using 
 1. **Round 1: Ban Vague Language** (+6.0%)
    - Added explicit banned words list with required alternatives
    - Forced specificity: "improve" → "increase from X to Y"
-   
+
 2. **Round 2: Strengthen "No Implementation" Rule** (+5.4%)
    - Added forbidden vs. allowed examples
    - Dramatically reduced technical drift in complex cases
-   
+
 3. **Round 3: Enhance Adversarial Tension** (+2.9%)
    - Made Phase 2 genuinely challenge Phase 1
    - Created productive tension for better synthesis
-   
+
 4. **Round 5: Quantified Success Metrics** (+2.5%)
    - Required baseline + target + timeline + measurement method
    - Eliminated vague success criteria
-   
+
 5. **Round 4: Stakeholder Impact** (+2.6%)
    - Required quantified impact for each stakeholder group
    - Improved comprehensiveness and business context
@@ -268,4 +268,3 @@ The evolutionary prompt optimization methodology successfully transformed the pr
 **"More rounds = better results"** is **FALSE**. The relationship is logarithmic, not linear. Optimal stopping point is 15-20 rounds for maximum efficiency.
 
 **Production-Ready Prompts:** Available in `evolutionary-optimization/optimized-*.md` files.
-

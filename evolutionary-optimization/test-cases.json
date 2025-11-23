@@ -104,4 +104,3 @@
     "context": "Enterprise SaaS platform, 200K users, 50 engineers across 8 teams. Current: Ruby on Rails monolith (500K LOC), PostgreSQL, Redis. Target: Enable independent team deployments, reduce infrastructure costs 40%."
   }
 ]
-

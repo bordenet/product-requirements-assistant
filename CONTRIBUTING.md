@@ -226,4 +226,3 @@ Open an issue for:
 - Feature requests
 - Questions about the codebase
 - Suggestions for improvements
-
