@@ -71,16 +71,16 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>📥 <strong>Step 6: Continue Pasting</strong> - The response continues</summary>
+<summary>📥 <strong>Step 6: Prepare Gemini for Adversarial Review</strong> - Tee Gemini up to create an alternate rendition</summary>
 
 ![Tool Paste Phase 1 Continued](docs/MonkeyMoonshot/06-tool-paste-phase1-continued.png)
 
-*Continue pasting the full response from Claude.*
+*This step helps create a competing version that we'll benefit from.*
 
 </details>
 
 <details>
-<summary>🎯 <strong>Step 7: Ready for Phase 3</strong> - Phase 1 and 2 complete, starting Phase 3</summary>
+<summary>🎯 <strong>Step 7: Commence Phase 3</strong> - Phase 1 and 2 complete, starting Phase 3</summary>
 
 ![Phase 3 Ready](docs/MonkeyMoonshot/07-phase2-ready.png)
 
