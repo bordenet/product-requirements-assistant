@@ -26,7 +26,7 @@ No installation required. Works on any device with a modern browser. All data st
 See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phase 1 workflow):
 
 <details>
-<summary>📋 <strong>Step 1: Generate Phase 1 Prompt</strong> - Our tool creates the optimized prompt</summary>
+<summary>📋 <strong>Step 1: Generate Phase 1 Prompt</strong> - Capture the base rudiments of a PRD</summary>
 
 ![Tool Phase 1 Prompt](docs/MonkeyMoonshot/01-tool-phase1-prompt.png)
 
@@ -35,7 +35,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>🤖 <strong>Step 2: Generate prompt for Claude</strong> - Compose the rudiments of a PRD ahead of sharing with Claude</summary>
+<summary>🤖 <strong>Step 2: Generate prompt for Claude</strong> - Compose a prompt for Claude, specifying your initial input</summary>
 
 ![Claude Phase 1 Draft](docs/MonkeyMoonshot/02-claude-phase1-draft.png)
 
@@ -44,7 +44,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>✍️ <strong>Step 3: Claude Disambiguation</strong> - Dialog with Claude to establish a working PRD draft</summary>
+<summary>✍️ <strong>Step 3: Claude Disambiguation</strong> - Dialog with Claude to establish a working Product Requirements Document</summary>
 
 ![Claude Phase 1 Continued](docs/MonkeyMoonshot/03-claude-phase1-continued.png)
 
