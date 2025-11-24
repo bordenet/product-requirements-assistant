@@ -44,7 +44,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>✍️ <strong>Step 3: Claude Disambiguation</strong> - The PRD draft continues</summary>
+<summary>✍️ <strong>Step 3: Claude Disambiguation</strong> - Dialog with Claude to establish a working PRD draft</summary>
 
 ![Claude Phase 1 Continued](docs/MonkeyMoonshot/03-claude-phase1-continued.png)
 
@@ -53,7 +53,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>✅ <strong>Step 4: Claude Completes Draft</strong> - The initial PRD is complete</summary>
+<summary>✅ <strong>Step 4: Claude Completes Draft</strong> - Finalize the first PRD document</summary>
 
 ![Claude Phase 1 Complete](docs/MonkeyMoonshot/04-claude-phase1-complete.png)
 
@@ -62,7 +62,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>📥 <strong>Step 5: Paste Back into Tool</strong> - Begin pasting Claude's response</summary>
+<summary>📥 <strong>Step 5: Paste Back into Tool</strong> - Prepare the PRD document for Gemini's scrutiny</summary>
 
 ![Tool Paste Phase 1 Start](docs/MonkeyMoonshot/05-tool-paste-phase1-start.png)
 
@@ -71,7 +71,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>📥 <strong>Step 6: Prepare Gemini for Adversarial Review</strong> - Tee Gemini up to create an alternate rendition</summary>
+<summary>📥 <strong>Step 6: Prepare Gemini for Adversarial Review</strong> - Build an adversarial prompt for Gemini, instructing it to generate an alernate rendition</summary>
 
 ![Tool Paste Phase 1 Continued](docs/MonkeyMoonshot/06-tool-paste-phase1-continued.png)
 
