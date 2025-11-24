@@ -30,7 +30,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 
 ![Tool Phase 1 Prompt](docs/MonkeyMoonshot/01-tool-phase1-prompt.png)
 
-*The tool generates a Phase 1 prompt optimized through evolutionary testing. Copy this prompt.*
+*The tool starts with as much information as you can provide.*
 
 </details>
 
@@ -39,7 +39,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 
 ![Claude Phase 1 Draft](docs/MonkeyMoonshot/02-claude-phase1-draft.png)
 
-*Copy the prompt the tool generates for Claude. This instructs Claude (eg Opus or Sonnet 4.5) to generate a first draft PRD.*
+*Compose a prompt for Claude. You can fork this project and configure it to work with LibreChat, et al. This sets us up for a dialog en route to a reasonable first-cut PRD.*
 
 </details>
 
@@ -57,7 +57,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 
 ![Claude Phase 1 Complete](docs/MonkeyMoonshot/04-claude-phase1-complete.png)
 
-*Claude finishes the initial PRD draft. Now copy this entire response.*
+*Claude finishes the initial PRD draft. Now copy Claude's response.*
 
 </details>
 
@@ -66,7 +66,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 
 ![Tool Paste Phase 1 Start](docs/MonkeyMoonshot/05-tool-paste-phase1-start.png)
 
-*Paste Claude's PRD draft back into our tool. The tool captures the response.*
+*Paste Claude's PRD draft back into our tool. The tool captures the response for use with Gemini.*
 
 </details>
 
@@ -75,7 +75,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 
 ![Tool Paste Phase 1 Continued](docs/MonkeyMoonshot/06-tool-paste-phase1-continued.png)
 
-*This step helps create a competing version that we'll benefit from.*
+*This step helps create a competing version of the PRD.*
 
 </details>
 
