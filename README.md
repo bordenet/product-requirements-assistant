@@ -35,7 +35,7 @@ See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phas
 </details>
 
 <details>
-<summary>🤖 <strong>Step 2: Generate prompt for Claude</strong> - Claude generates the initial PRD draft</summary>
+<summary>🤖 <strong>Step 2: Generate prompt for Claude</strong> - Compose the rudiments of a PRD ahead of sharing with Claude</summary>
 
 ![Claude Phase 1 Draft](docs/MonkeyMoonshot/02-claude-phase1-draft.png)
 
