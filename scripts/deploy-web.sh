@@ -14,18 +14,29 @@ set -euo pipefail
 
 # Source compact output library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck source=scripts/lib/compact.sh
 source "${SCRIPT_DIR}/lib/compact.sh"
+
+# Change to repo root so relative paths work
+cd "${REPO_ROOT}"
 
 ################################################################################
 # Configuration
 ################################################################################
 
-readonly DOCS_DIR="docs"
+# All paths are relative to REPO_ROOT (script changes to REPO_ROOT on startup)
+readonly DOCS_DIR="${REPO_ROOT}/docs"
 readonly REQUIRED_FILES=(
-    "index.html"
-    "css/styles.css"
-    "js/app.js"
+    "${REPO_ROOT}/index.html"
+    "${REPO_ROOT}/css/styles.css"
+    "${REPO_ROOT}/js/app.js"
+    "${REPO_ROOT}/data/prompts.json"
+)
+readonly SOURCE_DIRS=(
+    "css"
+    "js"
+    "data"
 )
 
 ################################################################################
@@ -142,7 +153,8 @@ validate_files() {
     local missing_files=()
     for file in "${REQUIRED_FILES[@]}"; do
         if [[ ! -f "${file}" ]]; then
-            missing_files+=("${file}")
+            # Show relative path in error message for readability
+            missing_files+=("${file#${REPO_ROOT}/}")
         fi
     done
 
@@ -167,32 +179,26 @@ copy_web_files() {
     # Create docs directory if it doesn't exist
     mkdir -p "${DOCS_DIR}"
 
-    # Copy files (index.html, css/, js/)
+    # Copy files (index.html, css/, js/, data/)
     log_verbose "Copying web app files to ${DOCS_DIR}/"
 
     # Copy index.html
-    cp -f index.html "${DOCS_DIR}/"
+    cp -f "${REPO_ROOT}/index.html" "${DOCS_DIR}/"
 
-    # Copy css/ and js/ directories
-    if [[ ${VERBOSE} -eq 1 ]]; then
-        rsync -a --delete \
-            --exclude='.DS_Store' \
-            --exclude='*.swp' \
-            css/ "${DOCS_DIR}/css/"
-        rsync -a --delete \
-            --exclude='.DS_Store' \
-            --exclude='*.swp' \
-            js/ "${DOCS_DIR}/js/"
-    else
-        rsync -a --delete \
-            --exclude='.DS_Store' \
-            --exclude='*.swp' \
-            css/ "${DOCS_DIR}/css/" 2>&1 | grep -v "^rsync" || true
-        rsync -a --delete \
-            --exclude='.DS_Store' \
-            --exclude='*.swp' \
-            js/ "${DOCS_DIR}/js/" 2>&1 | grep -v "^rsync" || true
-    fi
+    # Copy source directories (css/, js/, data/)
+    for dir in "${SOURCE_DIRS[@]}"; do
+        if [[ ${VERBOSE} -eq 1 ]]; then
+            rsync -a --delete \
+                --exclude='.DS_Store' \
+                --exclude='*.swp' \
+                "${REPO_ROOT}/${dir}/" "${DOCS_DIR}/${dir}/"
+        else
+            rsync -a --delete \
+                --exclude='.DS_Store' \
+                --exclude='*.swp' \
+                "${REPO_ROOT}/${dir}/" "${DOCS_DIR}/${dir}/" 2>&1 | grep -v "^rsync" || true
+        fi
+    done
 
     task_ok "Files copied"
 }
@@ -294,10 +300,10 @@ main() {
         echo ""
         echo "Would deploy:"
         for file in "${REQUIRED_FILES[@]}"; do
-            echo "  - ${file}"
+            echo "  - ${file#${REPO_ROOT}/}"
         done
         echo ""
-        echo "Destination: ${DOCS_DIR}/"
+        echo "Destination: docs/"
         echo "GitHub Pages: https://bordenet.github.io/product-requirements-assistant/"
         exit 0
     fi
