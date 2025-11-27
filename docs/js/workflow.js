@@ -85,7 +85,7 @@ export async function generatePhase2Prompt(project) {
     throw new Error('Phase 2 prompt template not found. Please ensure prompts are loaded.');
   }
 
-  const phase1Response = project.phases[1].response;
+  const phase1Response = project.phases[1].response || '';
 
   // Replace placeholder
   const prompt = template.replace('[PASTE CLAUDE\'S ORIGINAL PRD HERE]', phase1Response);
@@ -103,8 +103,8 @@ export async function generatePhase3Prompt(project) {
     throw new Error('Phase 3 prompt template not found. Please ensure prompts are loaded.');
   }
 
-  const phase1Response = project.phases[1].response;
-  const phase2Response = project.phases[2].response;
+  const phase1Response = project.phases[1].response || '';
+  const phase2Response = project.phases[2].response || '';
 
   // Replace placeholders
   const prompt = template
