@@ -380,4 +380,126 @@ describe('Workflow Module', () => {
     });
   });
 
+  describe('Visual workflow tests - prompt content verification', () => {
+    test('Phase 1 prompt should contain project title, problems, and context', async () => {
+      // Set up a realistic Phase 1 template
+      await savePrompt(1, 'Create a PRD for: %s\n\nProblems to solve:\n%s\n\nContext:\n%s');
+
+      const project = await createProject(
+        'MonkeyMoonshot Analytics Dashboard',
+        'Users cannot track their usage metrics effectively',
+        'B2B SaaS platform with 10,000 active users'
+      );
+
+      const prompt = await generatePhase1Prompt(project);
+
+      // Verify all project data is in the prompt
+      expect(prompt).toContain('MonkeyMoonshot Analytics Dashboard');
+      expect(prompt).toContain('Users cannot track their usage metrics effectively');
+      expect(prompt).toContain('B2B SaaS platform with 10,000 active users');
+    });
+
+    test('Phase 2 prompt should contain Phase 1 response (Claude PRD)', async () => {
+      // Set up Phase 2 template with placeholder
+      await savePrompt(2, 'Review this PRD:\n\n[PASTE CLAUDE\'S ORIGINAL PRD HERE]');
+
+      const project = await createProject('Test Project', 'Problems', 'Context');
+      project.phases[1].response = '# Product Requirements Document\n\n## Overview\nThis is the Claude-generated PRD for the Analytics Dashboard.';
+      project.phases[1].completed = true;
+
+      const prompt = await generatePhase2Prompt(project);
+
+      // Verify Phase 1 response is in the prompt
+      expect(prompt).toContain('# Product Requirements Document');
+      expect(prompt).toContain('This is the Claude-generated PRD for the Analytics Dashboard.');
+      expect(prompt).not.toContain('[PASTE CLAUDE\'S ORIGINAL PRD HERE]');
+    });
+
+    test('Phase 3 prompt should contain both Claude and Gemini responses', async () => {
+      // Set up Phase 3 template with both placeholders
+      await savePrompt(3, 'Compare these PRDs:\n\nCLAUDE VERSION:\n[PASTE CLAUDE\'S ORIGINAL PRD HERE]\n\nGEMINI VERSION:\n[PASTE GEMINI\'S PRD RENDITION HERE]');
+
+      const project = await createProject('Test Project', 'Problems', 'Context');
+      project.phases[1].response = '# Claude PRD\n\nThis is the original PRD from Claude Sonnet 4.5.';
+      project.phases[1].completed = true;
+      project.phases[2].response = '# Gemini Review\n\nThis is the reviewed PRD from Gemini 2.5 Pro.';
+      project.phases[2].completed = true;
+
+      const prompt = await generatePhase3Prompt(project);
+
+      // Verify both responses are in the prompt
+      expect(prompt).toContain('# Claude PRD');
+      expect(prompt).toContain('This is the original PRD from Claude Sonnet 4.5.');
+      expect(prompt).toContain('# Gemini Review');
+      expect(prompt).toContain('This is the reviewed PRD from Gemini 2.5 Pro.');
+      expect(prompt).not.toContain('[PASTE CLAUDE\'S ORIGINAL PRD HERE]');
+      expect(prompt).not.toContain('[PASTE GEMINI\'S PRD RENDITION HERE]');
+    });
+
+    test('Full 3-phase workflow with realistic data', async () => {
+      // Set up realistic prompt templates
+      await savePrompt(1, 'You are a PM. Create a PRD for: %s\n\nProblems:\n%s\n\nContext:\n%s');
+      await savePrompt(2, 'Review this PRD from Claude:\n\n[PASTE CLAUDE\'S ORIGINAL PRD HERE]');
+      await savePrompt(3, 'Compare:\n\nCLAUDE:\n[PASTE CLAUDE\'S ORIGINAL PRD HERE]\n\nGEMINI:\n[PASTE GEMINI\'S PRD RENDITION HERE]');
+
+      // Create project
+      const project = await createProject(
+        'MonkeyMoonshot',
+        'Users need better analytics',
+        'Enterprise SaaS'
+      );
+
+      // Phase 1: Generate prompt for Claude
+      const phase1Prompt = await generatePhase1Prompt(project);
+      expect(phase1Prompt).toContain('MonkeyMoonshot');
+      expect(phase1Prompt).toContain('Users need better analytics');
+      expect(phase1Prompt).toContain('Enterprise SaaS');
+
+      // Simulate Claude's response
+      project.phases[1].response = '# MonkeyMoonshot PRD\n\n## Goals\n- Improve analytics\n- Better UX';
+      project.phases[1].completed = true;
+
+      // Phase 2: Generate prompt for Gemini
+      const phase2Prompt = await generatePhase2Prompt(project);
+      expect(phase2Prompt).toContain('# MonkeyMoonshot PRD');
+      expect(phase2Prompt).toContain('## Goals');
+      expect(phase2Prompt).not.toContain('[PASTE CLAUDE\'S ORIGINAL PRD HERE]');
+
+      // Simulate Gemini's response
+      project.phases[2].response = '# Improved PRD\n\n## Refined Goals\n- Enhanced analytics with KPIs';
+      project.phases[2].completed = true;
+
+      // Phase 3: Generate prompt for Claude (final synthesis)
+      const phase3Prompt = await generatePhase3Prompt(project);
+      expect(phase3Prompt).toContain('# MonkeyMoonshot PRD');
+      expect(phase3Prompt).toContain('# Improved PRD');
+      expect(phase3Prompt).not.toContain('[PASTE CLAUDE\'S ORIGINAL PRD HERE]');
+      expect(phase3Prompt).not.toContain('[PASTE GEMINI\'S PRD RENDITION HERE]');
+    });
+
+    test('Phase 2 should handle missing Phase 1 response gracefully', async () => {
+      await savePrompt(2, 'Review: [PASTE CLAUDE\'S ORIGINAL PRD HERE]');
+
+      const project = await createProject('Test', 'Problems', 'Context');
+      // Phase 1 response is empty/undefined
+
+      const prompt = await generatePhase2Prompt(project);
+
+      // Should still generate a prompt (placeholder may remain or be empty)
+      expect(typeof prompt).toBe('string');
+    });
+
+    test('Phase 3 should handle missing responses gracefully', async () => {
+      await savePrompt(3, 'Compare: [PASTE CLAUDE\'S ORIGINAL PRD HERE] and [PASTE GEMINI\'S PRD RENDITION HERE]');
+
+      const project = await createProject('Test', 'Problems', 'Context');
+      // Both responses are empty/undefined
+
+      const prompt = await generatePhase3Prompt(project);
+
+      // Should still generate a prompt
+      expect(typeof prompt).toBe('string');
+    });
+  });
+
 });
