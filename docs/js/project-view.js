@@ -184,10 +184,19 @@ function attachPhaseEventListeners(project, phase) {
   const nextPhaseBtn = document.getElementById('next-phase-btn');
 
   copyPromptBtn.addEventListener('click', async () => {
-    const prompt = await generatePromptForPhase(project, phase);
-    await copyToClipboard(prompt);
-    await updatePhase(project.id, phase, prompt, project.phases[phase].response);
-    renderProjectView(project.id);
+    try {
+      const prompt = await generatePromptForPhase(project, phase);
+      if (!prompt) {
+        showToast('Failed to generate prompt. Please try again.', 'error');
+        return;
+      }
+      await copyToClipboard(prompt);
+      await updatePhase(project.id, phase, prompt, project.phases[phase].response);
+      renderProjectView(project.id);
+    } catch (error) {
+      console.error('Error copying prompt:', error);
+      showToast(`Failed to copy prompt: ${error.message}`, 'error');
+    }
   });
 
   saveResponseBtn.addEventListener('click', async () => {
