@@ -191,7 +191,8 @@ function attachPhaseEventListeners(project, phase) {
         return;
       }
       await copyToClipboard(prompt);
-      await updatePhase(project.id, phase, prompt, project.phases[phase].response);
+      const currentResponse = (project.phases && project.phases[phase] && project.phases[phase].response) || '';
+      await updatePhase(project.id, phase, prompt, currentResponse);
       renderProjectView(project.id);
     } catch (error) {
       console.error('Error copying prompt:', error);
@@ -202,7 +203,8 @@ function attachPhaseEventListeners(project, phase) {
   saveResponseBtn.addEventListener('click', async () => {
     const response = responseTextarea.value.trim();
     if (response) {
-      await updatePhase(project.id, phase, project.phases[phase].prompt, response);
+      const currentPrompt = (project.phases && project.phases[phase] && project.phases[phase].prompt) || '';
+      await updatePhase(project.id, phase, currentPrompt, response);
       showToast('Response saved successfully!', 'success');
       renderProjectView(project.id);
     } else {

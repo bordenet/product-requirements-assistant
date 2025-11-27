@@ -85,7 +85,7 @@ export async function generatePhase2Prompt(project) {
     throw new Error('Phase 2 prompt template not found. Please ensure prompts are loaded.');
   }
 
-  const phase1Response = project.phases[1].response || '';
+  const phase1Response = (project.phases && project.phases[1] && project.phases[1].response) || '';
 
   // Replace placeholder
   const prompt = template.replace('[PASTE CLAUDE\'S ORIGINAL PRD HERE]', phase1Response);
@@ -103,8 +103,8 @@ export async function generatePhase3Prompt(project) {
     throw new Error('Phase 3 prompt template not found. Please ensure prompts are loaded.');
   }
 
-  const phase1Response = project.phases[1].response || '';
-  const phase2Response = project.phases[2].response || '';
+  const phase1Response = (project.phases && project.phases[1] && project.phases[1].response) || '';
+  const phase2Response = (project.phases && project.phases[2] && project.phases[2].response) || '';
 
   // Replace placeholders
   const prompt = template
@@ -138,7 +138,8 @@ export async function copyPromptToClipboard(project, phase) {
   await copyToClipboard(prompt);
 
   // Save the generated prompt to the project
-  await updatePhase(project.id, phase, prompt, project.phases[phase].response);
+  const currentResponse = (project.phases && project.phases[phase] && project.phases[phase].response) || '';
+  await updatePhase(project.id, phase, prompt, currentResponse);
 }
 
 /**
@@ -176,7 +177,10 @@ export function getPhaseMetadata(phase) {
  * Export final PRD as markdown
  */
 export async function exportFinalPRD(project) {
-  const finalResponse = project.phases[3].response || project.phases[2].response || project.phases[1].response;
+  const phase3Response = (project.phases && project.phases[3] && project.phases[3].response) || '';
+  const phase2Response = (project.phases && project.phases[2] && project.phases[2].response) || '';
+  const phase1Response = (project.phases && project.phases[1] && project.phases[1].response) || '';
+  const finalResponse = phase3Response || phase2Response || phase1Response;
 
   if (!finalResponse) {
     showToast('No PRD content to export', 'warning');
