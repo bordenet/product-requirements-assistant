@@ -66,13 +66,25 @@ export async function generatePhase1Prompt(project) {
     throw new Error('Phase 1 prompt template not found. Please ensure prompts are loaded.');
   }
 
-  // Replace placeholders
-  const prompt = template
-    .replace('%s', project.title)
-    .replace('%s', project.problems)
-    .replace('%s', project.context);
+  // Replace placeholders sequentially
+  // Using a function to prevent user input containing '%s' from interfering with replacements
+  const prompt = replacePlaceholders(template, project.title, project.problems, project.context);
 
   return prompt;
+}
+
+/**
+ * Replace %s placeholders sequentially, immune to user input containing '%s'
+ */
+function replacePlaceholders(template, ...values) {
+  let result = template;
+  for (const value of values) {
+    const index = result.indexOf('%s');
+    if (index !== -1) {
+      result = result.substring(0, index) + value + result.substring(index + 2);
+    }
+  }
+  return result;
 }
 
 /**
