@@ -62,6 +62,10 @@ export async function resetPrompt(phase) {
 export async function generatePhase1Prompt(project) {
   const template = await getPrompt(1);
 
+  if (!template) {
+    throw new Error('Phase 1 prompt template not found. Please ensure prompts are loaded.');
+  }
+
   // Replace placeholders
   const prompt = template
     .replace('%s', project.title)
@@ -76,6 +80,11 @@ export async function generatePhase1Prompt(project) {
  */
 export async function generatePhase2Prompt(project) {
   const template = await getPrompt(2);
+
+  if (!template) {
+    throw new Error('Phase 2 prompt template not found. Please ensure prompts are loaded.');
+  }
+
   const phase1Response = project.phases[1].response;
 
   // Replace placeholder
@@ -89,6 +98,11 @@ export async function generatePhase2Prompt(project) {
  */
 export async function generatePhase3Prompt(project) {
   const template = await getPrompt(3);
+
+  if (!template) {
+    throw new Error('Phase 3 prompt template not found. Please ensure prompts are loaded.');
+  }
+
   const phase1Response = project.phases[1].response;
   const phase2Response = project.phases[2].response;
 
