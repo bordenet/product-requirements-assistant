@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { getPrompt, savePrompt, resetPrompt, generatePhase1Prompt, generatePhase2Prompt, generatePhase3Prompt, generatePromptForPhase, getPhaseMetadata, exportFinalPRD, copyPromptToClipboard, loadDefaultPrompts } from '../js/workflow.js';
-import { createProject, updatePhase } from '../js/projects.js';
+import { createProject, updatePhase, getProject } from '../js/projects.js';
 import storage from '../js/storage.js';
 
 describe('Workflow Module', () => {
@@ -499,6 +499,64 @@ describe('Workflow Module', () => {
 
       // Should still generate a prompt
       expect(typeof prompt).toBe('string');
+    });
+  });
+
+  describe('Workflow edge cases - saving response without generating prompt', () => {
+    test('should be able to save response even if prompt was never generated', async () => {
+      // Set up a default prompt template
+      await savePrompt(1, 'Create a PRD for: %s. Problems: %s. Context: %s');
+
+      // Create a new project
+      const project = await createProject(
+        'Test Feature',
+        'Users need better analytics',
+        'B2B SaaS platform'
+      );
+
+      // Verify prompt is initially empty
+      expect(project.phases[1].prompt).toBe('');
+
+      // User pastes a response WITHOUT clicking "Copy Prompt to Clipboard" first
+      // This simulates the bug where the user skips generating the prompt
+      const response = 'This is the AI response that the user pasted directly';
+
+      // The UI should generate the prompt automatically when saving the response
+      const prompt = await generatePromptForPhase(project, 1);
+      expect(prompt).toBeTruthy();
+      expect(prompt.length).toBeGreaterThan(0);
+
+      // This is what the UI does when you click "Save Response"
+      await updatePhase(project.id, 1, prompt, response);
+
+      // Verify the phase was updated correctly
+      const updated = await getProject(project.id);
+      expect(updated.phases[1].prompt).toBeTruthy();
+      expect(updated.phases[1].prompt.length).toBeGreaterThan(0);
+      expect(updated.phases[1].response).toBe(response);
+      expect(updated.phases[1].completed).toBe(true);
+    });
+
+    test('should handle empty prompt gracefully when saving response', async () => {
+      // Set up a default prompt template
+      await savePrompt(1, 'Create a PRD for: %s');
+
+      const project = await createProject('Test', 'Problems', 'Context');
+
+      // Simulate saving with empty prompt (the bug scenario)
+      const response = 'User response';
+
+      // If prompt is empty, generate it
+      let prompt = project.phases[1].prompt;
+      if (!prompt) {
+        prompt = await generatePromptForPhase(project, 1);
+      }
+
+      await updatePhase(project.id, 1, prompt, response);
+
+      const updated = await getProject(project.id);
+      expect(updated.phases[1].prompt).toBeTruthy();
+      expect(updated.phases[1].response).toBe(response);
     });
   });
 

@@ -202,7 +202,12 @@ function attachPhaseEventListeners(project, phase) {
   saveResponseBtn.addEventListener('click', async () => {
     const response = responseTextarea.value.trim();
     if (response) {
-      await updatePhase(project.id, phase, project.phases[phase].prompt, response);
+      // Generate prompt if it hasn't been generated yet
+      let prompt = project.phases[phase].prompt;
+      if (!prompt) {
+        prompt = await generatePromptForPhase(project, phase);
+      }
+      await updatePhase(project.id, phase, prompt, response);
       showToast('Response saved successfully!', 'success');
       renderProjectView(project.id);
     } else {
