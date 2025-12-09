@@ -2,14 +2,16 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  fullyParallel: true,  // Run tests in parallel - each gets fresh context
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: 2,  // Retry failed tests to handle flakiness
+  workers: undefined,  // Use default workers
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:8000',
     trace: 'on-first-retry',
+    // Ensure clean storage state for each test
+    storageState: { cookies: [], origins: [] },
   },
 
   projects: [

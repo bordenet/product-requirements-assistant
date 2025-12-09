@@ -174,6 +174,52 @@ function renderPhaseContent(project, phase) {
 }
 
 /**
+ * Show the full prompt in a modal
+ */
+function showPromptModal(prompt) {
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+  modal.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                    📋 Full Prompt
+                </h3>
+                <button id="close-prompt-modal-btn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1">
+                <pre class="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 font-mono bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">${escapeHtml(prompt)}</pre>
+            </div>
+            <div class="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+                <button id="copy-prompt-modal-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mr-2">
+                    📋 Copy to Clipboard
+                </button>
+                <button id="close-prompt-modal-btn-2" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+
+  modal.querySelector('#close-prompt-modal-btn').addEventListener('click', closeModal);
+  modal.querySelector('#close-prompt-modal-btn-2').addEventListener('click', closeModal);
+  modal.querySelector('#copy-prompt-modal-btn').addEventListener('click', async () => {
+    await copyToClipboard(prompt);
+  });
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+}
+
+/**
  * Attach event listeners for phase interactions
  */
 function attachPhaseEventListeners(project, phase) {
@@ -182,6 +228,14 @@ function attachPhaseEventListeners(project, phase) {
   const responseTextarea = document.getElementById('response-textarea');
   const prevPhaseBtn = document.getElementById('prev-phase-btn');
   const nextPhaseBtn = document.getElementById('next-phase-btn');
+  const viewPromptBtn = document.querySelector('.view-prompt-btn');
+
+  // View Full Prompt button handler
+  if (viewPromptBtn && project.phases[phase].prompt) {
+    viewPromptBtn.addEventListener('click', () => {
+      showPromptModal(project.phases[phase].prompt);
+    });
+  }
 
   copyPromptBtn.addEventListener('click', async () => {
     try {
