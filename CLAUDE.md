@@ -119,6 +119,11 @@ npm run lint:fix
 2. `npm test`
 3. Verify output shows all passing
 
+### ALWAYS Fix Lint Warnings Immediately
+- No exceptions - fix lint warnings in the same commit
+- Don't leave warnings for "later" - they accumulate and become tech debt
+- If a warning seems wrong, add an eslint-disable comment with explanation
+
 ---
 
 ## 🚫 What NOT to Do
