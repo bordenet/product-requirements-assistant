@@ -3,10 +3,10 @@
  */
 
 import storage from './storage.js';
-import { initRouter } from './router.js';
+import { initRouter, updateStorageInfo } from './router.js';
 import { loadDefaultPrompts } from './workflow.js';
 import { exportAllProjects, importProjects } from './projects.js';
-import { showToast, showLoading, hideLoading, formatBytes } from './ui.js';
+import { showToast, showLoading, hideLoading } from './ui.js';
 
 /**
  * Initialize the application
@@ -155,22 +155,7 @@ function loadTheme() {
   }
 }
 
-/**
- * Update storage info in footer
- */
-async function updateStorageInfo() {
-  const estimate = await storage.getStorageEstimate();
-  const storageInfo = document.getElementById('storage-info');
 
-  if (estimate) {
-    const used = formatBytes(estimate.usage || 0);
-    const quota = formatBytes(estimate.quota || 0);
-    const percent = ((estimate.usage / estimate.quota) * 100).toFixed(1);
-    storageInfo.textContent = `Storage: ${used} / ${quota} (${percent}%)`;
-  } else {
-    storageInfo.textContent = 'Storage: Available';
-  }
-}
 
 /**
  * Show about modal

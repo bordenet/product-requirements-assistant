@@ -44,8 +44,14 @@ export async function getProject(id) {
 
 /**
  * Update project phase data
+ * @param {string} projectId - The project ID
+ * @param {number} phase - The phase number
+ * @param {string} prompt - The prompt text
+ * @param {string} response - The response text
+ * @param {Object} options - Optional configuration
+ * @param {boolean} options.skipAutoAdvance - If true, don't auto-advance to next phase
  */
-export async function updatePhase(projectId, phase, prompt, response) {
+export async function updatePhase(projectId, phase, prompt, response, options = {}) {
   const project = await storage.getProject(projectId);
   if (!project) throw new Error('Project not found');
 
@@ -55,11 +61,12 @@ export async function updatePhase(projectId, phase, prompt, response) {
     completed: !!response
   };
 
-  // Auto-advance to next phase if current phase is completed
-  if (response && phase < 3) {
+  // Auto-advance to next phase if current phase is completed (unless skipAutoAdvance is set)
+  if (response && phase < 3 && !options.skipAutoAdvance) {
     project.phase = phase + 1;
   }
 
+  project.updatedAt = new Date().toISOString();
   await storage.saveProject(project);
   return project;
 }
