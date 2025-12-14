@@ -166,8 +166,8 @@ function renderPhaseContent(project, phase) {
                         href="${aiUrl}"
                         target="ai-assistant-tab"
                         rel="noopener noreferrer"
-                        class="px-6 py-3 bg-green-600 text-white rounded-lg transition-colors font-medium ${phaseData.prompt ? 'hover:bg-green-700' : 'opacity-50 cursor-not-allowed pointer-events-none'}"
-                        ${!phaseData.prompt ? 'aria-disabled="true"' : ''}
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg transition-colors font-medium opacity-50 cursor-not-allowed pointer-events-none"
+                        aria-disabled="true"
                     >
                         🔗 Open ${phase === 2 ? 'Gemini' : 'Claude'}
                     </a>
@@ -301,12 +301,10 @@ function attachPhaseEventListeners(project, phase) {
       // Save prompt but DON'T auto-advance - user is still working on this phase
       await updatePhase(project.id, phase, prompt, project.phases[phase].response, { skipAutoAdvance: true });
 
-      // Enable the "Open AI" button now that prompt is copied
+      // Show the "Open AI" button now that prompt is copied
       const openAiBtn = document.getElementById('open-ai-btn');
       if (openAiBtn) {
-        openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-        openAiBtn.classList.add('hover:bg-green-700');
-        openAiBtn.removeAttribute('aria-disabled');
+        openAiBtn.classList.remove('hidden');
       }
 
       // Enable the response textarea now that prompt is copied
