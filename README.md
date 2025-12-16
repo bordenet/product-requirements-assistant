@@ -2,6 +2,7 @@
 
 [![CI/CD](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/bordenet/product-requirements-assistant/branch/main/graph/badge.svg?token=13a4e0d2-5d04-4b4e-9b0e-d07f16280fa1)](https://codecov.io/gh/bordenet/product-requirements-assistant)
+[![GitHub Dependabot](https://img.shields.io/badge/dependabot-enabled-brightgreen?logo=dependabot)](https://github.com/bordenet/product-requirements-assistant/security/dependabot)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.
