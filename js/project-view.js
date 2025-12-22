@@ -301,10 +301,11 @@ function attachPhaseEventListeners(project, phase) {
       // Save prompt but DON'T auto-advance - user is still working on this phase
       await updatePhase(project.id, phase, prompt, project.phases[phase].response, { skipAutoAdvance: true });
 
-      // Show the "Open AI" button now that prompt is copied
+      // Enable the "Open AI" button now that prompt is copied
       const openAiBtn = document.getElementById('open-ai-btn');
       if (openAiBtn) {
-        openAiBtn.classList.remove('hidden');
+        openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        openAiBtn.removeAttribute('aria-disabled');
       }
 
       // Enable the response textarea now that prompt is copied
