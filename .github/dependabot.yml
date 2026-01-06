@@ -46,10 +46,7 @@ updates:
         patterns:
           - "eslint*"
           - "@eslint/*"
-    ignore:
-      # Ignore major updates unless security-related (handled by security updates)
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+    # Allow all update types including major versions
 
   # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
@@ -74,4 +71,3 @@ updates:
       actions:
         patterns:
           - "*"
-
