@@ -161,6 +161,7 @@ function loadTheme() {
  * Show about modal
  */
 function showAboutModal() {
+  const prdDocUrl = 'https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/Project_Planning_Mechanisms%3A_Documents.md#prd-the-what-and-why';
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
   modal.innerHTML = `
@@ -169,7 +170,7 @@ function showAboutModal() {
                 📋 Product Requirements Assistant
             </h3>
             <div class="text-gray-700 dark:text-gray-300 space-y-3 mb-6">
-                <p>A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.</p>
+                <p>A structured 3-phase workflow tool for creating <a href="${prdDocUrl}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">Product Requirements Documents (PRDs)</a> with AI assistance.</p>
                 <p><strong>100% Client-Side:</strong> All your data is stored locally in your browser using IndexedDB. Nothing is ever sent to any server.</p>
                 <p><strong>Privacy-First:</strong> No tracking, no analytics, no cookies (except preferences).</p>
                 <p><strong>Open Source:</strong> Available on GitHub under MIT license.</p>
