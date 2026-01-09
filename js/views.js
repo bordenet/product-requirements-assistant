@@ -7,6 +7,9 @@ import { getAllProjects, createProject, deleteProject } from './projects.js';
 import { formatDate, escapeHtml, confirm, showToast } from './ui.js';
 import { navigateTo } from './router.js';
 
+// PRD documentation URL
+const PRD_DOC_URL = 'https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/Project_Planning_Mechanisms%3A_Documents.md#prd-the-what-and-why';
+
 /**
  * Render the projects list view
  */
@@ -17,10 +20,10 @@ export async function renderProjectsList() {
   container.innerHTML = `
         <div class="mb-6 flex items-center justify-between">
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-                My Projects
+                My <a href="${PRD_DOC_URL}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">PRDs</a>
             </h2>
             <button id="new-project-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                + New Project
+                + New PRD
             </button>
         </div>
 
@@ -28,13 +31,13 @@ export async function renderProjectsList() {
             <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                 <span class="text-6xl mb-4 block">📋</span>
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    No projects yet
+                    No PRDs yet
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 mb-6">
-                    Create your first Product Requirements Document
+                    Create your first <a href="${PRD_DOC_URL}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">Product Requirements Document</a>
                 </p>
                 <button id="new-project-btn-empty" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    + Create Your First Project
+                    + Create Your First PRD
                 </button>
             </div>
         ` : `
@@ -131,7 +134,7 @@ export function renderNewProjectForm() {
 
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    Create New Project
+                    Create New <a href="${PRD_DOC_URL}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">PRD</a>
                 </h2>
 
                 <form id="new-project-form" class="space-y-6">
