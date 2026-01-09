@@ -3,7 +3,7 @@
  * Handles rendering different views/screens
  */
 
-import { getAllProjects, createProject, deleteProject } from './projects.js';
+import { getAllProjects, createProject, deleteProject, getProject, updateProject } from './projects.js';
 import { formatDate, escapeHtml, confirm, showToast } from './ui.js';
 import { navigateTo } from './router.js';
 
@@ -208,5 +208,119 @@ export function renderNewProjectForm() {
     const project = await createProject(title, problems, context);
     showToast('Project created successfully!', 'success');
     navigateTo('project', project.id);
+  });
+}
+
+/**
+ * Render the edit project form
+ */
+export async function renderEditProjectForm(projectId) {
+  const project = await getProject(projectId);
+
+  if (!project) {
+    showToast('Project not found', 'error');
+    navigateTo('home');
+    return;
+  }
+
+  const container = document.getElementById('app-container');
+  container.innerHTML = `
+        <div class="max-w-3xl mx-auto">
+            <div class="mb-6">
+                <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Back to PRD
+                </button>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                    Edit <a href="${PRD_DOC_URL}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">PRD</a> Details
+                </h2>
+
+                <form id="edit-project-form" class="space-y-6">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Project Title *
+                        </label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            value="${escapeHtml(project.title)}"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="problems" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Problems to Solve *
+                        </label>
+                        <textarea
+                            id="problems"
+                            name="problems"
+                            required
+                            rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                        >${escapeHtml(project.problems)}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="context" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Additional Context
+                        </label>
+                        <textarea
+                            id="context"
+                            name="context"
+                            rows="6"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                        >${escapeHtml(project.context || '')}</textarea>
+                    </div>
+
+                    <!-- Footer (One-Pager style: Save on left, Delete and Cancel on right) -->
+                    <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                            Save Changes
+                        </button>
+                        <div class="flex gap-3">
+                            <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                                Delete
+                            </button>
+                            <button type="button" id="cancel-btn" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+  // Event listeners
+  document.getElementById('back-btn').addEventListener('click', () => navigateTo('project', projectId));
+  document.getElementById('cancel-btn').addEventListener('click', () => navigateTo('project', projectId));
+
+  document.getElementById('delete-btn').addEventListener('click', async () => {
+    if (await confirm(`Are you sure you want to delete "${project.title}"?`, 'Delete PRD')) {
+      await deleteProject(projectId);
+      showToast('PRD deleted', 'success');
+      navigateTo('home');
+    }
+  });
+
+  document.getElementById('edit-project-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const title = formData.get('title');
+    const problems = formData.get('problems');
+    const context = formData.get('context') || '';
+
+    await updateProject(projectId, { title, problems, context });
+    showToast('Changes saved!', 'success');
+    navigateTo('project', projectId);
   });
 }
