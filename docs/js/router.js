@@ -3,7 +3,7 @@
  * Handles client-side routing
  */
 
-import { renderProjectsList, renderNewProjectForm } from './views.js';
+import { renderProjectsList, renderNewProjectForm, renderEditProjectForm } from './views.js';
 import { renderProjectView } from './project-view.js';
 import storage from './storage.js';
 import { formatBytes } from './ui.js';
@@ -11,7 +11,8 @@ import { formatBytes } from './ui.js';
 const routes = {
   'home': renderProjectsList,
   'new-project': renderNewProjectForm,
-  'project': renderProjectView
+  'project': renderProjectView,
+  'edit-project': renderEditProjectForm
 };
 
 let currentRoute = null;
@@ -50,6 +51,8 @@ export async function navigateTo(route, ...params) {
     window.location.hash = '#new';
   } else if (route === 'project' && params[0]) {
     window.location.hash = `#project/${params[0]}`;
+  } else if (route === 'edit-project' && params[0]) {
+    window.location.hash = `#edit/${params[0]}`;
   }
 
   // Render the route
@@ -88,6 +91,9 @@ async function handleHashChange() {
   } else if (hash.startsWith('project/')) {
     const projectId = hash.split('/')[1];
     await navigateTo('project', projectId);
+  } else if (hash.startsWith('edit/')) {
+    const projectId = hash.split('/')[1];
+    await navigateTo('edit-project', projectId);
   } else {
     await navigateTo('home');
   }
