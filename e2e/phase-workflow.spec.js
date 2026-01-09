@@ -8,15 +8,15 @@ test.describe('Phase Navigation and Workflow', () => {
     // Navigate to app and wait for it to load
     await page.goto('/');
     await page.waitForSelector('#app-container', { state: 'visible' });
-    await page.waitForSelector('h2:has-text("My Projects")', { timeout: 5000 });
+    await page.waitForSelector('h2:has-text("My PRDs")', { timeout: 5000 });
 
     // Create a test project
-    await page.click('button:has-text("New Project")');
+    await page.click('button:has-text("New PRD")');
     await page.waitForSelector('#title', { state: 'visible', timeout: 5000 });
     await page.fill('#title', 'Phase Test Project');
     await page.fill('#problems', 'Need to test phases');
     await page.fill('#context', 'E2E testing context');
-    await page.click('button[type="submit"]:has-text("Create Project")');
+    await page.click('button[type="submit"]:has-text("Create")');
 
     // Wait for project view to load
     await page.waitForSelector('h2:has-text("Phase Test Project")', { timeout: 10000 });
@@ -39,7 +39,8 @@ test.describe('Phase Navigation and Workflow', () => {
     // Use heading selector to avoid matching both tab and heading
     await expect(page.locator('h3:has-text("📝 Phase 1")')).toBeVisible();
     await expect(page.locator('text=Initial Draft')).toBeVisible();
-    await expect(page.locator('text=Claude Sonnet 4.5')).toBeVisible();
+    // Check for AI model badge - use first() to handle multiple matches
+    await expect(page.locator('text=Use with Claude Sonnet 4.5').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should show copy prompt button in Phase 1', async ({ page }) => {
@@ -55,8 +56,8 @@ test.describe('Phase Navigation and Workflow', () => {
     // Click copy prompt button
     await page.click('button:has-text("Copy Prompt to Clipboard")');
 
-    // Should show success toast
-    await expect(page.locator('text=Copied to clipboard!')).toBeVisible();
+    // Should show success toast - exact text from project-view.js
+    await expect(page.locator('text=Prompt copied to clipboard!')).toBeVisible();
 
     // Verify clipboard contains content
     const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
@@ -66,20 +67,31 @@ test.describe('Phase Navigation and Workflow', () => {
   });
 
   test('should save response and mark phase as completed', async ({ page }) => {
+    // Must copy prompt first to enable textarea
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
+
     // Enter a response
     await page.fill('textarea#response-textarea', 'This is my Phase 1 PRD draft');
 
     // Save response
     await page.click('button:has-text("Save Response")');
 
-    // Should show success toast
-    await expect(page.locator('text=Response saved successfully!')).toBeVisible();
+    // Should show success toast - app auto-advances so message reflects that
+    await expect(page.locator('text=Response saved! Moving to next phase...')).toBeVisible();
 
-    // Phase should be marked as completed (green checkmark)
-    await expect(page.locator('button.phase-tab[data-phase="1"] >> text=✓')).toBeVisible();
+    // Wait for auto-advance to Phase 2 (the view re-renders)
+    await page.waitForSelector('h3:has-text("🔍 Phase 2")', { timeout: 5000 });
+
+    // Phase 1 tab should be marked as completed with green checkmark
+    await expect(page.locator('button.phase-tab[data-phase="1"] span.text-green-500')).toBeVisible();
   });
 
   test('should navigate to Phase 2 after completing Phase 1', async ({ page }) => {
+    // Must copy prompt first to enable textarea
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
+
     // Complete Phase 1
     await page.fill('textarea#response-textarea', 'Phase 1 complete');
     await page.click('button:has-text("Save Response")');
@@ -94,13 +106,17 @@ test.describe('Phase Navigation and Workflow', () => {
     await expect(page.locator('text=Gemini 2.5 Pro')).toBeVisible();
   });
 
-  test('should not allow next phase if current phase not completed', async ({ page }) => {
-    // Next button should be disabled/grayed out
+  test('should not show next phase button if current phase not completed', async ({ page }) => {
+    // Next Phase button should not exist when phase is not completed
     const nextButton = page.locator('button:has-text("Next Phase")');
-    await expect(nextButton).toHaveClass(/opacity-50/);
+    await expect(nextButton).toHaveCount(0);
   });
 
   test('should navigate between phases using tabs', async ({ page }) => {
+    // Must copy prompt first to enable textarea
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
+
     // Complete Phase 1
     await page.fill('textarea#response-textarea', 'Phase 1 done');
     await page.click('button:has-text("Save Response")');
@@ -122,6 +138,10 @@ test.describe('Phase Navigation and Workflow', () => {
   });
 
   test('should use Previous Phase button to go back', async ({ page }) => {
+    // Must copy prompt first to enable textarea
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
+
     // Complete Phase 1 - app auto-advances to Phase 2
     await page.fill('textarea#response-textarea', 'Phase 1 content');
     await page.click('button:has-text("Save Response")');
@@ -138,10 +158,18 @@ test.describe('Phase Navigation and Workflow', () => {
   });
 
   test('should complete full 3-phase workflow', async ({ page }) => {
+    // Must copy prompt first to enable textarea (Phase 1)
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
+
     // Phase 1 - app auto-advances to Phase 2 after saving
     await page.fill('textarea#response-textarea', 'Initial PRD draft from Claude');
     await page.click('button:has-text("Save Response")');
     await page.waitForSelector('h3:has-text("🔍 Phase 2")', { timeout: 5000 });
+
+    // Must copy prompt for Phase 2 to enable textarea
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
 
     // Phase 2 - app auto-advances to Phase 3 after saving
     await expect(page.locator('text=Phase 2: Review & Refine')).toBeVisible();
@@ -159,23 +187,24 @@ test.describe('Phase Navigation and Workflow', () => {
     await expect(page.locator('button.phase-tab[data-phase="2"] >> text=✓')).toBeVisible();
   });
 
-  test('should display generated prompt preview after copying', async ({ page }) => {
+  test('should display View Prompt button after copying', async ({ page }) => {
     // Copy prompt
     await page.click('button:has-text("Copy Prompt to Clipboard")');
     await page.waitForTimeout(500);
 
-    // Should show prompt preview
-    await expect(page.locator('text=Generated Prompt:')).toBeVisible();
-    await expect(page.locator('button:has-text("View Full Prompt")')).toBeVisible();
+    // View Prompt button should now be enabled (One-Pager style)
+    const viewPromptBtn = page.locator('button#view-prompt-btn');
+    await expect(viewPromptBtn).toBeVisible();
+    await expect(viewPromptBtn).not.toHaveAttribute('disabled');
   });
 
-  test('should open View Full Prompt modal for Phase 1', async ({ page }) => {
+  test('should open View Prompt modal for Phase 1', async ({ page }) => {
     // Copy prompt to generate it
     await page.click('button:has-text("Copy Prompt to Clipboard")');
     await page.waitForTimeout(500);
 
-    // Click View Full Prompt button
-    await page.click('button:has-text("View Full Prompt")');
+    // Click View Prompt button (One-Pager style)
+    await page.click('button#view-prompt-btn');
 
     // Modal should be visible with full prompt content
     await expect(page.locator('text=📋 Full Prompt')).toBeVisible();
@@ -190,7 +219,11 @@ test.describe('Phase Navigation and Workflow', () => {
     await expect(page.locator('text=📋 Full Prompt')).toBeHidden();
   });
 
-  test('should open View Full Prompt modal for Phase 2', async ({ page }) => {
+  test('should open View Prompt modal for Phase 2', async ({ page }) => {
+    // Must copy prompt first to enable textarea (Phase 1)
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
+
     // Complete Phase 1 - app auto-advances to Phase 2
     await page.fill('textarea#response-textarea', 'Phase 1 PRD content');
     await page.click('button:has-text("Save Response")');
@@ -199,12 +232,12 @@ test.describe('Phase Navigation and Workflow', () => {
     // Should be on Phase 2
     await expect(page.locator('text=Phase 2: Review & Refine')).toBeVisible();
 
-    // Copy prompt to generate it
+    // Copy prompt to generate it (Phase 2)
     await page.click('button:has-text("Copy Prompt to Clipboard")');
     await page.waitForTimeout(500);
 
-    // Click View Full Prompt button
-    await page.click('button:has-text("View Full Prompt")');
+    // Click View Prompt button
+    await page.click('button#view-prompt-btn');
 
     // Modal should be visible
     await expect(page.locator('text=📋 Full Prompt')).toBeVisible();
@@ -219,11 +252,19 @@ test.describe('Phase Navigation and Workflow', () => {
     await expect(page.locator('text=📋 Full Prompt')).toBeHidden();
   });
 
-  test('should open View Full Prompt modal for Phase 3', async ({ page }) => {
+  test('should open View Prompt modal for Phase 3', async ({ page }) => {
+    // Must copy prompt first to enable textarea (Phase 1)
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
+
     // Complete Phase 1 - app auto-advances to Phase 2
     await page.fill('textarea#response-textarea', 'Phase 1 draft');
     await page.click('button:has-text("Save Response")');
     await page.waitForSelector('h3:has-text("🔍 Phase 2")', { timeout: 5000 });
+
+    // Must copy prompt first to enable textarea (Phase 2)
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
 
     // Complete Phase 2 - app auto-advances to Phase 3
     await page.fill('textarea#response-textarea', 'Phase 2 review');
@@ -233,12 +274,12 @@ test.describe('Phase Navigation and Workflow', () => {
     // Should be on Phase 3
     await expect(page.locator('text=Phase 3: Final Comparison')).toBeVisible();
 
-    // Copy prompt to generate it
+    // Copy prompt to generate it (Phase 3)
     await page.click('button:has-text("Copy Prompt to Clipboard")');
     await page.waitForTimeout(500);
 
-    // Click View Full Prompt button
-    await page.click('button:has-text("View Full Prompt")');
+    // Click View Prompt button
+    await page.click('button#view-prompt-btn');
 
     // Modal should be visible
     await expect(page.locator('text=📋 Full Prompt')).toBeVisible();
@@ -253,13 +294,13 @@ test.describe('Phase Navigation and Workflow', () => {
     await expect(page.locator('text=📋 Full Prompt')).toBeHidden();
   });
 
-  test('should copy prompt from View Full Prompt modal', async ({ page }) => {
+  test('should copy prompt from View Prompt modal', async ({ page }) => {
     // Copy prompt to generate it
     await page.click('button:has-text("Copy Prompt to Clipboard")');
     await page.waitForTimeout(500);
 
-    // Click View Full Prompt button
-    await page.click('button:has-text("View Full Prompt")');
+    // Click View Prompt button
+    await page.click('button#view-prompt-btn');
     await expect(page.locator('text=📋 Full Prompt')).toBeVisible();
 
     // Click Copy to Clipboard button in modal
@@ -273,6 +314,10 @@ test.describe('Phase Navigation and Workflow', () => {
   });
 
   test('should export PRD from project view', async ({ page }) => {
+    // Must copy prompt first to enable textarea
+    await page.click('button:has-text("Copy Prompt to Clipboard")');
+    await page.waitForTimeout(300);
+
     // Complete Phase 1
     await page.fill('textarea#response-textarea', 'PRD content for export');
     await page.click('button:has-text("Save Response")');

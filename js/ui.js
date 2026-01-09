@@ -159,7 +159,7 @@ export async function copyToClipboard(text) {
     await navigator.clipboard.writeText(text);
     showToast('Copied to clipboard!', 'success');
     return true;
-  } catch (error) {
+  } catch {
     showToast('Failed to copy to clipboard', 'error');
     return false;
   }
