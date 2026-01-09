@@ -3,9 +3,9 @@
  * Handles rendering the project workflow view
  */
 
-import { getProject, updatePhase, updateProject } from './projects.js';
+import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, exportFinalPRD } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboard } from './ui.js';
+import { escapeHtml, showToast, copyToClipboard, confirm } from './ui.js';
 import { navigateTo } from './router.js';
 
 /**
@@ -200,26 +200,28 @@ function renderPhaseContent(project, phase) {
                     ${!textareaEnabled ? 'disabled' : ''}
                 >${escapeHtml(phaseData.response || '')}</textarea>
 
-                <div class="mt-3 flex justify-between items-center">
+                <div class="mt-3">
                     <span class="text-sm text-gray-600 dark:text-gray-400">
                         ${phaseData.completed ? '✓ Phase completed' : 'Paste response to complete this phase'}
                     </span>
-                    <button id="save-response-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600" ${!phaseData.response || phaseData.response.trim().length < 3 ? 'disabled' : ''}>
-                        Save Response
-                    </button>
                 </div>
             </div>
 
-            <!-- Navigation -->
-            <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
-                <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors ${phase === 1 ? 'invisible' : ''}">
-                    ← Previous Phase
+            <!-- Footer Navigation (ADR-style: Save | Next Phase → ... Delete) -->
+            <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex gap-3">
+                    <button id="save-response-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600" ${!phaseData.response || phaseData.response.trim().length < 3 ? 'disabled' : ''}>
+                        Save
+                    </button>
+                    ${phase < 3 ? `
+                    <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${!phaseData.completed ? 'opacity-50 cursor-not-allowed' : ''}" ${!phaseData.completed ? 'disabled' : ''}>
+                        Next Phase →
+                    </button>
+                    ` : ''}
+                </div>
+                <button id="delete-project-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Delete
                 </button>
-                ${phaseData.completed && phase < 3 ? `
-                <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Next Phase →
-                </button>
-                ` : '<div></div>'}
             </div>
         </div>
     `;
@@ -278,8 +280,8 @@ function attachPhaseEventListeners(project, phase) {
   const copyPromptBtn = document.getElementById('copy-prompt-btn');
   const saveResponseBtn = document.getElementById('save-response-btn');
   const responseTextarea = document.getElementById('response-textarea');
-  const prevPhaseBtn = document.getElementById('prev-phase-btn');
   const nextPhaseBtn = document.getElementById('next-phase-btn');
+  const deleteProjectBtn = document.getElementById('delete-project-btn');
   const viewPromptBtn = document.querySelector('.view-prompt-btn');
 
   // View Full Prompt button handler
@@ -361,21 +363,23 @@ function attachPhaseEventListeners(project, phase) {
     }
   });
 
-  if (prevPhaseBtn) {
-    prevPhaseBtn.addEventListener('click', () => {
-      project.phase = phase - 1;
-      updatePhaseTabStyles(phase - 1);
-      document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase - 1);
-      attachPhaseEventListeners(project, phase - 1);
-    });
-  }
-
   if (nextPhaseBtn && project.phases[phase].completed) {
     nextPhaseBtn.addEventListener('click', () => {
       project.phase = phase + 1;
       updatePhaseTabStyles(phase + 1);
       document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase + 1);
       attachPhaseEventListeners(project, phase + 1);
+    });
+  }
+
+  // Delete button handler
+  if (deleteProjectBtn) {
+    deleteProjectBtn.addEventListener('click', async () => {
+      if (await confirm(`Are you sure you want to delete "${project.title}"?`, 'Delete PRD')) {
+        await deleteProject(project.id);
+        showToast('PRD deleted', 'success');
+        navigateTo('home');
+      }
     });
   }
 }
