@@ -179,12 +179,13 @@ export function renderNewProjectForm() {
                         ></textarea>
                     </div>
 
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" id="cancel-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                            Cancel
+                    <!-- Footer (ADR-style: Create on left, Cancel on right) -->
+                    <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                            Create
                         </button>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                            Create Project
+                        <button type="button" id="cancel-btn" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                            Cancel
                         </button>
                     </div>
                 </form>
