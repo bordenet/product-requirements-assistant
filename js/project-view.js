@@ -111,15 +111,21 @@ export async function renderProjectView(projectId) {
 
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
-  document.getElementById('export-prd-btn').addEventListener('click', () => exportFinalPRD(project));
+  document.getElementById('export-prd-btn').addEventListener('click', async () => {
+    // Re-fetch project to get latest data from storage (responses may have been saved)
+    const updatedProject = await getProject(project.id);
+    exportFinalPRD(updatedProject);
+  });
 
   document.querySelectorAll('.phase-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
+    tab.addEventListener('click', async () => {
       const phase = parseInt(tab.dataset.phase);
-      project.phase = phase;
+      // Re-fetch project to get latest data from storage
+      const updatedProject = await getProject(project.id);
+      updatedProject.phase = phase;
       updatePhaseTabStyles(phase);
-      document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase);
-      attachPhaseEventListeners(project, phase);
+      document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase);
+      attachPhaseEventListeners(updatedProject, phase);
     });
   });
 
@@ -300,6 +306,19 @@ function attachPhaseEventListeners(project, phase) {
         openAiBtn.removeAttribute('aria-disabled');
       }
 
+      // Enable the View Prompt button now that prompt is generated
+      if (viewPromptBtn) {
+        viewPromptBtn.disabled = false;
+        viewPromptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        // Add click handler if not already attached
+        if (!viewPromptBtn.hasAttribute('data-listener-attached')) {
+          viewPromptBtn.setAttribute('data-listener-attached', 'true');
+          viewPromptBtn.addEventListener('click', () => {
+            showPromptModal(prompt);
+          });
+        }
+      }
+
       // Enable the response textarea now that prompt is copied
       if (responseTextarea) {
         responseTextarea.disabled = false;
@@ -335,6 +354,11 @@ function attachPhaseEventListeners(project, phase) {
         const updatedProject = await getProject(project.id);
         updatedProject.phase = phase + 1;
         updatePhaseTabStyles(phase + 1);
+        // Add completion checkmark to the current phase tab
+        const currentPhaseTab = document.querySelector(`button.phase-tab[data-phase="${phase}"]`);
+        if (currentPhaseTab && !currentPhaseTab.querySelector('.text-green-500')) {
+          currentPhaseTab.insertAdjacentHTML('beforeend', '<span class="ml-2 text-green-500">✓</span>');
+        }
         document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
         attachPhaseEventListeners(updatedProject, phase + 1);
       } else {
