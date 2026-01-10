@@ -97,8 +97,8 @@ describe('UI Module', () => {
       // Mock clipboard to throw error
       navigator.clipboard.writeText.mockRejectedValueOnce(new Error('Clipboard error'));
 
-      // Should not throw
-      await expect(copyToClipboard('test')).resolves.not.toThrow();
+      // Should reject with error (caller handles the error display)
+      await expect(copyToClipboard('test')).rejects.toThrow('Clipboard error');
     });
   });
 

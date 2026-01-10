@@ -12,6 +12,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     // Ensure clean storage state for each test
     storageState: { cookies: [], origins: [] },
+    // Grant clipboard permissions for tests that use clipboard API
+    permissions: ['clipboard-read', 'clipboard-write'],
   },
 
   projects: [
