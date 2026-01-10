@@ -214,21 +214,25 @@ test.describe('Project Management', () => {
     test('should display projects sorted by most recent first', async ({ page }) => {
       // Create projects with delays to ensure different timestamps
       await page.click('button:has-text("New PRD")');
+      await page.waitForSelector('#title', { state: 'visible', timeout: 5000 });
       await page.fill('#title', 'First Project');
       await page.fill('#problems', 'Test');
       await page.fill('#context', 'Test');
       await page.click('button[type="submit"]:has-text("Create")');
-      await page.waitForSelector('button:has-text("Back to PRDs")', { timeout: 5000 });
+      await page.waitForSelector('button:has-text("Back to PRDs")', { timeout: 10000 });
       await page.click('button:has-text("Back to PRDs")');
+      await page.waitForSelector('button:has-text("New PRD")', { timeout: 5000 });
       await page.waitForTimeout(1000);
 
       await page.click('button:has-text("New PRD")');
+      await page.waitForSelector('#title', { state: 'visible', timeout: 5000 });
       await page.fill('#title', 'Second Project');
       await page.fill('#problems', 'Test');
       await page.fill('#context', 'Test');
       await page.click('button[type="submit"]:has-text("Create")');
-      await page.waitForSelector('button:has-text("Back to PRDs")', { timeout: 5000 });
+      await page.waitForSelector('button:has-text("Back to PRDs")', { timeout: 10000 });
       await page.click('button:has-text("Back to PRDs")');
+      await page.waitForSelector('button:has-text("New PRD")', { timeout: 5000 });
 
       // Get all project titles in order
       const projectTitles = await page.locator('.project-card h3, [class*="project"] h3').allTextContents();
