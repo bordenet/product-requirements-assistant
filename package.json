@@ -3,6 +3,9 @@
   "version": "0.6.0",
   "description": "AI-assisted 3-phase workflow for creating Product Requirements Documents",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/bordenet/product-requirements-assistant.git"
