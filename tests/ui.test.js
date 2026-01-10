@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { showToast, showLoading, hideLoading, copyToClipboard, formatDate, formatBytes, confirm } from '../js/ui.js';
 
 describe('UI Module', () => {
@@ -96,9 +96,11 @@ describe('UI Module', () => {
     test('should handle clipboard errors gracefully', async () => {
       // Mock clipboard to throw error
       navigator.clipboard.writeText.mockRejectedValueOnce(new Error('Clipboard error'));
+      // Also mock execCommand to fail (fallback)
+      document.execCommand = jest.fn().mockReturnValue(false);
 
-      // Should reject with error (caller handles the error display)
-      await expect(copyToClipboard('test')).rejects.toThrow('Clipboard error');
+      // Should reject with an error (caller handles the error display)
+      await expect(copyToClipboard('test')).rejects.toThrow();
     });
   });
 
