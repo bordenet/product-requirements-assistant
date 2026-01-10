@@ -280,19 +280,19 @@ export async function renderEditProjectForm(projectId) {
                         >${escapeHtml(project.context || '')}</textarea>
                     </div>
 
-                    <!-- Footer (One-Pager style: Save on left, Delete and Cancel on right) -->
+                    <!-- Footer (One-Pager style: Save and Cancel on left, Delete on right) -->
                     <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                            Save Changes
-                        </button>
                         <div class="flex gap-3">
-                            <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                                Delete
+                            <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                                Save Changes
                             </button>
-                            <button type="button" id="cancel-btn" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                            <button type="button" id="cancel-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                                 Cancel
                             </button>
                         </div>
+                        <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                            Delete
+                        </button>
                     </div>
                 </form>
             </div>

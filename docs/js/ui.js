@@ -153,14 +153,42 @@ export function escapeHtml(text) {
 
 /**
  * Copy text to clipboard
+ * @param {string} text - Text to copy
+ * @returns {Promise<boolean>} True if successful
+ * @throws {Error} If copy fails
  */
 export async function copyToClipboard(text) {
   try {
-    await navigator.clipboard.writeText(text);
-    showToast('Copied to clipboard!', 'success');
-    return true;
-  } catch {
-    showToast('Failed to copy to clipboard', 'error');
-    return false;
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    // Fallback for older browsers or insecure contexts (e.g., headless testing)
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful) {
+        return true;
+      } else {
+        throw new Error('Copy command failed');
+      }
+    } catch (err) {
+      document.body.removeChild(textArea);
+      throw err;
+    }
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    throw error;
   }
 }
