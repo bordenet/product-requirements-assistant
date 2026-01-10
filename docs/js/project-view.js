@@ -254,8 +254,10 @@ function renderPhaseContent(project, phase) {
 
 /**
  * Show the full prompt in a modal
+ * @param {string} prompt - The prompt text to display
+ * @param {Function} [onCopySuccess] - Optional callback to run after successful copy (enables workflow progression)
  */
-function showPromptModal(prompt) {
+function showPromptModal(prompt, onCopySuccess = null) {
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
   modal.innerHTML = `
@@ -291,7 +293,16 @@ function showPromptModal(prompt) {
   modal.querySelector('#close-prompt-modal-btn').addEventListener('click', closeModal);
   modal.querySelector('#close-prompt-modal-btn-2').addEventListener('click', closeModal);
   modal.querySelector('#copy-prompt-modal-btn').addEventListener('click', async () => {
-    await copyToClipboard(prompt);
+    try {
+      await copyToClipboard(prompt);
+      showToast('Prompt copied to clipboard!', 'success');
+      // Run callback to enable workflow progression (Open AI button, textarea, etc.)
+      if (onCopySuccess) {
+        onCopySuccess();
+      }
+    } catch {
+      showToast('Failed to copy to clipboard', 'error');
+    }
   });
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
@@ -329,10 +340,41 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 
-  // View Prompt button handler
+  /**
+   * Enable workflow progression after prompt is copied
+   * Called from both main copy button and modal copy button
+   */
+  const enableWorkflowProgression = async (prompt) => {
+    // Save prompt but DON'T auto-advance - user is still working on this phase
+    await updatePhase(project.id, phase, prompt, project.phases[phase].response, { skipAutoAdvance: true });
+
+    // Enable the "Open AI" button now that prompt is copied
+    const openAiBtn = document.getElementById('open-ai-btn');
+    if (openAiBtn) {
+      openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      openAiBtn.removeAttribute('aria-disabled');
+    }
+
+    // Enable the View Prompt button now that prompt is generated
+    if (viewPromptBtn) {
+      viewPromptBtn.disabled = false;
+      viewPromptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // Enable the response textarea now that prompt is copied
+    if (responseTextarea) {
+      responseTextarea.disabled = false;
+      responseTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
+      responseTextarea.focus();
+    }
+  };
+
+  // View Prompt button handler - passes callback to enable workflow when copied from modal
   if (viewPromptBtn && project.phases[phase].prompt) {
     viewPromptBtn.addEventListener('click', () => {
-      showPromptModal(project.phases[phase].prompt);
+      showPromptModal(project.phases[phase].prompt, () => {
+        enableWorkflowProgression(project.phases[phase].prompt);
+      });
     });
   }
 
@@ -346,34 +388,14 @@ function attachPhaseEventListeners(project, phase) {
         }
         await copyToClipboard(prompt);
         showToast('Prompt copied to clipboard!', 'success');
-        // Save prompt but DON'T auto-advance - user is still working on this phase
-        await updatePhase(project.id, phase, prompt, project.phases[phase].response, { skipAutoAdvance: true });
+        await enableWorkflowProgression(prompt);
 
-        // Enable the "Open AI" button now that prompt is copied
-        const openAiBtn = document.getElementById('open-ai-btn');
-        if (openAiBtn) {
-          openAiBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-          openAiBtn.removeAttribute('aria-disabled');
-        }
-
-        // Enable the View Prompt button now that prompt is generated
-        if (viewPromptBtn) {
-          viewPromptBtn.disabled = false;
-          viewPromptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-          // Add click handler if not already attached
-          if (!viewPromptBtn.hasAttribute('data-listener-attached')) {
-            viewPromptBtn.setAttribute('data-listener-attached', 'true');
-            viewPromptBtn.addEventListener('click', () => {
-              showPromptModal(prompt);
-            });
-          }
-        }
-
-        // Enable the response textarea now that prompt is copied
-        if (responseTextarea) {
-          responseTextarea.disabled = false;
-          responseTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
-          responseTextarea.focus();
+        // Add click handler to view prompt if not already attached
+        if (viewPromptBtn && !viewPromptBtn.hasAttribute('data-listener-attached')) {
+          viewPromptBtn.setAttribute('data-listener-attached', 'true');
+          viewPromptBtn.addEventListener('click', () => {
+            showPromptModal(prompt, () => enableWorkflowProgression(prompt));
+          });
         }
       } catch (error) {
         console.error('Error copying prompt:', error);
