@@ -153,42 +153,44 @@ export function escapeHtml(text) {
 
 /**
  * Copy text to clipboard
+ *
+ * Uses a fallback chain for maximum compatibility:
+ * 1. Modern Clipboard API (navigator.clipboard.writeText)
+ * 2. Legacy execCommand('copy') for older browsers and iPad/mobile
+ *
  * @param {string} text - Text to copy
- * @returns {Promise<boolean>} True if successful
+ * @returns {Promise<void>} Resolves if successful, throws if failed
  * @throws {Error} If copy fails
  */
 export async function copyToClipboard(text) {
-  try {
-    // Try modern clipboard API first
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-
-    // Fallback for older browsers or insecure contexts (e.g., headless testing)
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
+  // Try modern Clipboard API first
+  if (navigator.clipboard && navigator.clipboard.writeText) {
     try {
-      const successful = document.execCommand('copy');
-      document.body.removeChild(textArea);
-      if (successful) {
-        return true;
-      } else {
-        throw new Error('Copy command failed');
-      }
-    } catch (err) {
-      document.body.removeChild(textArea);
-      throw err;
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {
+      // Fall through to legacy method (iPad/mobile often fails here)
     }
-  } catch (error) {
-    console.error('Failed to copy to clipboard:', error);
-    throw error;
+  }
+
+  // Fallback for iOS Safari, older browsers, or when Clipboard API fails
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    if (!successful) {
+      throw new Error('Copy command failed');
+    }
+  } catch {
+    document.body.removeChild(textArea);
+    throw new Error('Failed to copy to clipboard');
   }
 }
