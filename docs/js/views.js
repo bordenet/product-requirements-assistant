@@ -140,7 +140,7 @@ export function renderNewProjectForm() {
                 <form id="new-project-form" class="space-y-6">
                     <div>
                         <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Project Title *
+                            Project Title <span class="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -154,7 +154,7 @@ export function renderNewProjectForm() {
 
                     <div>
                         <label for="problems" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Problems to Solve *
+                            Problems to Solve <span class="text-red-500">*</span>
                         </label>
                         <textarea
                             id="problems"
@@ -243,7 +243,7 @@ export async function renderEditProjectForm(projectId) {
                 <form id="edit-project-form" class="space-y-6">
                     <div>
                         <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Project Title *
+                            Project Title <span class="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -257,7 +257,7 @@ export async function renderEditProjectForm(projectId) {
 
                     <div>
                         <label for="problems" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Problems to Solve *
+                            Problems to Solve <span class="text-red-500">*</span>
                         </label>
                         <textarea
                             id="problems"
