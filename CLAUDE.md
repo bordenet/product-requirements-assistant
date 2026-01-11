@@ -2,6 +2,8 @@
 
 **CRITICAL**: Read this file FIRST before working on this codebase.
 
+**📐 Design Patterns**: See [DESIGN-PATTERNS.md](./DESIGN-PATTERNS.md) for architecture and coding patterns used across all genesis-tools repos.
+
 ---
 
 ## 🎯 Core Principles
