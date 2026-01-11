@@ -1,6 +1,10 @@
 // Jest setup file
 import 'fake-indexeddb/auto';
 import { webcrypto } from 'node:crypto';
+import { jest } from '@jest/globals';
+
+// Expose jest globally for test files
+global.jest = jest;
 
 // Polyfill crypto.randomUUID for Node.js
 Object.defineProperty(globalThis, 'crypto', {
@@ -43,7 +47,6 @@ window.location = {
 };
 
 // Mock navigator.clipboard
-import { jest } from '@jest/globals';
 global.navigator.clipboard = {
   writeText: jest.fn(() => Promise.resolve())
 };

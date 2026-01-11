@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
 import storage from '../js/storage.js';
 
 describe('Storage Module', () => {
