@@ -1,126 +1,105 @@
 # Product Requirements Assistant
 
-[![CI/CD](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/bordenet/product-requirements-assistant/branch/main/graph/badge.svg?token=13a4e0d2-5d04-4b4e-9b0e-d07f16280fa1)](https://codecov.io/gh/bordenet/product-requirements-assistant)
-[![GitHub Dependabot](https://img.shields.io/badge/dependabot-enabled-brightgreen?logo=dependabot)](https://github.com/bordenet/product-requirements-assistant/security/dependabot)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+Generate comprehensive product requirements documents using a three-phase AI workflow.
 
-A structured 3-phase workflow tool for creating Product Requirements Documents with AI assistance.
+**Live Demo**: [bordenet.github.io/product-requirements-assistant](https://bordenet.github.io/product-requirements-assistant/)
 
-**🌐 [Launch Web App](https://bordenet.github.io/product-requirements-assistant/)**
+[![CI](https://github.com/bordenet/product-requirements-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/bordenet/product-requirements-assistant/actions)
+[![codecov](https://codecov.io/gh/bordenet/product-requirements-assistant/branch/main/graph/badge.svg)](https://codecov.io/gh/bordenet/product-requirements-assistant)
+[![Linting: ESLint](https://img.shields.io/badge/linting-ESLint-4B32C3)](https://eslint.org/)
+[![Code Style: ESLint](https://img.shields.io/badge/code%20style-ESLint-4B32C3)](https://eslint.org/)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot)](https://github.com/bordenet/product-requirements-assistant/security/dependabot)
+
+---
 
 ## Quick Start
 
-**🌐 [Launch Web App](https://bordenet.github.io/product-requirements-assistant/)**
-
-No installation required. Works on any device with a modern browser. All data stored locally in your browser.
+1. Visit the [live demo](https://bordenet.github.io/product-requirements-assistant/)
+2. Fill in your product context, user needs, and requirements
+3. Copy the generated prompt and paste into Claude
+4. Paste the AI response back, then proceed through review and synthesis phases
+5. Export your completed PRD as Markdown
 
 ## Features
 
-- **3-Phase Workflow**: Initial draft (Claude), review (Gemini), finalization (Claude)
-- **Copy/Paste Integration**: Works with Claude Sonnet 4.5 and Gemini 2.5 Pro
-- **Local Storage**: Projects stored as JSON with markdown export
-- **Privacy-First**: 100% client-side, no server, no tracking
+- **Three-Phase AI Workflow**: Initial draft → Adversarial review → Synthesis
+- **Privacy-First**: All data stored locally in your browser (IndexedDB)
+- **No Account Required**: Works immediately, no signup needed
+- **Export to Markdown**: Download your completed document
+- **Dark Mode**: Toggle between light and dark themes
+- **Project Management**: Create, save, and manage multiple PRDs
 
-## Screenshots
+## Workflow
 
-See the workflow in action with our light-hearted "MonkeyMoonshot" example (Phase 1 workflow):
+### Phase 1: Initial Draft
+Enter your product context, user needs, and requirements. Copy the generated prompt to Claude to create an initial PRD draft.
 
-<details>
-<summary>📋 <strong>Step 1: Generate Phase 1 Prompt</strong> - Capture the base rudiments of a PRD</summary>
+### Phase 2: Adversarial Review
+The initial draft is critically reviewed by Gemini to identify gaps, ambiguous requirements, and edge cases.
 
-![Tool Phase 1 Prompt](docs/MonkeyMoonshot/01-tool-phase1-prompt.png)
+### Phase 3: Synthesis
+Claude synthesizes the initial draft with the adversarial feedback to produce a final, polished PRD.
 
-*The tool starts with as much information as you can provide.*
+## Development
 
-</details>
+### Prerequisites
 
-<details>
-<summary>🤖 <strong>Step 2: Generate prompt for Claude</strong> - Compose a prompt for Claude, specifying your initial input</summary>
+- Node.js 18+
+- npm
 
-![Claude Phase 1 Draft](docs/MonkeyMoonshot/02-claude-phase1-draft.png)
+### Setup
 
-*Compose a prompt for Claude. You can fork this project and configure it to work with LibreChat, et al. This sets us up for a dialog en route to a reasonable first-cut PRD.*
+\`\`\`bash
+git clone https://github.com/bordenet/product-requirements-assistant.git
+cd product-requirements-assistant
+npm install
+\`\`\`
 
-</details>
+### Testing
 
-<details>
-<summary>✍️ <strong>Step 3: Claude Disambiguation</strong> - Dialog with Claude to establish a working Product Requirements Document</summary>
+\`\`\`bash
+npm test        # Run all tests
+npm run lint    # Run linting
+npm run lint:fix # Fix lint issues
+\`\`\`
 
-![Claude Phase 1 Continued](docs/MonkeyMoonshot/03-claude-phase1-continued.png)
+### Local Development
 
-*Claude asks clarifying questions to arrive at a working PRD draft with detailed sections.*
+\`\`\`bash
+npm run serve   # Start local server at http://localhost:8000
+\`\`\`
 
-</details>
+## Project Structure
 
-<details>
-<summary>✅ <strong>Step 4: Claude Completes Draft</strong> - Finalize the first PRD document</summary>
+\`\`\`
+product-requirements-assistant/
+├── js/                    # JavaScript modules
+│   ├── app.js            # Main application entry
+│   ├── workflow.js       # Phase orchestration
+│   ├── storage.js        # IndexedDB operations
+│   └── ...
+├── tests/                 # Jest test files
+├── prompts/              # AI prompt templates
+│   ├── phase1.md
+│   ├── phase2.md
+│   └── phase3.md
+└── index.html            # Main HTML file
+\`\`\`
 
-![Claude Phase 1 Complete](docs/MonkeyMoonshot/04-claude-phase1-complete.png)
+## Part of Genesis Tools
 
-*Claude finishes the initial PRD draft. Now copy Claude's response.*
+This project is generated and maintained using [Genesis](https://github.com/bordenet/genesis), ensuring consistency across all document-generation tools:
 
-</details>
+- [Architecture Decision Record](https://github.com/bordenet/architecture-decision-record)
+- [One-Pager](https://github.com/bordenet/one-pager)
+- [Power Statement Assistant](https://github.com/bordenet/power-statement-assistant)
+- [PR/FAQ Assistant](https://github.com/bordenet/pr-faq-assistant)
+- [Product Requirements Assistant](https://github.com/bordenet/product-requirements-assistant) ← You are here
 
-<details>
-<summary>📥 <strong>Step 5: Paste Back into Tool</strong> - Prepare the PRD document for Gemini's scrutiny</summary>
+## Contributing
 
-![Tool Paste Phase 1 Start](docs/MonkeyMoonshot/05-tool-paste-phase1-start.png)
-
-*Paste Claude's PRD draft back into our tool. The tool captures the response for use with Gemini.*
-
-</details>
-
-<details>
-<summary>📥 <strong>Step 6: Prepare Gemini for Adversarial Review</strong> - Build an adversarial prompt for Gemini, instructing it to generate an alernate rendition</summary>
-
-![Tool Paste Phase 1 Continued](docs/MonkeyMoonshot/06-tool-paste-phase1-continued.png)
-
-*This step helps create a competing version of the PRD.*
-
-</details>
-
-<details>
-<summary>🎯 <strong>Step 7: Commence Phase 3</strong> - Phase 1 and 2 complete, starting Phase 3</summary>
-
-![Phase 3 Ready](docs/MonkeyMoonshot/07-phase2-ready.png)
-
-*Phases 1 and 2 are complete! The tool now has both Claude's initial PRD and Gemini's review. You're ready to start Phase 3 (final synthesis).*
-
-</details>
-
-> **Note:** These screenshots demonstrate the complete Phase 1 workflow: generate prompt in our tool → paste into Claude Code → paste Claude's response back into our tool. The final screenshot shows the tool ready to start Phase 3 after completing Phases 1 and 2. The same copy/paste pattern continues throughout all phases.
-
-## How It Works
-
-1. **Create Project**: Enter title, problems, and context
-2. **Phase 1**: Copy prompt to Claude Sonnet 4.5, paste response back
-3. **Phase 2**: Copy prompt to Gemini 2.5 Pro, paste response back
-4. **Phase 3**: Copy prompt to Claude, paste final PRD
-5. **Export**: Download as markdown with full revision history
-
-## For Developers
-
-Interested in contributing or running from source? See:
-
-- [Contributing](CONTRIBUTING.md) - Development guidelines
-- [Evolutionary Optimization](PROMPT-FOR-GENESIS-EVOLUTIONARY-INTEGRATION.md) - LLM prompt tuning methodology
-
-## Evolutionary Prompt Optimization
-
-This repository contains the authoritative implementation of evolutionary prompt optimization:
-
-- **+31.1% quality improvement** in 20 rounds (data-driven)
-- **Objective scoring** with keep/discard logic
-- **Proven mutation library** (Top 5 mutations deliver 71-73% of improvement)
-
-Key files:
-
-- `tools/evolutionary-optimizer.js` - Core optimization engine
-- `tools/prd-scorer.js` - Objective PRD quality scorer
-- `evolutionary-optimization/` - Test cases and results
-- [`PROMPT-FOR-GENESIS-EVOLUTIONARY-INTEGRATION.md`](PROMPT-FOR-GENESIS-EVOLUTIONARY-INTEGRATION.md) - Integration guide
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-MIT License - see [LICENSE](./LICENSE)
+MIT - See [LICENSE](LICENSE)
