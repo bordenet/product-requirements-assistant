@@ -1,6 +1,6 @@
 {
   "name": "product-requirements-assistant",
-  "version": "0.6.0",
+  "version": "1.0.0",
   "description": "AI-assisted 3-phase workflow for creating Product Requirements Documents",
   "type": "module",
   "engines": {
@@ -25,14 +25,10 @@
     "prepare": "command -v pre-commit >/dev/null 2>&1 && pre-commit install || echo 'pre-commit not installed, skipping hook setup'"
   },
   "keywords": [
-    "ai",
-    "workflow",
-    "prd",
     "product-requirements",
-    "claude",
-    "gemini",
-    "document-generation",
-    "requirements-engineering"
+    "prd",
+    "ai-assisted",
+    "workflow"
   ],
   "author": "Matt J Bordenet",
   "license": "MIT",
@@ -45,5 +41,9 @@
     "globals": "^17.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/bordenet/product-requirements-assistant/issues"
+  },
+  "homepage": "https://bordenet.github.io/product-requirements-assistant/"
 }

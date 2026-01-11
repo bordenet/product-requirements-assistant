@@ -3,17 +3,15 @@ export default {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleFileExtensions: ['js'],
   testMatch: ['**/*.test.js'],
-  testPathIgnorePatterns: ['/node_modules/', '/genesis/', '/evolutionary-optimization/'],
+  testPathIgnorePatterns: ['/node_modules/', '/docs/'],
   collectCoverageFrom: [
     'js/**/*.js',
     '!js/**/*.test.js',
     '!js/app.js',
-    '!js/router.js', // Exclude router (tested via E2E)
-    '!js/views.js', // Exclude views (tested via E2E)
-    '!js/project-view.js', // Exclude project view (tested via E2E)
-    '!**/node_modules/**',
-    '!**/genesis/**',
-    '!**/evolutionary-optimization/**'
+    '!js/router.js',
+    '!js/views.js',
+    '!js/project-view.js',
+    '!**/node_modules/**'
   ],
   coverageThreshold: {
     global: {

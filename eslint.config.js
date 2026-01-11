@@ -13,6 +13,7 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.es2021,
+        process: 'readonly',
       },
     },
     rules: {
@@ -41,8 +42,7 @@ export default [
       'node_modules/**',
       'coverage/**',
       'docs/**',
-      'genesis/**',
-      'examples/**',
+      'dist/**',
       '*.min.js',
     ],
   },

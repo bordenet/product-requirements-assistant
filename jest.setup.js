@@ -1,4 +1,9 @@
-// Jest setup file
+/**
+ * Jest Setup File
+ *
+ * This file runs before each test suite to set up the testing environment.
+ */
+
 import 'fake-indexeddb/auto';
 import { webcrypto } from 'node:crypto';
 import { jest } from '@jest/globals';
@@ -18,68 +23,47 @@ if (typeof global.structuredClone === 'undefined') {
   global.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
+// Global test utilities
+global.sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Mock localStorage
-global.localStorage = {
-  store: {},
-  getItem(key) {
-    return this.store[key] || null;
-  },
-  setItem(key, value) {
-    this.store[key] = value.toString();
-  },
-  removeItem(key) {
-    delete this.store[key];
-  },
-  clear() {
-    this.store = {};
-  }
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
 };
+global.localStorage = localStorageMock;
 
-// Mock window.location
-delete window.location;
-window.location = {
-  hostname: 'localhost',
-  href: 'http://localhost/',
-  origin: 'http://localhost',
-  pathname: '/',
-  search: '',
-  hash: ''
+// Mock sessionStorage
+const sessionStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
 };
+global.sessionStorage = sessionStorageMock;
 
-// Mock navigator.clipboard
-global.navigator.clipboard = {
-  writeText: jest.fn(() => Promise.resolve())
-};
-
-// Mock alert, confirm, prompt
-global.alert = () => {};
-global.confirm = () => true;
-global.prompt = () => null;
-
-// Mock File and Blob APIs
+// Mock File API
 class MockBlob {
-  constructor(parts, options) {
-    this.parts = parts || [];
-    this.options = options || {};
-    this.type = this.options.type || '';
-    this.size = this.parts.reduce((acc, part) => acc + (part.length || 0), 0);
-  }
-
-  text() {
-    return Promise.resolve(this.parts.join(''));
-  }
-
-  // Make it compatible with FileReader
-  toString() {
-    return this.parts.join('');
+  constructor(parts = [], options = {}) {
+    // Flatten parts - handle nested Blobs
+    this.parts = parts.map(part => {
+      if (part instanceof MockBlob) {
+        return part.parts.join('');
+      }
+      return part;
+    });
+    this.type = options.type || '';
+    this.size = this.parts.reduce((acc, part) => acc + (part?.length || 0), 0);
   }
 }
 
 class MockFile extends MockBlob {
-  constructor(parts, name, options) {
+  constructor(parts, name, options = {}) {
     super(parts, options);
     this.name = name;
-    this.lastModified = Date.now();
+    this.lastModified = options.lastModified || Date.now();
   }
 }
 
@@ -88,33 +72,41 @@ global.File = MockFile;
 
 // Mock FileReader
 global.FileReader = class FileReader {
-  constructor() {
-    this.result = null;
-    this.error = null;
-    this.readyState = 0;
-    this.onload = null;
-    this.onerror = null;
+  readAsText(blob) {
+    this.result = blob.parts.join('');
+    if (this.onload) {
+      this.onload({ target: this });
+    }
   }
 
-  readAsText(blob) {
-    setTimeout(() => {
-      try {
-        this.result = blob.parts.join('');
-        this.readyState = 2;
-        if (this.onload) {
-          this.onload({ target: this });
-        }
-      } catch (error) {
-        this.error = error;
-        this.readyState = 2;
-        if (this.onerror) {
-          this.onerror({ target: this });
-        }
-      }
-    }, 0);
+  readAsDataURL(blob) {
+    this.result = `data:${blob.type};base64,${Buffer.from(blob.parts.join('')).toString('base64')}`;
+    if (this.onload) {
+      this.onload({ target: this });
+    }
   }
 };
 
 // Mock URL.createObjectURL and revokeObjectURL
-global.URL.createObjectURL = () => 'blob:mock-url';
-global.URL.revokeObjectURL = () => {};
+global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+global.URL.revokeObjectURL = jest.fn();
+
+// Mock clipboard API
+Object.assign(navigator, {
+  clipboard: {
+    writeText: jest.fn(() => Promise.resolve()),
+    readText: jest.fn(() => Promise.resolve('')),
+  },
+});
+
+// Reset mocks before each test
+beforeEach(() => {
+  localStorage.clear();
+  sessionStorage.clear();
+  jest.clearAllMocks();
+});
+
+// Clean up after each test
+afterEach(() => {
+  jest.restoreAllMocks();
+});
