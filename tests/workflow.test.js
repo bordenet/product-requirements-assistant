@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { getPrompt, savePrompt, resetPrompt, generatePhase1Prompt, generatePhase2Prompt, generatePhase3Prompt, generatePromptForPhase, getPhaseMetadata, exportFinalPRD, copyPromptToClipboard, loadDefaultPrompts } from '../js/workflow.js';
 import { createProject, updatePhase, getProject } from '../js/projects.js';
 import storage from '../js/storage.js';
