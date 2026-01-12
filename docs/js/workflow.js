@@ -1,6 +1,8 @@
 /**
  * Workflow Module
+ * @module workflow
  * Handles the 3-phase PRD workflow logic
+ * @module workflow
  */
 
 import storage from './storage.js';
@@ -12,6 +14,7 @@ let defaultPrompts = {};
 
 /**
  * Load default prompts
+ * @module workflow
  */
 export async function loadDefaultPrompts() {
   try {
@@ -32,6 +35,7 @@ export async function loadDefaultPrompts() {
 
 /**
  * Get prompt for a phase
+ * @module workflow
  */
 export async function getPrompt(phase) {
   const prompt = await storage.getPrompt(phase);
@@ -40,6 +44,7 @@ export async function getPrompt(phase) {
 
 /**
  * Save custom prompt
+ * @module workflow
  */
 export async function savePrompt(phase, content) {
   await storage.savePrompt(phase, content);
@@ -47,6 +52,7 @@ export async function savePrompt(phase, content) {
 
 /**
  * Reset prompt to default
+ * @module workflow
  */
 export async function resetPrompt(phase) {
   const defaultPrompt = defaultPrompts[phase];
@@ -58,6 +64,7 @@ export async function resetPrompt(phase) {
 
 /**
  * Generate prompt for Phase 1 (Claude Initial)
+ * @module workflow
  */
 export async function generatePhase1Prompt(project) {
   const template = await getPrompt(1);
@@ -75,6 +82,7 @@ export async function generatePhase1Prompt(project) {
 
 /**
  * Replace %s placeholders sequentially, immune to user input containing '%s'
+ * @module workflow
  */
 function replacePlaceholders(template, ...values) {
   let result = template;
@@ -89,6 +97,7 @@ function replacePlaceholders(template, ...values) {
 
 /**
  * Generate prompt for Phase 2 (Gemini Review)
+ * @module workflow
  */
 export async function generatePhase2Prompt(project) {
   const template = await getPrompt(2);
@@ -107,6 +116,7 @@ export async function generatePhase2Prompt(project) {
 
 /**
  * Generate prompt for Phase 3 (Claude Compare)
+ * @module workflow
  */
 export async function generatePhase3Prompt(project) {
   const template = await getPrompt(3);
@@ -128,6 +138,7 @@ export async function generatePhase3Prompt(project) {
 
 /**
  * Get the appropriate prompt generator for a phase
+ * @module workflow
  */
 export async function generatePromptForPhase(project, phase) {
   switch (phase) {
@@ -144,6 +155,7 @@ export async function generatePromptForPhase(project, phase) {
 
 /**
  * Copy prompt to clipboard
+ * @module workflow
  */
 export async function copyPromptToClipboard(project, phase) {
   const prompt = await generatePromptForPhase(project, phase);
@@ -155,6 +167,7 @@ export async function copyPromptToClipboard(project, phase) {
 
 /**
  * Get phase metadata
+ * @module workflow
  */
 export function getPhaseMetadata(phase) {
   const metadata = {
@@ -186,6 +199,7 @@ export function getPhaseMetadata(phase) {
 
 /**
  * Export final PRD as markdown
+ * @module workflow
  */
 export async function exportFinalPRD(project) {
   const finalResponse = project.phases[3].response || project.phases[2].response || project.phases[1].response;
@@ -208,6 +222,7 @@ export async function exportFinalPRD(project) {
 
 /**
  * Sanitize filename
+ * @module workflow
  */
 function sanitizeFilename(filename) {
   return filename

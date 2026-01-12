@@ -1,6 +1,8 @@
 /**
  * Project Detail View Module
+ * @module project-view
  * Handles rendering the project workflow view
+ * @module project-view
  */
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
@@ -10,6 +12,7 @@ import { navigateTo } from './router.js';
 
 /**
  * Extract title from markdown content (looks for # Title at the beginning)
+ * @module project-view
  * @param {string} markdown - The markdown content
  * @returns {string|null} - The extracted title or null if not found
  */
@@ -26,6 +29,7 @@ export function extractTitleFromMarkdown(markdown) {
 
 /**
  * Update phase tab styles to reflect the active phase
+ * @module project-view
  */
 function updatePhaseTabStyles(activePhase) {
   document.querySelectorAll('.phase-tab').forEach(tab => {
@@ -42,6 +46,7 @@ function updatePhaseTabStyles(activePhase) {
 
 /**
  * Render the project detail view
+ * @module project-view
  */
 export async function renderProjectView(projectId) {
   const project = await getProject(projectId);
@@ -139,6 +144,7 @@ export async function renderProjectView(projectId) {
 
 /**
  * Render content for a specific phase
+ * @module project-view
  */
 function renderPhaseContent(project, phase) {
   const meta = getPhaseMetadata(phase);
@@ -256,6 +262,7 @@ function renderPhaseContent(project, phase) {
 
 /**
  * Show the full prompt in a modal
+ * @module project-view
  * @param {string} prompt - The prompt text to display
  * @param {Function} [onCopySuccess] - Optional callback to run after successful copy (enables workflow progression)
  */
@@ -313,6 +320,7 @@ function showPromptModal(prompt, onCopySuccess = null) {
 
 /**
  * Attach event listeners for phase interactions
+ * @module project-view
  */
 function attachPhaseEventListeners(project, phase) {
   const copyPromptBtn = document.getElementById('copy-prompt-btn');

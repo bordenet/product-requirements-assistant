@@ -1,10 +1,13 @@
 /**
  * UI Utilities Module
+ * @module ui
  * Handles common UI operations like toasts, modals, loading states
+ * @module ui
  */
 
 /**
  * Show a toast notification
+ * @module ui
  */
 export function showToast(message, type = 'info', duration = 3000) {
   const container = document.getElementById('toast-container');
@@ -46,6 +49,7 @@ export function showToast(message, type = 'info', duration = 3000) {
 
 /**
  * Show loading overlay
+ * @module ui
  */
 export function showLoading(text = 'Loading...') {
   const overlay = document.getElementById('loading-overlay');
@@ -56,6 +60,7 @@ export function showLoading(text = 'Loading...') {
 
 /**
  * Hide loading overlay
+ * @module ui
  */
 export function hideLoading() {
   const overlay = document.getElementById('loading-overlay');
@@ -64,6 +69,7 @@ export function hideLoading() {
 
 /**
  * Show confirmation dialog
+ * @module ui
  */
 export function confirm(message, title = 'Confirm') {
   return new Promise((resolve) => {
@@ -108,6 +114,7 @@ export function confirm(message, title = 'Confirm') {
 
 /**
  * Format date for display
+ * @module ui
  */
 export function formatDate(isoString) {
   const date = new Date(isoString);
@@ -131,6 +138,7 @@ export function formatDate(isoString) {
 
 /**
  * Format bytes for display
+ * @module ui
  */
 export function formatBytes(bytes) {
   if (bytes === 0) return '0 Bytes';
@@ -144,6 +152,7 @@ export function formatBytes(bytes) {
 
 /**
  * Escape HTML to prevent XSS
+ * @module ui
  */
 export function escapeHtml(text) {
   const div = document.createElement('div');
@@ -153,8 +162,10 @@ export function escapeHtml(text) {
 
 /**
  * Copy text to clipboard
+ * @module ui
  *
  * Uses a fallback chain for maximum compatibility:
+ * @module ui
  * 1. Modern Clipboard API (navigator.clipboard.writeText)
  * 2. Legacy execCommand('copy') for older browsers and iPad/mobile
  *

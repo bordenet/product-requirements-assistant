@@ -1,5 +1,6 @@
 /**
  * Main Application Entry Point
+ * @module app
  */
 
 import storage from './storage.js';
@@ -11,6 +12,7 @@ import { initMockMode, setMockMode } from './ai-mock.js';
 
 /**
  * Initialize the application
+ * @module app
  */
 async function init() {
   try {
@@ -50,6 +52,7 @@ async function init() {
 
 /**
  * Setup global event listeners
+ * @module app
  */
 function setupGlobalEventListeners() {
   // Related projects dropdown
@@ -141,6 +144,7 @@ function setupGlobalEventListeners() {
 
 /**
  * Toggle dark/light theme
+ * @module app
  */
 function toggleTheme() {
   const html = document.documentElement;
@@ -159,6 +163,7 @@ function toggleTheme() {
 
 /**
  * Load saved theme
+ * @module app
  */
 function loadTheme() {
   // Use localStorage for immediate synchronous access
@@ -172,6 +177,7 @@ function loadTheme() {
 
 /**
  * Show about modal
+ * @module app
  */
 function showAboutModal() {
   const prdDocUrl = 'https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/Project_Planning_Mechanisms%3A_Documents.md#prd-the-what-and-why';

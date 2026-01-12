@@ -1,6 +1,8 @@
 /**
  * Views Module
+ * @module views
  * Handles rendering different views/screens
+ * @module views
  */
 
 import { getAllProjects, createProject, deleteProject, getProject, updateProject } from './projects.js';
@@ -12,6 +14,7 @@ const PRD_DOC_URL = 'https://github.com/bordenet/Engineering_Culture/blob/main/S
 
 /**
  * Render the projects list view
+ * @module views
  */
 export async function renderProjectsList() {
   const projects = await getAllProjects();
@@ -118,6 +121,7 @@ export async function renderProjectsList() {
 
 /**
  * Render the new project form
+ * @module views
  */
 export function renderNewProjectForm() {
   const container = document.getElementById('app-container');
@@ -213,6 +217,7 @@ export function renderNewProjectForm() {
 
 /**
  * Render the edit project form
+ * @module views
  */
 export async function renderEditProjectForm(projectId) {
   const project = await getProject(projectId);
