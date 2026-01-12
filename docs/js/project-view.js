@@ -364,9 +364,10 @@ function attachPhaseEventListeners(project, phase) {
     }
 
     // Show and enable the View Prompt button now that prompt is generated
-    if (viewPromptBtn) {
-      viewPromptBtn.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed');
-      viewPromptBtn.disabled = false;
+    const viewBtn = document.getElementById('view-prompt-btn');
+    if (viewBtn) {
+      viewBtn.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed');
+      viewBtn.disabled = false;
     }
 
     // Enable the response textarea now that prompt is copied
