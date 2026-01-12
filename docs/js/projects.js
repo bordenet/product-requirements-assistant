@@ -1,6 +1,7 @@
 /**
  * Project Management Module
  * Handles project CRUD operations and business logic
+ * @module projects
  */
 
 import storage from './storage.js';

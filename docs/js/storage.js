@@ -1,13 +1,21 @@
 /**
  * IndexedDB Storage Module
  * Handles all client-side data persistence
+ * @module storage
  */
 
+/** @type {string} */
 const DB_NAME = 'prd-assistant';
+
+/** @type {number} */
 const DB_VERSION = 1;
 
+/**
+ * Storage class for IndexedDB operations
+ */
 class Storage {
   constructor() {
+    /** @type {IDBDatabase | null} */
     this.db = null;
   }
 
