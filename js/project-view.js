@@ -190,11 +190,9 @@ function renderPhaseContent(project, phase) {
                             🔗 Open ${phase === 2 ? 'Gemini' : 'Claude'}
                         </a>
                     </div>
-                    ${phaseData.prompt ? `
-                    <button id="view-prompt-btn" class="px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors font-medium">
+                    <button id="view-prompt-btn" class="px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors font-medium ${phaseData.prompt ? '' : 'hidden'}">
                         👁️ View Prompt
                     </button>
-                    ` : ''}
                 </div>
             </div>
 
@@ -365,10 +363,11 @@ function attachPhaseEventListeners(project, phase) {
       openAiBtn.removeAttribute('aria-disabled');
     }
 
-    // Enable the View Prompt button now that prompt is generated
-    if (viewPromptBtn) {
-      viewPromptBtn.disabled = false;
-      viewPromptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    // Show and enable the View Prompt button now that prompt is generated
+    const viewBtn = document.getElementById('view-prompt-btn');
+    if (viewBtn) {
+      viewBtn.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed');
+      viewBtn.disabled = false;
     }
 
     // Enable the response textarea now that prompt is copied
