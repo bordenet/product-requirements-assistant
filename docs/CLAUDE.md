@@ -8,6 +8,29 @@
 
 ## 🎯 Core Principles
 
+### 0. **MANDATORY: Manual Deployment After CI Passes**
+
+**ALL deployments MUST follow this 3-step process:**
+
+```bash
+# Step 1: Push changes to GitHub
+git add .
+git commit -m "feat: description of changes"
+git push origin main
+
+# Step 2: WAIT for CI to pass
+# Check: https://github.com/bordenet/product-requirements-assistant/actions
+# ⚠️ DO NOT PROCEED until all checks are GREEN
+
+# Step 3: Deploy ONLY after CI passes
+./scripts/deploy-web.sh
+```
+
+**Why**:
+- CI runs comprehensive quality gates (lint, test, coverage)
+- Deploying before CI passes can ship broken code
+- CI is the single source of truth for code quality
+
 ### 1. **ALWAYS Complete the Full Workflow**
 When asked to do a task, you MUST:
 1. ✅ Complete the work
