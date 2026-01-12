@@ -1,6 +1,8 @@
 /**
  * Router Module
+ * @module router
  * Handles client-side routing
+ * @module router
  */
 
 import { renderProjectsList, renderNewProjectForm, renderEditProjectForm } from './views.js';
@@ -20,6 +22,7 @@ let currentParams = null;
 
 /**
  * Update storage info in footer - called after every route render
+ * @module router
  */
 export async function updateStorageInfo() {
   const estimate = await storage.getStorageEstimate();
@@ -39,6 +42,7 @@ export async function updateStorageInfo() {
 
 /**
  * Navigate to a route
+ * @module router
  */
 export async function navigateTo(route, ...params) {
   currentRoute = route;
@@ -69,6 +73,7 @@ export async function navigateTo(route, ...params) {
 
 /**
  * Initialize router
+ * @module router
  */
 export function initRouter() {
   // Handle hash changes
@@ -80,6 +85,7 @@ export function initRouter() {
 
 /**
  * Handle hash change events
+ * @module router
  */
 async function handleHashChange() {
   const hash = window.location.hash.slice(1); // Remove #
@@ -101,6 +107,7 @@ async function handleHashChange() {
 
 /**
  * Get current route
+ * @module router
  */
 export function getCurrentRoute() {
   return { route: currentRoute, params: currentParams };
