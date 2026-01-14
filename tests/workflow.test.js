@@ -2,13 +2,41 @@ import { getPrompt, savePrompt, resetPrompt, generatePhase1Prompt, generatePhase
 import { createProject, updatePhase, getProject } from '../js/projects.js';
 import storage from '../js/storage.js';
 
+// Mock prompt templates using {{VAR}} syntax
+const mockPromptTemplates = {
+  1: 'Create a PRD for: {{TITLE}}. Problems: {{PROBLEMS}}. Context: {{CONTEXT}}',
+  2: 'Review this PRD: {{PHASE1_OUTPUT}}',
+  3: 'Synthesize these PRDs: Phase 1: {{PHASE1_OUTPUT}} Phase 2: {{PHASE2_OUTPUT}}'
+};
+
 describe('Workflow Module', () => {
   beforeEach(async () => {
     // Initialize database before each test
     await storage.init();
 
-    // Clear prompts to avoid test interference
-    // We'll let each test set up its own prompts
+    // Mock fetch for both JSON and markdown files
+    global.fetch = jest.fn((url) => {
+      if (url === 'data/prompts.json') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            '1': mockPromptTemplates[1],
+            '2': mockPromptTemplates[2],
+            '3': mockPromptTemplates[3]
+          })
+        });
+      }
+      // Handle markdown file requests
+      const match = url.match(/prompts\/phase(\d+)\.md/);
+      if (match) {
+        const phase = parseInt(match[1]);
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(mockPromptTemplates[phase] || '')
+        });
+      }
+      return Promise.reject(new Error(`Unknown URL: ${url}`));
+    });
   });
 
   describe('loadDefaultPrompts', () => {
@@ -101,9 +129,7 @@ describe('Workflow Module', () => {
 
   describe('generatePhase1Prompt', () => {
     test('should generate Phase 1 prompt with project data', async () => {
-      // Set up a default prompt template
-      await savePrompt(1, 'Create a PRD for: %s. Problems: %s. Context: %s');
-
+      // Uses mock template from beforeEach: 'Create a PRD for: {{TITLE}}. Problems: {{PROBLEMS}}. Context: {{CONTEXT}}'
       const project = await createProject(
         'Test Feature',
         'Users need better analytics',
@@ -129,9 +155,7 @@ describe('Workflow Module', () => {
 
   describe('generatePhase2Prompt', () => {
     test('should generate Phase 2 prompt with Phase 1 response', async () => {
-      // Set up a default prompt template
-      await savePrompt(2, 'Review this PRD: [PASTE CLAUDE\'S ORIGINAL PRD HERE]');
-
+      // Uses mock template from beforeEach: 'Review this PRD: {{PHASE1_OUTPUT}}'
       const project = await createProject(
         'Test Feature',
         'Problems',
@@ -163,9 +187,7 @@ describe('Workflow Module', () => {
 
   describe('generatePhase3Prompt', () => {
     test('should generate Phase 3 prompt with both responses', async () => {
-      // Set up a default prompt template
-      await savePrompt(3, 'Compare: [PASTE CLAUDE\'S ORIGINAL PRD HERE] and [PASTE GEMINI\'S PRD RENDITION HERE]');
-
+      // Uses mock template from beforeEach: 'Synthesize these PRDs: Phase 1: {{PHASE1_OUTPUT}} Phase 2: {{PHASE2_OUTPUT}}'
       const project = await createProject(
         'Test Feature',
         'Problems',
@@ -199,11 +221,7 @@ describe('Workflow Module', () => {
 
   describe('3-phase workflow integration', () => {
     test('should complete full workflow', async () => {
-      // Set up default prompt templates
-      await savePrompt(1, 'Create PRD: %s, %s, %s');
-      await savePrompt(2, 'Review: [PASTE CLAUDE\'S ORIGINAL PRD HERE]');
-      await savePrompt(3, 'Compare: [PASTE CLAUDE\'S ORIGINAL PRD HERE] and [PASTE GEMINI\'S PRD RENDITION HERE]');
-
+      // Uses mock templates from beforeEach
       // Create project
       const project = await createProject(
         'Analytics Dashboard',

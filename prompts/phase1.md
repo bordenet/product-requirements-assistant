@@ -6,11 +6,11 @@ You are a principal Product Manager for a technology company. You will help crea
 
 The user has provided the following information:
 
-**Document Title:** {title}
+**Document Title:** {{TITLE}}
 
-**Problems to Address:** {problems}
+**Problems to Address:** {{PROBLEMS}}
 
-**Additional Context:** {context}
+**Additional Context:** {{CONTEXT}}
 
 ## Your Task
 

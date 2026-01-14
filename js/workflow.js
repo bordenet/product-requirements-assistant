@@ -2,18 +2,82 @@
  * Workflow Module
  * @module workflow
  * Handles the 3-phase PRD workflow logic
- * @module workflow
  */
 
 import storage from './storage.js';
 import { updatePhase } from './projects.js';
 import { copyToClipboard, showToast } from './ui.js';
+import {
+  WORKFLOW_CONFIG,
+  generatePhase1Prompt as genPhase1,
+  generatePhase2Prompt as genPhase2,
+  generatePhase3Prompt as genPhase3
+} from './prompts.js';
 
-// Default prompts (loaded from prompts.json)
+// Re-export WORKFLOW_CONFIG for backward compatibility
+export { WORKFLOW_CONFIG };
+
+/**
+ * Helper to get phase data, handling both object and array formats
+ * @param {Object} project - Project object
+ * @param {number} phaseNum - 1-based phase number
+ * @returns {Object} Phase data object with prompt, response, completed
+ */
+function getPhaseData(project, phaseNum) {
+  const defaultPhase = { prompt: '', response: '', completed: false };
+  if (!project.phases) return defaultPhase;
+
+  // Array format first (legacy)
+  if (Array.isArray(project.phases) && project.phases[phaseNum - 1]) {
+    return project.phases[phaseNum - 1];
+  }
+  // Object format (canonical)
+  if (project.phases[phaseNum] && typeof project.phases[phaseNum] === 'object') {
+    return project.phases[phaseNum];
+  }
+  return defaultPhase;
+}
+
+/**
+ * Generate prompt for Phase 1 (Claude Initial)
+ * Wrapper for backward compatibility - delegates to prompts.js
+ * @module workflow
+ */
+export async function generatePhase1Prompt(project) {
+  const formData = {
+    title: project.title || '',
+    problems: project.problems || '',
+    context: project.context || ''
+  };
+  return await genPhase1(formData);
+}
+
+/**
+ * Generate prompt for Phase 2 (Gemini Review)
+ * Wrapper for backward compatibility - delegates to prompts.js
+ * @module workflow
+ */
+export async function generatePhase2Prompt(project) {
+  const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
+  return await genPhase2(phase1Output);
+}
+
+/**
+ * Generate prompt for Phase 3 (Claude Compare)
+ * Wrapper for backward compatibility - delegates to prompts.js
+ * @module workflow
+ */
+export async function generatePhase3Prompt(project) {
+  const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
+  const phase2Output = getPhaseData(project, 2).response || '[No Phase 2 output yet]';
+  return await genPhase3(phase1Output, phase2Output);
+}
+
+// Default prompts (loaded from prompts.json) - legacy, kept for backward compatibility
 let defaultPrompts = {};
 
 /**
- * Load default prompts
+ * Load default prompts - legacy function kept for backward compatibility
  * @module workflow
  */
 export async function loadDefaultPrompts() {
@@ -34,7 +98,7 @@ export async function loadDefaultPrompts() {
 }
 
 /**
- * Get prompt for a phase
+ * Get prompt for a phase - legacy function kept for backward compatibility
  * @module workflow
  */
 export async function getPrompt(phase) {
@@ -63,91 +127,29 @@ export async function resetPrompt(phase) {
 }
 
 /**
- * Generate prompt for Phase 1 (Claude Initial)
- * @module workflow
- */
-export async function generatePhase1Prompt(project) {
-  const template = await getPrompt(1);
-
-  if (!template) {
-    throw new Error('Phase 1 prompt template not found. Please ensure prompts are loaded.');
-  }
-
-  // Replace placeholders sequentially
-  // Using a function to prevent user input containing '%s' from interfering with replacements
-  const prompt = replacePlaceholders(template, project.title, project.problems, project.context);
-
-  return prompt;
-}
-
-/**
- * Replace %s placeholders sequentially, immune to user input containing '%s'
- * @module workflow
- */
-function replacePlaceholders(template, ...values) {
-  let result = template;
-  for (const value of values) {
-    const index = result.indexOf('%s');
-    if (index !== -1) {
-      result = result.substring(0, index) + value + result.substring(index + 2);
-    }
-  }
-  return result;
-}
-
-/**
- * Generate prompt for Phase 2 (Gemini Review)
- * @module workflow
- */
-export async function generatePhase2Prompt(project) {
-  const template = await getPrompt(2);
-
-  if (!template) {
-    throw new Error('Phase 2 prompt template not found. Please ensure prompts are loaded.');
-  }
-
-  const phase1Response = project.phases[1].response || '';
-
-  // Replace placeholder
-  const prompt = template.replace('[PASTE CLAUDE\'S ORIGINAL PRD HERE]', phase1Response);
-
-  return prompt;
-}
-
-/**
- * Generate prompt for Phase 3 (Claude Compare)
- * @module workflow
- */
-export async function generatePhase3Prompt(project) {
-  const template = await getPrompt(3);
-
-  if (!template) {
-    throw new Error('Phase 3 prompt template not found. Please ensure prompts are loaded.');
-  }
-
-  const phase1Response = project.phases[1].response || '';
-  const phase2Response = project.phases[2].response || '';
-
-  // Replace placeholders
-  const prompt = template
-    .replace('[PASTE CLAUDE\'S ORIGINAL PRD HERE]', phase1Response)
-    .replace('[PASTE GEMINI\'S PRD RENDITION HERE]', phase2Response);
-
-  return prompt;
-}
-
-/**
  * Get the appropriate prompt generator for a phase
+ * Uses prompts.js module for template loading and variable replacement
  * @module workflow
  */
 export async function generatePromptForPhase(project, phase) {
+  const formData = {
+    title: project.title || '',
+    problems: project.problems || '',
+    context: project.context || ''
+  };
+
   switch (phase) {
   case 1:
-    return await generatePhase1Prompt(project);
-  case 2:
-    return await generatePhase2Prompt(project);
-  case 3:
-    return await generatePhase3Prompt(project);
+    return await genPhase1(formData);
+  case 2: {
+    const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
+    return await genPhase2(phase1Output);
+  }
+  case 3: {
+    const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
+    const phase2Output = getPhaseData(project, 2).response || '[No Phase 2 output yet]';
+    return await genPhase3(phase1Output, phase2Output);
+  }
   default:
     throw new Error(`Invalid phase: ${phase}`);
   }
