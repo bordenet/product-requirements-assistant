@@ -115,13 +115,13 @@ Provide the final synthesized PRD in this format:
 
 ## Version 1: Initial Draft (Claude)
 
-{phase1Output}
+{{PHASE1_OUTPUT}}
 
 ---
 
 ## Version 2: Gemini Review
 
-{phase2Output}
+{{PHASE2_OUTPUT}}
 
 ---
 

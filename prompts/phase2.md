@@ -143,7 +143,7 @@ When ready, provide your improved version in this format:
 
 ## Original PRD to Review
 
-{phase1Output}
+{{PHASE1_OUTPUT}}
 
 ---
 
