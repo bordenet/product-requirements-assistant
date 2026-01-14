@@ -46,7 +46,13 @@ export async function renderProjectsList() {
             </div>
         ` : `
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                ${projects.map(project => `
+                ${projects.map(project => {
+                    // Check if all phases are complete
+                    const isComplete = project.phases &&
+                        project.phases[1]?.completed &&
+                        project.phases[2]?.completed &&
+                        project.phases[3]?.completed;
+                    return `
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer" data-project-id="${project.id}">
                         <div class="p-6">
                             <div class="flex items-start justify-between mb-3">
@@ -54,7 +60,7 @@ export async function renderProjectsList() {
                                     ${escapeHtml(project.title)}
                                 </h3>
                                 <div class="flex items-center space-x-2">
-                                    ${project.phases && project.phases[3] && project.phases[3].completed ? `
+                                    ${isComplete ? `
                                     <button class="preview-project-btn text-gray-400 hover:text-blue-600 transition-colors" data-project-id="${project.id}" title="Preview & Copy">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -79,7 +85,7 @@ export async function renderProjectsList() {
                                 </div>
                                 <div class="flex space-x-1">
                                     ${[1, 2, 3].map(phase => `
-                                        <div class="flex-1 h-1 rounded ${project.phases[phase].completed ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}"></div>
+                                        <div class="flex-1 h-1 rounded ${project.phases?.[phase]?.completed ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}"></div>
                                     `).join('')}
                                 </div>
                             </div>
@@ -94,7 +100,7 @@ export async function renderProjectsList() {
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                `;}).join('')}
             </div>
         `}
     `;
