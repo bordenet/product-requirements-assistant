@@ -76,7 +76,7 @@ export async function renderProjectView(projectId) {
                         ${escapeHtml(project.problems)}
                     </p>
                 </div>
-                ${project.phases[3]?.completed ? `
+                ${project.phases?.[3]?.completed ? `
                 <button id="export-prd-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                     📄 Preview & Copy
                 </button>
@@ -90,7 +90,7 @@ export async function renderProjectView(projectId) {
                 ${[1, 2, 3].map(phase => {
     const meta = getPhaseMetadata(phase);
     const isActive = project.phase === phase;
-    const isCompleted = project.phases[phase].completed;
+    const isCompleted = project.phases?.[phase]?.completed;
 
     return `
                         <button
@@ -153,7 +153,7 @@ export async function renderProjectView(projectId) {
  */
 function renderPhaseContent(project, phase) {
   const meta = getPhaseMetadata(phase);
-  const phaseData = project.phases[phase];
+  const phaseData = project.phases?.[phase] || { prompt: '', response: '', completed: false };
   // Determine AI URL based on phase (Phase 2 uses Gemini, others use Claude)
   const aiUrl = phase === 2 ? 'https://gemini.google.com' : 'https://claude.ai';
   // Textarea should be enabled if: has existing response OR prompt was already copied
@@ -381,7 +381,7 @@ function attachPhaseEventListeners(project, phase) {
    */
   const enableWorkflowProgression = async (prompt) => {
     // Save prompt but DON'T auto-advance - user is still working on this phase
-    await updatePhase(project.id, phase, prompt, project.phases[phase].response, { skipAutoAdvance: true });
+    await updatePhase(project.id, phase, prompt, project.phases?.[phase]?.response || '', { skipAutoAdvance: true });
 
     // Enable the "Open AI" button now that prompt is copied
     const openAiBtn = document.getElementById('open-ai-btn');
@@ -406,7 +406,7 @@ function attachPhaseEventListeners(project, phase) {
   };
 
   // View Prompt button handler - passes callback to enable workflow when copied from modal
-  if (viewPromptBtn && project.phases[phase].prompt) {
+  if (viewPromptBtn && project.phases?.[phase]?.prompt) {
     viewPromptBtn.addEventListener('click', () => {
       showPromptModal(project.phases[phase].prompt, () => {
         enableWorkflowProgression(project.phases[phase].prompt);
@@ -455,7 +455,7 @@ function attachPhaseEventListeners(project, phase) {
       const response = responseTextarea ? responseTextarea.value.trim() : '';
       if (response && response.length >= 3) {
         // Generate prompt if it hasn't been generated yet
-        let prompt = project.phases[phase].prompt;
+        let prompt = project.phases?.[phase]?.prompt || '';
         if (!prompt) {
           prompt = await generatePromptForPhase(project, phase);
         }
@@ -492,7 +492,7 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 
-  if (nextPhaseBtn && project.phases[phase].completed) {
+  if (nextPhaseBtn && project.phases?.[phase]?.completed) {
     nextPhaseBtn.addEventListener('click', () => {
       project.phase = phase + 1;
       updatePhaseTabStyles(phase + 1);
