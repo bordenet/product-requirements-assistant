@@ -223,12 +223,34 @@ export async function exportFinalPRD(project) {
 /**
  * Sanitize filename
  * @module workflow
+ * @param {string} filename - Filename to sanitize
+ * @returns {string} Sanitized filename
  */
-function sanitizeFilename(filename) {
+export function sanitizeFilename(filename) {
   return filename
     .replace(/[^a-z0-9]/gi, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .toLowerCase()
     .substring(0, 50);
+}
+
+/**
+ * Generate export filename for a project
+ * @module workflow
+ * @param {Object} project - Project object
+ * @returns {string} Filename with .md extension
+ */
+export function getExportFilename(project) {
+  return `${sanitizeFilename(project.title)}-PRD.md`;
+}
+
+/**
+ * Get the final markdown content from a project
+ * @module workflow
+ * @param {Object} project - Project object
+ * @returns {string|null} The markdown content or null if none exists
+ */
+export function getFinalMarkdown(project) {
+  return project.phases?.[3]?.response || project.phases?.[2]?.response || project.phases?.[1]?.response || null;
 }
