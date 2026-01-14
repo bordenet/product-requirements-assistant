@@ -6,8 +6,8 @@
  */
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
-import { getPhaseMetadata, generatePromptForPhase, exportFinalPRD } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboard, confirm } from './ui.js';
+import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename } from './workflow.js';
+import { escapeHtml, showToast, copyToClipboard, confirm, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 
 /**
@@ -78,7 +78,7 @@ export async function renderProjectView(projectId) {
                 </div>
                 ${project.phases[3]?.completed ? `
                 <button id="export-prd-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                    📄 Export as Markdown
+                    📄 Preview & Copy
                 </button>
                 ` : ''}
             </div>
@@ -123,7 +123,12 @@ export async function renderProjectView(projectId) {
     exportPrdBtn.addEventListener('click', async () => {
       // Re-fetch project to get latest data from storage (responses may have been saved)
       const updatedProject = await getProject(project.id);
-      exportFinalPRD(updatedProject);
+      const markdown = getFinalMarkdown(updatedProject);
+      if (markdown) {
+        showDocumentPreviewModal(markdown, 'Your PRD is Ready', getExportFilename(updatedProject));
+      } else {
+        showToast('No PRD content to export', 'warning');
+      }
     });
   }
 
@@ -228,13 +233,30 @@ function renderPhaseContent(project, phase) {
                             <span class="mr-2">🎉</span> Your PRD is Complete!
                         </h4>
                         <p class="text-green-700 dark:text-green-400 mt-1">
-                            Download your finished product requirements document as a Markdown (.md) file.
+                            <strong>Next step:</strong> Copy this into Word or Google Docs so you can edit and share it.
                         </p>
                     </div>
                     <button id="export-complete-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
-                        📄 Export as Markdown
+                        📄 Preview & Copy
                     </button>
                 </div>
+                <!-- Expandable Help Section -->
+                <details class="mt-4">
+                    <summary class="text-sm text-green-700 dark:text-green-400 cursor-pointer hover:text-green-800 dark:hover:text-green-300">
+                        Need help using your document?
+                    </summary>
+                    <div class="mt-3 p-4 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li>Click <strong>"Preview & Copy"</strong> above to see your formatted document</li>
+                            <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
+                            <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong></li>
+                            <li>Paste (Ctrl+V / ⌘V) — your headings and bullets will appear automatically</li>
+                        </ol>
+                        <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
+                            💡 You can also download the raw file (.md format) if needed.
+                        </p>
+                    </div>
+                </details>
             </div>
             ` : ''}
 
@@ -341,10 +363,15 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 
-  // Export complete button handler (Phase 3 CTA)
+  // Export complete button handler (Phase 3 CTA - Preview & Copy)
   if (exportCompleteBtn) {
     exportCompleteBtn.addEventListener('click', () => {
-      exportFinalPRD(project);
+      const markdown = getFinalMarkdown(project);
+      if (markdown) {
+        showDocumentPreviewModal(markdown, 'Your PRD is Ready', getExportFilename(project));
+      } else {
+        showToast('No PRD content to export', 'warning');
+      }
     });
   }
 
