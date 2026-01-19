@@ -1,228 +1,185 @@
 # Contributing to Product Requirements Assistant
 
-Thank you for your interest in contributing! This guide will help you get started.
+We welcome contributions to this project!
 
----
+## Getting Started
 
-## 📚 Documentation
+1. **Fork** the repository
+2. **Clone** your fork: `git clone https://github.com/YOUR-USERNAME/product-requirements-assistant.git`
+3. **Create** a feature branch: `git checkout -b feature/your-feature`
+4. **Set up** the project: `./scripts/setup-macos.sh` (or your platform's setup script)
 
-Before contributing, please review:
-- **[Architecture](docs/architecture/ARCHITECTURE.md)** - System design
-- **[API Reference](docs/architecture/API.md)** - Backend API
-- **[Development Guide](docs/development/)** - Development tools
-- **[Scripts Reference](scripts/README.md)** - Automation scripts
+## Development Workflow
 
----
+### Before You Start
 
-## 🚀 Development Setup
+Read these documents:
+- [`CLAUDE.md`](docs/CLAUDE.md) - AI assistant instructions and standards
+- [`README.md`](README.md) - Project overview
 
-### Prerequisites
+### Making Changes
 
-- **Go** 1.21 or higher
-- **Python** 3.8 or higher
-- **Make** (optional, but recommended)
-- **Git**
+1. **Write tests first** (TDD approach):
+   ```bash
+   npm run test:watch
+   ```
 
-### Quick Start
+2. **Write your code** following the style guide:
+   - Use ES6+ features
+   - Double quotes for strings
+   - 2-space indentation
+   - Descriptive variable names
+   - JSDoc comments for functions
 
-**Option 1: Automated Setup (Recommended)**
+3. **Lint your code**:
+   ```bash
+   npm run lint:fix
+   ```
 
-```bash
-# macOS
-./scripts/setup-macos.sh -y
+4. **Run all tests**:
+   ```bash
+   npm test
+   npm run test:coverage
+   ```
 
-# Linux
-./scripts/setup-linux.sh -y
+5. **Verify coverage** meets 85% threshold:
+   ```bash
+   npm run test:coverage
+   ```
 
-# Windows (WSL)
-./scripts/setup-windows-wsl.sh -y
+### Code Style Guide
 
-# Windows (PowerShell)
-.\scripts\setup-windows.ps1 -AutoYes
+**JavaScript**:
+- ES6+ syntax (const/let, arrow functions, async/await)
+- Double quotes: `"string"`
+- 2-space indentation
+- Semicolons required
+- No console.log in production code
+- JSDoc comments for all functions
+
+**Example**:
+```javascript
+/**
+ * Save a project to storage
+ * @param {Object} project - The project to save
+ * @returns {Promise<string>} The project ID
+ */
+export async function saveProject(project) {
+  if (!project.title) {
+    throw new Error("Project title is required");
+  }
+
+  const result = await storage.saveProject(project);
+  return result;
+}
 ```
 
-See [`scripts/README.md`](scripts/README.md) for details.
+### Testing Standards
 
-**Option 2: Manual Setup**
+- **Coverage**: ≥85% (statements, branches, functions, lines)
+- **Test structure**: One test file per module
+- **Test names**: Describe what is being tested
+- **Mocks**: Mock external dependencies only
 
-```bash
-# Clone the repository
-git clone https://github.com/bordenet/product-requirements-assistant.git
-cd product-requirements-assistant
-
-# Install dependencies
-make install
-
-# Run tests
-make test-all
-
-# Start development servers
-# Terminal 1
-make run-backend
-
-# Terminal 2
-make run-frontend
+```javascript
+test("should save project with valid data", async () => {
+  const project = { id: "1", title: "Test" };
+  const result = await saveProject(project);
+  expect(result).toBe("1");
+});
 ```
 
-Open http://localhost:8501
+## Commit Messages
 
-## Code Standards
-
-### Go Code
-
-- Follow standard Go formatting (`gofmt`)
-- Run `make format` before committing
-- Run `make lint` to check for issues
-- Add tests for new functionality
-- Maintain test coverage
-
-### Python Code
-
-- Follow PEP 8 style guide
-- Use type hints where appropriate
-- Keep functions focused and small
-- Add docstrings for public functions
-
-### Commit Messages
-
-Use conventional commit format:
-
-```
-type(scope): subject
-
-body
-
-footer
-```
+Format: `<type>: <description>`
 
 Types:
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
-- `style`: Code style changes (formatting)
+- `test`: Test changes
 - `refactor`: Code refactoring
-- `test`: Test additions or changes
-- `chore`: Build process or auxiliary tool changes
+- `chore`: Maintenance
 
-Example:
+Examples:
 ```
-feat(backend): add rate limiting middleware
-
-Implements per-IP rate limiting with configurable limits.
-Defaults to 100 requests per minute.
-
-Closes #123
-```
-
-## Testing
-
-### Backend Tests
-
-```bash
-# Run all tests
-make test-backend
-
-# Run specific test
-cd backend && go test -run TestEndToEndWorkflow
-
-# Run with coverage
-cd backend && go test -cover ./...
-
-# Run benchmarks
-make benchmark
-```
-
-### Integration Tests
-
-```bash
-# Requires backend to be running
-make test-integration
+feat: Add PRD export to PDF
+fix: Resolve dark mode toggle issue
+docs: Update deployment guide
+test: Add integration tests for workflow
 ```
 
 ## Pull Request Process
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feat/amazing-feature`)
-3. **Make** your changes
-4. **Add** tests for new functionality
-5. **Run** tests and linting (`make test-all && make lint`)
-6. **Commit** your changes with conventional commit messages
-7. **Push** to your fork (`git push origin feat/amazing-feature`)
-8. **Open** a Pull Request
+1. **Update your branch**: `git pull origin main`
+2. **Push your changes**: `git push origin feature/your-feature`
+3. **Create a Pull Request** on GitHub
+4. **Describe your changes**: What problem does this solve?
+5. **Link related issues**: "Fixes #123"
+6. **Wait for review**: Maintainers will review your code
 
 ### PR Checklist
 
-- [ ] Tests pass locally
-- [ ] New tests added for new features
+- [ ] Tests pass (`npm test`)
+- [ ] Coverage ≥85% (`npm run test:coverage`)
+- [ ] Linting passes (`npm run lint`)
+- [ ] Code follows style guide
 - [ ] Documentation updated
-- [ ] Code formatted (`make format`)
-- [ ] No linting errors (`make lint`)
-- [ ] Commit messages follow convention
-- [ ] PR description explains changes
+- [ ] No breaking changes (or clearly documented)
+- [ ] Commit messages are descriptive
 
-## 📁 Project Structure
+## Testing Guidelines
 
-```
-product-requirements-assistant/
-├── backend/          # Go REST API
-│   ├── main.go      # Server entry point
-│   ├── handlers.go  # HTTP handlers
-│   ├── models.go    # Data structures
-│   ├── storage.go   # File operations
-│   ├── validation.go # Input validation
-│   ├── config.go    # Configuration
-│   ├── middleware.go # HTTP middleware
-│   ├── metrics.go   # Metrics collection
-│   ├── filepool.go  # File caching
-│   └── paths.go     # Path management
-├── frontend/        # Streamlit UI
-│   ├── app.py       # Main application
-│   └── api_client.py # Backend client
-├── web/             # Browser-based web app
-│   └── README.md    # See web/README.md
-├── docs/            # Documentation
-│   └── README.md    # See docs/README.md
-├── scripts/         # Setup scripts
-│   └── README.md    # See scripts/README.md
-├── prompts/         # Prompt templates
-│   └── README.md    # See prompts/README.md
-├── testdata/        # Test fixtures
-└── outputs/         # Generated PRDs
+### Writing Tests
+
+```javascript
+import { functionToTest } from "../js/module.js";
+
+describe("Module Name", () => {
+  test("should do something specific", () => {
+    const result = functionToTest(input);
+    expect(result).toBe(expectedValue);
+  });
+
+  test("should handle error cases", () => {
+    expect(() => functionToTest(invalid)).toThrow();
+  });
+});
 ```
 
-**See also:**
-- [`README.md`](README.md) - Main project documentation
-- [`docs/README.md`](docs/README.md) - Complete documentation index
-- [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) - System architecture
+### Running Tests
 
-## Adding New Features
+```bash
+# Run all tests
+npm test
 
-### Backend Endpoint
+# Run specific test file
+npm test -- storage.test.js
 
-1. Add route in [`backend/main.go`](backend/main.go)
-2. Implement handler in [`backend/handlers.go`](backend/handlers.go)
-3. Add validation if needed
-4. Add tests in [`backend/e2e_test.go`](backend/e2e_test.go)
-5. Update [`docs/architecture/API.md`](docs/architecture/API.md)
+# Run in watch mode
+npm run test:watch
 
-### Frontend Feature
+# Check coverage
+npm run test:coverage
+```
 
-1. Add UI components in [`frontend/app.py`](frontend/app.py)
-2. Add API client methods in [`frontend/api_client.py`](frontend/api_client.py)
-3. Test manually with backend running
-4. Update documentation
+## Documentation
 
-### Web App Feature
-
-1. Add UI components in [`web/index.html`](web/index.html)
-2. Add JavaScript modules in [`web/js/`](web/js/)
-3. Test in browser (see [`web/README.md`](web/README.md))
-4. Update documentation
+When adding features, update:
+- README.md (if user-facing)
+- Comments in code
+- This file (if process changes)
+- Architecture documentation (if architectural)
 
 ## Questions?
 
-Open an issue for:
-- Bug reports
-- Feature requests
-- Questions about the codebase
-- Suggestions for improvements
+- Check existing [Issues](https://github.com/bordenet/product-requirements-assistant/issues)
+- Review [Architecture Decision Record](https://github.com/bordenet/architecture-decision-record) for similar patterns
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT License.
+
+---
+
+**Thank you for contributing to Product Requirements Assistant!**

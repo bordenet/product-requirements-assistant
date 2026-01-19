@@ -166,7 +166,7 @@ Automation scripts for setup, validation, testing, and release management.
 4. Pushes to GitHub
 5. Triggers GitHub Actions to build binaries
 
-**See also:** [`docs/deployment/RELEASING.md`](../docs/deployment/RELEASING.md)
+**Tip:** Tag releases with semantic versioning (e.g., v1.0.0).
 
 ---
 
@@ -253,7 +253,7 @@ Automation scripts for setup, validation, testing, and release management.
 - Symbols: ✓ (success), ✗ (fail), ⚠ (warn), ○ (cached)
 - Verbose mode support
 
-**See also:** [`docs/development/COMPACT_OUTPUT_STATUS.md`](../docs/development/COMPACT_OUTPUT_STATUS.md)
+**Tip:** Use verbose mode (`-v`) for detailed output during debugging.
 
 ---
 
@@ -271,6 +271,5 @@ Automation scripts for setup, validation, testing, and release management.
 
 ## 🔗 Related Documentation
 
-- **[Development Guide](../docs/development/)** - Development workflows and tools
-- **[Deployment Guide](../docs/deployment/)** - Release and deployment processes
 - **[Contributing](../CONTRIBUTING.md)** - Contribution guidelines
+- **[README](../README.md)** - Project overview
