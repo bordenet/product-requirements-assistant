@@ -67,3 +67,15 @@ playwright/.cache/
 build/
 dist/
 *.log
+
+################################################################################
+# GitHub Pages Architecture B: Serving from root (/)
+################################################################################
+# When GitHub Pages serves from root, docs/ should ONLY contain documentation,
+# NOT copies of app files. This prevents drift between root and docs/.
+docs/js/
+docs/css/
+docs/index.html
+docs/data/
+docs/*.html
+!docs/*.md
