@@ -69,13 +69,7 @@ dist/
 *.log
 
 ################################################################################
-# GitHub Pages Architecture B: Serving from root (/)
+# GitHub Pages: Serving from /docs folder
 ################################################################################
-# When GitHub Pages serves from root, docs/ should ONLY contain documentation,
-# NOT copies of app files. This prevents drift between root and docs/.
-docs/js/
-docs/css/
-docs/index.html
-docs/data/
-docs/*.html
-!docs/*.md
+# Web app files are deployed to docs/ folder by scripts/deploy-web.sh
+# and served by GitHub Pages from the /docs path on main branch
