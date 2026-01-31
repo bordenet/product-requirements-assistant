@@ -83,24 +83,23 @@ describe('UI Module', () => {
   });
 
   describe('copyToClipboard', () => {
-    test('should copy text to clipboard using writeText first', async () => {
-      const writeTextMock = jest.fn().mockResolvedValue();
-      navigator.clipboard.writeText = writeTextMock;
+    test('should copy text to clipboard using ClipboardItem with Promise', async () => {
+      const writeMock = jest.fn().mockResolvedValue();
+      navigator.clipboard.write = writeMock;
 
       const text = 'Test text to copy';
       await copyToClipboard(text);
 
-      // The new implementation tries writeText first (Safari MacOS compatible)
-      expect(writeTextMock).toHaveBeenCalledTimes(1);
-      expect(writeTextMock).toHaveBeenCalledWith(text);
+      // The new implementation uses ClipboardItem with Promise-wrapped Blob for Safari transient activation
+      expect(writeMock).toHaveBeenCalledTimes(1);
+      // Verify it was called with an array containing a ClipboardItem
+      expect(writeMock).toHaveBeenCalledWith(expect.any(Array));
     });
 
     test('should throw error if all clipboard methods fail', async () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      // Mock writeText to fail
-      navigator.clipboard.writeText = jest.fn().mockRejectedValue(new Error('Not allowed'));
-      // Mock write (ClipboardItem) to also fail
+      // Mock write (ClipboardItem) to fail
       navigator.clipboard.write = jest.fn().mockRejectedValue(new Error('Not allowed'));
       // Mock execCommand to also fail
       document.execCommand = jest.fn().mockReturnValue(false);

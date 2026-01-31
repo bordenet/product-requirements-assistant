@@ -7,7 +7,7 @@
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboard, confirm, showDocumentPreviewModal } from './ui.js';
+import { escapeHtml, showToast, copyToClipboardAsync, confirm, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
 
@@ -431,29 +431,36 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 
+  // CRITICAL: Safari transient activation fix - call copyToClipboardAsync synchronously
   if (copyPromptBtn) {
-    copyPromptBtn.addEventListener('click', async () => {
-      try {
+    copyPromptBtn.addEventListener('click', () => {
+      let generatedPrompt = null;
+      const promptPromise = (async () => {
         const prompt = await generatePromptForPhase(project, phase);
         if (!prompt) {
-          showToast('Failed to generate prompt. Please try again.', 'error');
-          return;
+          throw new Error('Failed to generate prompt');
         }
-        await copyToClipboard(prompt);
-        showToast('Prompt copied to clipboard!', 'success');
-        await enableWorkflowProgression(prompt);
+        generatedPrompt = prompt;
+        return prompt;
+      })();
 
-        // Add click handler to view prompt if not already attached
-        if (viewPromptBtn && !viewPromptBtn.hasAttribute('data-listener-attached')) {
-          viewPromptBtn.setAttribute('data-listener-attached', 'true');
-          viewPromptBtn.addEventListener('click', () => {
-            showPromptModal(prompt, () => enableWorkflowProgression(prompt));
-          });
-        }
-      } catch (error) {
-        console.error('Error copying prompt:', error);
-        showToast(`Failed to copy prompt: ${error.message}`, 'error');
-      }
+      copyToClipboardAsync(promptPromise)
+        .then(async () => {
+          showToast('Prompt copied to clipboard!', 'success');
+          await enableWorkflowProgression(generatedPrompt);
+
+          // Add click handler to view prompt if not already attached
+          if (viewPromptBtn && !viewPromptBtn.hasAttribute('data-listener-attached')) {
+            viewPromptBtn.setAttribute('data-listener-attached', 'true');
+            viewPromptBtn.addEventListener('click', () => {
+              showPromptModal(generatedPrompt, () => enableWorkflowProgression(generatedPrompt));
+            });
+          }
+        })
+        .catch((error) => {
+          console.error('Error copying prompt:', error);
+          showToast(`Failed to copy prompt: ${error.message}`, 'error');
+        });
     });
   }
 

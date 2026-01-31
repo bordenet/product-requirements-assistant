@@ -382,7 +382,6 @@ describe('Workflow Module', () => {
       // Mock clipboard API with ClipboardItem support for Safari-compatible pattern
       Object.assign(navigator, {
         clipboard: {
-          writeText: jest.fn(() => Promise.resolve()),
           write: jest.fn(() => Promise.resolve())
         }
       });
@@ -393,8 +392,8 @@ describe('Workflow Module', () => {
 
       await copyPromptToClipboard(project, 1);
 
-      // Verify clipboard.writeText was called (Safari MacOS compatible fallback chain)
-      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+      // Verify clipboard.write was called (ClipboardItem with Promise for Safari transient activation)
+      expect(navigator.clipboard.write).toHaveBeenCalled();
     });
   });
 
