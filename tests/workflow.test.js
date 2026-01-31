@@ -393,8 +393,8 @@ describe('Workflow Module', () => {
 
       await copyPromptToClipboard(project, 1);
 
-      // Verify clipboard.write was called (Safari-compatible ClipboardItem pattern)
-      expect(navigator.clipboard.write).toHaveBeenCalled();
+      // Verify clipboard.writeText was called (Safari MacOS compatible fallback chain)
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
     });
   });
 
