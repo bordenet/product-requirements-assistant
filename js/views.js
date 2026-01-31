@@ -24,7 +24,7 @@ export async function renderProjectsList() {
   container.innerHTML = `
         <div class="mb-6 flex items-center justify-between">
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-                My <a href="${PRD_DOC_URL}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">PRDs</a>
+                My <a href="${PRD_DOC_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-700 dark:hover:text-blue-300">PRDs</a>
             </h2>
             <button id="new-project-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 + New PRD
@@ -38,7 +38,7 @@ export async function renderProjectsList() {
                     No PRDs yet
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 mb-6">
-                    Create your first <a href="${PRD_DOC_URL}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">Product Requirements Document</a>
+                    Create your first <a href="${PRD_DOC_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-700 dark:hover:text-blue-300">Product Requirements Document</a>
                 </p>
                 <button id="new-project-btn-empty" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                     + Create Your First PRD
@@ -173,7 +173,7 @@ export function renderNewProjectForm() {
 
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    Create New <a href="${PRD_DOC_URL}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">PRD</a>
+                    Create New <a href="${PRD_DOC_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-700 dark:hover:text-blue-300">PRD</a>
                 </h2>
 
                 <form id="new-project-form" class="space-y-6">
@@ -277,7 +277,7 @@ export async function renderEditProjectForm(projectId) {
 
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    Edit <a href="${PRD_DOC_URL}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">PRD</a> Details
+                    Edit <a href="${PRD_DOC_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-700 dark:hover:text-blue-300">PRD</a> Details
                 </h2>
 
                 <form id="edit-project-form" class="space-y-6">
