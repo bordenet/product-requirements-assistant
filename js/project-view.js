@@ -139,13 +139,25 @@ export async function renderProjectView(projectId) {
 
   document.querySelectorAll('.phase-tab').forEach(tab => {
     tab.addEventListener('click', async () => {
-      const phase = parseInt(tab.dataset.phase);
+      const targetPhase = parseInt(tab.dataset.phase);
+
+      // Guard: Can only navigate to a phase if all prior phases are complete
+      // Phase 1 is always accessible
+      if (targetPhase > 1) {
+        const priorPhase = targetPhase - 1;
+        const priorPhaseComplete = project.phases?.[priorPhase]?.completed;
+        if (!priorPhaseComplete) {
+          showToast(`Complete Phase ${priorPhase} before proceeding to Phase ${targetPhase}`, 'warning');
+          return;
+        }
+      }
+
       // Re-fetch project to get latest data from storage
       const updatedProject = await getProject(project.id);
-      updatedProject.phase = phase;
-      updatePhaseTabStyles(phase);
-      document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase);
-      attachPhaseEventListeners(updatedProject, phase);
+      updatedProject.phase = targetPhase;
+      updatePhaseTabStyles(targetPhase);
+      document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, targetPhase);
+      attachPhaseEventListeners(updatedProject, targetPhase);
     });
   });
 
