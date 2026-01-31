@@ -83,23 +83,35 @@ describe('UI Module', () => {
   });
 
   describe('copyToClipboard', () => {
-    test('should copy text to clipboard', async () => {
+    test('should copy text to clipboard using ClipboardItem pattern', async () => {
       const text = 'Test text to copy';
 
       await copyToClipboard(text);
 
-      // Verify clipboard was called (mocked in jest.setup.js)
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(text);
+      // Verify clipboard.write was called (Safari-compatible ClipboardItem pattern)
+      expect(navigator.clipboard.write).toHaveBeenCalledTimes(1);
     });
 
     test('should handle clipboard errors gracefully', async () => {
       // Mock clipboard to throw error
-      navigator.clipboard.writeText.mockRejectedValueOnce(new Error('Clipboard error'));
+      navigator.clipboard.write.mockRejectedValueOnce(new Error('Clipboard error'));
       // Also mock execCommand to fail (fallback)
       document.execCommand = jest.fn().mockReturnValue(false);
 
       // Should reject with an error (caller handles the error display)
       await expect(copyToClipboard('test')).rejects.toThrow();
+    });
+
+    test('should fallback to execCommand when Clipboard API unavailable', async () => {
+      // Remove clipboard API
+      Object.defineProperty(navigator, 'clipboard', {
+        value: undefined,
+        writable: true,
+      });
+      document.execCommand = jest.fn().mockReturnValue(true);
+
+      await copyToClipboard('test');
+      expect(document.execCommand).toHaveBeenCalledWith('copy');
     });
   });
 

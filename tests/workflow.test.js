@@ -379,10 +379,11 @@ describe('Workflow Module', () => {
     beforeEach(() => {
       document.body.innerHTML = '<div id="toast-container"></div>';
 
-      // Mock clipboard API
+      // Mock clipboard API with ClipboardItem support for Safari-compatible pattern
       Object.assign(navigator, {
         clipboard: {
-          writeText: jest.fn(() => Promise.resolve())
+          writeText: jest.fn(() => Promise.resolve()),
+          write: jest.fn(() => Promise.resolve())
         }
       });
     });
@@ -392,8 +393,8 @@ describe('Workflow Module', () => {
 
       await copyPromptToClipboard(project, 1);
 
-      // Verify clipboard was called
-      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+      // Verify clipboard.write was called (Safari-compatible ClipboardItem pattern)
+      expect(navigator.clipboard.write).toHaveBeenCalled();
     });
   });
 
