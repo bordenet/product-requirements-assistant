@@ -14,7 +14,7 @@ We welcome contributions to this project!
 ### Before You Start
 
 Read these documents:
-- [`CLAUDE.md`](docs/CLAUDE.md) - AI assistant instructions and standards
+- [`Agents.md`](Agents.md) - AI assistant instructions and standards
 - [`README.md`](README.md) - Project overview
 
 ### Making Changes
