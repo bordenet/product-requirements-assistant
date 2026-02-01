@@ -1,4 +1,4 @@
-import { showToast, showLoading, hideLoading, copyToClipboard, formatDate, formatBytes, confirm } from '../js/ui.js';
+import { showToast, showLoading, hideLoading, copyToClipboard, formatDate, formatBytes, confirm, showDocumentPreviewModal } from '../js/ui.js';
 
 describe('UI Module', () => {
   beforeEach(() => {
@@ -230,6 +230,139 @@ describe('UI Module', () => {
 
       await promise;
       expect(document.querySelector('.fixed.inset-0')).toBeFalsy();
+    });
+  });
+
+  describe('showDocumentPreviewModal', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '<div id="toast-container"></div>';
+      window.getSelection = jest.fn(() => ({
+        removeAllRanges: jest.fn(),
+        addRange: jest.fn()
+      }));
+      document.createRange = jest.fn(() => ({
+        selectNodeContents: jest.fn()
+      }));
+    });
+
+    test('should display modal with rendered markdown content', () => {
+      global.marked = { parse: (md) => `<p>${md}</p>` };
+
+      showDocumentPreviewModal('# Test Content', 'Preview Title', 'test.md');
+
+      const modal = document.querySelector('.fixed');
+      expect(modal).toBeTruthy();
+      expect(modal.innerHTML).toContain('Preview Title');
+      expect(modal.innerHTML).toContain('Test Content');
+
+      document.querySelector('#close-preview-modal').click();
+      delete global.marked;
+    });
+
+    test('should fallback to escaped HTML when marked is unavailable', () => {
+      delete global.marked;
+
+      showDocumentPreviewModal('Test **content**', 'Title', 'doc.md');
+
+      const modal = document.querySelector('.fixed');
+      expect(modal).toBeTruthy();
+      expect(modal.innerHTML).toContain('Test **content**');
+
+      modal.querySelector('#close-modal-btn').click();
+    });
+
+    test('should close modal when X button is clicked', () => {
+      showDocumentPreviewModal('Content', 'Title');
+
+      const closeBtn = document.querySelector('#close-preview-modal');
+      expect(closeBtn).toBeTruthy();
+      closeBtn.click();
+
+      expect(document.querySelector('.fixed')).toBeNull();
+    });
+
+    test('should close modal when Close button is clicked', () => {
+      showDocumentPreviewModal('Content', 'Title');
+
+      const closeBtn = document.querySelector('#close-modal-btn');
+      closeBtn.click();
+
+      expect(document.querySelector('.fixed')).toBeNull();
+    });
+
+    test('should close modal when backdrop is clicked', () => {
+      showDocumentPreviewModal('Content', 'Title');
+
+      const modal = document.querySelector('.fixed');
+      const event = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(event, 'target', { value: modal, enumerable: true });
+      modal.dispatchEvent(event);
+
+      expect(document.querySelector('.fixed')).toBeNull();
+    });
+
+    test('should close modal on Escape key', () => {
+      showDocumentPreviewModal('Content', 'Title');
+
+      const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
+      document.dispatchEvent(escapeEvent);
+
+      expect(document.querySelector('.fixed')).toBeNull();
+    });
+
+    test('should copy formatted text when copy button is clicked', async () => {
+      document.execCommand = jest.fn().mockReturnValue(true);
+
+      showDocumentPreviewModal('Content', 'Title');
+
+      const copyBtn = document.querySelector('#copy-formatted-btn');
+      await copyBtn.click();
+
+      expect(document.execCommand).toHaveBeenCalledWith('copy');
+    });
+
+    test('should download markdown file when download button is clicked', () => {
+      const mockUrl = 'blob:test-url';
+      const mockAnchor = { href: '', download: '', click: jest.fn() };
+      const originalCreateObjectURL = URL.createObjectURL;
+      const originalRevokeObjectURL = URL.revokeObjectURL;
+      const originalCreateElement = document.createElement.bind(document);
+
+      URL.createObjectURL = jest.fn(() => mockUrl);
+      URL.revokeObjectURL = jest.fn();
+      document.createElement = jest.fn((tag) => {
+        if (tag === 'a') return mockAnchor;
+        return originalCreateElement(tag);
+      });
+
+      const onDownload = jest.fn();
+
+      showDocumentPreviewModal('Content', 'Title', 'test-doc.md', onDownload);
+
+      const downloadBtn = document.querySelector('#download-md-btn');
+      downloadBtn.click();
+
+      expect(URL.createObjectURL).toHaveBeenCalled();
+      expect(mockAnchor.download).toBe('test-doc.md');
+      expect(mockAnchor.click).toHaveBeenCalled();
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith(mockUrl);
+      expect(onDownload).toHaveBeenCalled();
+
+      URL.createObjectURL = originalCreateObjectURL;
+      URL.revokeObjectURL = originalRevokeObjectURL;
+      document.createElement = originalCreateElement;
+    });
+
+    test('should use marked function directly if marked.parse is unavailable', () => {
+      global.marked = (md) => `<strong>${md}</strong>`;
+
+      showDocumentPreviewModal('Bold text', 'Title');
+
+      const modal = document.querySelector('.fixed');
+      expect(modal.innerHTML).toContain('<strong>');
+
+      modal.querySelector('#close-modal-btn').click();
+      delete global.marked;
     });
   });
 });
