@@ -50,29 +50,29 @@ Write PRDs with AI. Three phases: draft, review, refine.
 
 ### Setup
 
-\`\`\`bash
+```bash
 git clone https://github.com/bordenet/product-requirements-assistant.git
 cd product-requirements-assistant
 npm install
-\`\`\`
+```
 
 ### Testing
 
-\`\`\`bash
+```bash
 npm test        # Run all tests
 npm run lint    # Run linting
 npm run lint:fix # Fix lint issues
-\`\`\`
+```
 
 ### Local Development
 
-\`\`\`bash
+```bash
 npm run serve   # Start local server at http://localhost:8000
-\`\`\`
+```
 
 ## Project Structure
 
-\`\`\`
+```
 product-requirements-assistant/
 ├── js/                    # JavaScript modules
 │   ├── app.js            # Main application entry
@@ -85,7 +85,7 @@ product-requirements-assistant/
 │   ├── phase2.md
 │   └── phase3.md
 └── index.html            # Main HTML file
-\`\`\`
+```
 
 ## Part of Genesis Tools
 
