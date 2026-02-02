@@ -78,9 +78,9 @@ export async function renderProjectsList() {
 
                             <div class="mb-4">
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Phase ${project.phase}/3</span>
-                                    <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                        <div class="bg-blue-600 h-2 rounded-full transition-all" style="width: ${(project.phase / 3) * 100}%"></div>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Phase ${Math.min(project.phase, 3)}/3</span>
+                                    <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                                        <div class="bg-blue-600 h-2 rounded-full transition-all" style="width: ${Math.min((project.phase / 3) * 100, 100)}%"></div>
                                     </div>
                                 </div>
                                 <div class="flex space-x-1">
