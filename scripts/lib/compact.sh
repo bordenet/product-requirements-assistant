@@ -37,7 +37,13 @@ readonly SYM_RUN="${C_BLUE}▸${C_RESET}"
 # Global state
 SCRIPT_START_TIME=$(date +%s)
 CURRENT_TASK=""
-VERBOSE=${VERBOSE:-0}
+# VERBOSE can be "true"/"false" (string) or 0/1 (integer)
+# We normalize to string "true"/"false" for consistent comparisons
+if [[ "${VERBOSE:-}" == "1" || "${VERBOSE:-}" == "true" ]]; then
+    VERBOSE="true"
+else
+    VERBOSE="false"
+fi
 
 ################################################################################
 # Timer Functions
@@ -100,7 +106,7 @@ task_start() {
     CURRENT_TASK="$1"
     update_status "${SYM_RUN}" "${CURRENT_TASK}..."
 
-    if [[ $VERBOSE -eq 1 ]]; then
+    if [[ "$VERBOSE" == "true" ]]; then
         finalize_status
     fi
 }
@@ -128,7 +134,7 @@ task_warn() {
 
 # Verbose-only output
 verbose() {
-    if [[ $VERBOSE -eq 1 ]]; then
+    if [[ "$VERBOSE" == "true" ]]; then
         echo -e "${C_GRAY}  $*${C_RESET}"
     fi
 }
