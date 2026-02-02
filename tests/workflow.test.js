@@ -297,31 +297,32 @@ describe('Workflow Module', () => {
   describe('getPhaseMetadata', () => {
     test('should return metadata for phase 1', () => {
       const metadata = getPhaseMetadata(1);
-      expect(metadata.title).toBe('Phase 1: Initial Draft');
-      expect(metadata.ai).toBe('Claude Sonnet 4.5');
-      expect(metadata.color).toBe('blue');
+      // Uses WORKFLOW_CONFIG structure with 'name' and 'aiModel'
+      expect(metadata.name).toBe('Initial Draft');
+      expect(metadata.aiModel).toBe('Claude');
       expect(metadata.icon).toBe('📝');
+      expect(metadata.number).toBe(1);
     });
 
     test('should return metadata for phase 2', () => {
       const metadata = getPhaseMetadata(2);
-      expect(metadata.title).toBe('Phase 2: Review & Refine');
-      expect(metadata.ai).toBe('Gemini 2.5 Pro');
-      expect(metadata.color).toBe('purple');
+      expect(metadata.name).toBe('Critical Review');
+      expect(metadata.aiModel).toBe('Gemini');
       expect(metadata.icon).toBe('🔍');
+      expect(metadata.number).toBe(2);
     });
 
     test('should return metadata for phase 3', () => {
       const metadata = getPhaseMetadata(3);
-      expect(metadata.title).toBe('Phase 3: Final Comparison');
-      expect(metadata.ai).toBe('Claude Sonnet 4.5');
-      expect(metadata.color).toBe('green');
+      expect(metadata.name).toBe('Final Synthesis');
+      expect(metadata.aiModel).toBe('Claude');
       expect(metadata.icon).toBe('✨');
+      expect(metadata.number).toBe(3);
     });
 
-    test('should return empty object for invalid phase', () => {
+    test('should return undefined for invalid phase', () => {
       const metadata = getPhaseMetadata(99);
-      expect(metadata).toEqual({});
+      expect(metadata).toBeUndefined();
     });
   });
 
@@ -366,12 +367,15 @@ describe('Workflow Module', () => {
       expect(global.URL.createObjectURL).toHaveBeenCalled();
     });
 
-    test('should show warning if no PRD content available', async () => {
+    test('should export fallback content when no phase responses available', async () => {
+      // With the new Workflow class, exportAsMarkdown returns fallback content
+      // (project title, problems, context) when no phase responses exist
       const project = await createProject('Test Project', 'Problems', 'Context');
 
       await exportFinalPRD(project);
 
-      expect(global.URL.createObjectURL).not.toHaveBeenCalled();
+      // Still exports fallback content with attribution
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
     });
   });
 

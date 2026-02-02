@@ -38,40 +38,147 @@ function getPhaseData(project, phaseNum) {
   return defaultPhase;
 }
 
-/**
- * Generate prompt for Phase 1 (Claude Initial)
- * Wrapper for backward compatibility - delegates to prompts.js
- * @module workflow
- */
-export async function generatePhase1Prompt(project) {
-  const formData = {
-    title: project.title || '',
-    problems: project.problems || '',
-    context: project.context || ''
-  };
-  return await genPhase1(formData);
+export class Workflow {
+  constructor(project) {
+    this.project = project;
+    this.currentPhase = project.phase || 1;
+  }
+
+  /**
+   * Get current phase configuration
+   */
+  getCurrentPhase() {
+    return WORKFLOW_CONFIG.phases.find(p => p.number === this.currentPhase);
+  }
+
+  /**
+   * Get next phase configuration
+   */
+  getNextPhase() {
+    if (this.currentPhase >= WORKFLOW_CONFIG.phaseCount) {
+      return null;
+    }
+    return WORKFLOW_CONFIG.phases.find(p => p.number === this.currentPhase + 1);
+  }
+
+  /**
+   * Check if workflow is complete
+   */
+  isComplete() {
+    return this.currentPhase > WORKFLOW_CONFIG.phaseCount;
+  }
+
+  /**
+   * Advance to next phase
+   */
+  advancePhase() {
+    // Allow advancing up to phase 4 (complete state)
+    if (this.currentPhase <= WORKFLOW_CONFIG.phaseCount) {
+      this.currentPhase++;
+      this.project.phase = this.currentPhase;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Go back to previous phase
+   */
+  previousPhase() {
+    if (this.currentPhase > 1) {
+      this.currentPhase--;
+      this.project.phase = this.currentPhase;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Generate prompt for current phase
+   * Uses prompts.js module for template loading and variable replacement
+   */
+  async generatePrompt() {
+    const p = this.project;
+
+    switch (this.currentPhase) {
+    case 1: {
+      const formData = {
+        title: p.title || '',
+        problems: p.problems || '',
+        context: p.context || ''
+      };
+      return await genPhase1(formData);
+    }
+    case 2: {
+      const phase1Output = getPhaseData(p, 1).response || '[Phase 1 output not yet generated]';
+      return await genPhase2(phase1Output);
+    }
+    case 3: {
+      const phase1Output = getPhaseData(p, 1).response || '[Phase 1 output not yet generated]';
+      const phase2Output = getPhaseData(p, 2).response || '[Phase 2 output not yet generated]';
+      return await genPhase3(phase1Output, phase2Output);
+    }
+    default:
+      throw new Error(`Invalid phase: ${this.currentPhase}`);
+    }
+  }
+
+  /**
+   * Save phase output
+   */
+  savePhaseOutput(output) {
+    if (!this.project.phases) {
+      this.project.phases = {};
+    }
+    if (!this.project.phases[this.currentPhase]) {
+      this.project.phases[this.currentPhase] = { prompt: '', response: '', completed: false };
+    }
+    this.project.phases[this.currentPhase].response = output;
+    this.project.phases[this.currentPhase].completed = true;
+    this.project.updatedAt = new Date().toISOString();
+  }
+
+  /**
+   * Get phase output
+   */
+  getPhaseOutput(phaseNumber) {
+    return getPhaseData(this.project, phaseNumber).response || '';
+  }
+
+  /**
+   * Export final output as Markdown
+   */
+  exportAsMarkdown() {
+    const attribution = '\n\n---\n\n*Generated with [Product Requirements Assistant](https://bordenet.github.io/product-requirements-assistant/)*';
+
+    // Return Phase 3 output if available, otherwise earlier phases
+    const finalResponse = this.project.phases?.[3]?.response ||
+                          this.project.phases?.[2]?.response ||
+                          this.project.phases?.[1]?.response;
+
+    if (finalResponse) {
+      return finalResponse + attribution;
+    }
+
+    // Fallback to project metadata
+    let markdown = `# ${this.project.title || 'Untitled PRD'}\n\n`;
+    markdown += `## Problem Statement\n\n${this.project.problems || ''}\n\n`;
+    markdown += `## Context\n\n${this.project.context || ''}\n`;
+    return markdown + attribution;
+  }
+
+  /**
+   * Get workflow progress percentage
+   */
+  getProgress() {
+    return Math.round((this.currentPhase / WORKFLOW_CONFIG.phaseCount) * 100);
+  }
 }
 
 /**
- * Generate prompt for Phase 2 (Gemini Review)
- * Wrapper for backward compatibility - delegates to prompts.js
- * @module workflow
+ * Standalone helper functions for use in views
+ * These provide a simpler API for common workflow operations
  */
-export async function generatePhase2Prompt(project) {
-  const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
-  return await genPhase2(phase1Output);
-}
-
-/**
- * Generate prompt for Phase 3 (Claude Compare)
- * Wrapper for backward compatibility - delegates to prompts.js
- * @module workflow
- */
-export async function generatePhase3Prompt(project) {
-  const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
-  const phase2Output = getPhaseData(project, 2).response || '[No Phase 2 output yet]';
-  return await genPhase3(phase1Output, phase2Output);
-}
 
 // Default prompts (loaded from prompts.json) - legacy, kept for backward compatibility
 let defaultPrompts = {};
@@ -127,32 +234,51 @@ export async function resetPrompt(phase) {
 }
 
 /**
- * Get the appropriate prompt generator for a phase
- * Uses prompts.js module for template loading and variable replacement
+ * Get metadata for a specific phase
+ * @param {number} phaseNumber - Phase number (1, 2, 3, etc.)
+ * @returns {Object} Phase metadata
+ */
+export function getPhaseMetadata(phaseNumber) {
+  return WORKFLOW_CONFIG.phases.find(p => p.number === phaseNumber);
+}
+
+/**
+ * Generate prompt for a specific phase
+ * @param {Object} project - Project object
+ * @param {number} phaseNumber - Phase number
+ * @returns {Promise<string>} Generated prompt
+ */
+export async function generatePromptForPhase(project, phaseNumber) {
+  const workflow = new Workflow(project);
+  workflow.currentPhase = phaseNumber;
+  return await workflow.generatePrompt();
+}
+
+/**
+ * Generate prompt for Phase 1 (Claude Initial)
+ * Wrapper for backward compatibility - delegates to Workflow class
  * @module workflow
  */
-export async function generatePromptForPhase(project, phase) {
-  const formData = {
-    title: project.title || '',
-    problems: project.problems || '',
-    context: project.context || ''
-  };
+export async function generatePhase1Prompt(project) {
+  return await generatePromptForPhase(project, 1);
+}
 
-  switch (phase) {
-  case 1:
-    return await genPhase1(formData);
-  case 2: {
-    const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
-    return await genPhase2(phase1Output);
-  }
-  case 3: {
-    const phase1Output = getPhaseData(project, 1).response || '[No Phase 1 output yet]';
-    const phase2Output = getPhaseData(project, 2).response || '[No Phase 2 output yet]';
-    return await genPhase3(phase1Output, phase2Output);
-  }
-  default:
-    throw new Error(`Invalid phase: ${phase}`);
-  }
+/**
+ * Generate prompt for Phase 2 (Gemini Review)
+ * Wrapper for backward compatibility - delegates to Workflow class
+ * @module workflow
+ */
+export async function generatePhase2Prompt(project) {
+  return await generatePromptForPhase(project, 2);
+}
+
+/**
+ * Generate prompt for Phase 3 (Claude Compare)
+ * Wrapper for backward compatibility - delegates to Workflow class
+ * @module workflow
+ */
+export async function generatePhase3Prompt(project) {
+  return await generatePromptForPhase(project, 3);
 }
 
 /**
@@ -168,56 +294,33 @@ export async function copyPromptToClipboard(project, phase) {
 }
 
 /**
- * Get phase metadata
- * @module workflow
+ * Export final document as Markdown
+ * @param {Object} project - Project object
+ * @returns {string} Markdown content
  */
-export function getPhaseMetadata(phase) {
-  const metadata = {
-    1: {
-      title: 'Phase 1: Initial Draft',
-      ai: 'Claude Sonnet 4.5',
-      description: 'Generate the initial PRD based on your requirements',
-      color: 'blue',
-      icon: '📝'
-    },
-    2: {
-      title: 'Phase 2: Review & Refine',
-      ai: 'Gemini 2.5 Pro',
-      description: 'Review and improve the initial draft',
-      color: 'purple',
-      icon: '🔍'
-    },
-    3: {
-      title: 'Phase 3: Final Comparison',
-      ai: 'Claude Sonnet 4.5',
-      description: 'Compare both versions and create the final PRD',
-      color: 'green',
-      icon: '✨'
-    }
-  };
-
-  return metadata[phase] || {};
+export function exportFinalDocument(project) {
+  const workflow = new Workflow(project);
+  return workflow.exportAsMarkdown();
 }
 
 /**
- * Export final PRD as markdown
+ * Export final PRD as markdown (triggers download)
  * @module workflow
  */
 export async function exportFinalPRD(project) {
-  const finalResponse = project.phases[3].response || project.phases[2].response || project.phases[1].response;
-  const attribution = '\n\n---\n\n*Generated with [Product Requirements Assistant](https://bordenet.github.io/product-requirements-assistant/)*';
+  const content = exportFinalDocument(project);
+  const filename = getExportFilename(project);
 
-  if (!finalResponse) {
+  if (!content || content.includes('Untitled PRD')) {
     showToast('No PRD content to export', 'warning');
     return;
   }
 
-  const content = finalResponse + attribution;
   const blob = new Blob([content], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${sanitizeFilename(project.title)}-PRD.md`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 
@@ -231,11 +334,11 @@ export async function exportFinalPRD(project) {
  * @returns {string} Sanitized filename
  */
 export function sanitizeFilename(filename) {
-  return filename
-    .replace(/[^a-z0-9]/gi, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
+  const name = filename || 'prd';
+  return name
     .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
     .substring(0, 50);
 }
 
@@ -246,7 +349,8 @@ export function sanitizeFilename(filename) {
  * @returns {string} Filename with .md extension
  */
 export function getExportFilename(project) {
-  return `${sanitizeFilename(project.title)}-PRD.md`;
+  const title = project.title || project.name || 'prd';
+  return `${sanitizeFilename(title)}-prd.md`;
 }
 
 /**
@@ -256,5 +360,17 @@ export function getExportFilename(project) {
  * @returns {string|null} The markdown content or null if none exists
  */
 export function getFinalMarkdown(project) {
-  return project.phases?.[3]?.response || project.phases?.[2]?.response || project.phases?.[1]?.response || null;
+  if (!project) return null;
+
+  const attribution = '\n\n---\n\n*Generated with [Product Requirements Assistant](https://bordenet.github.io/product-requirements-assistant/)*';
+
+  const finalResponse = project.phases?.[3]?.response ||
+                        project.phases?.[2]?.response ||
+                        project.phases?.[1]?.response;
+
+  if (finalResponse) {
+    return finalResponse + attribution;
+  }
+
+  return null;
 }
