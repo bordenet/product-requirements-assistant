@@ -7,6 +7,49 @@
 import storage from './storage.js';
 
 /**
+ * Extract title from final document markdown content
+ * @param {string} markdown - Document markdown content
+ * @returns {string} Extracted title or empty string
+ */
+function extractTitleFromMarkdown(markdown) {
+  if (!markdown) return '';
+
+  // First try: H1 header (# Title)
+  const h1Match = markdown.match(/^#\s+(.+)$/m);
+  if (h1Match) {
+    const title = h1Match[1].trim();
+    // Skip generic headers like "PRESS RELEASE" or "Press Release"
+    if (!/^press\s+release$/i.test(title)) {
+      return title;
+    }
+  }
+
+  // Second try: Bold headline after "# PRESS RELEASE" or "## Press Release"
+  // Pattern: **Headline Text**
+  const prMatch = markdown.match(/^#\s*PRESS\s*RELEASE\s*$/im);
+  if (prMatch) {
+    const startIdx = markdown.indexOf(prMatch[0]) + prMatch[0].length;
+    const afterPR = markdown.slice(startIdx).trim();
+    const boldMatch = afterPR.match(/^\*\*(.+?)\*\*/);
+    if (boldMatch) {
+      return boldMatch[1].trim();
+    }
+  }
+
+  // Third try: First bold line in the document
+  const firstBoldMatch = markdown.match(/\*\*(.+?)\*\*/);
+  if (firstBoldMatch) {
+    const title = firstBoldMatch[1].trim();
+    // Only use if it looks like a headline (not too long, not a sentence)
+    if (title.length > 10 && title.length < 150 && !title.endsWith('.')) {
+      return title;
+    }
+  }
+
+  return '';
+}
+
+/**
  * Create a new project
  */
 export async function createProject(title, problems, context) {
@@ -65,6 +108,14 @@ export async function updatePhase(projectId, phase, prompt, response, options = 
   // Auto-advance to next phase if current phase is completed (unless skipAutoAdvance is set)
   if (response && phase < 3 && !options.skipAutoAdvance) {
     project.phase = phase + 1;
+  }
+
+  // Phase 3: Extract title from final document and update project title
+  if (phase === 3 && response) {
+    const extractedTitle = extractTitleFromMarkdown(response);
+    if (extractedTitle) {
+      project.title = extractedTitle;
+    }
   }
 
   project.updatedAt = new Date().toISOString();
