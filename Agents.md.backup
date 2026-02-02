@@ -1,0 +1,250 @@
+# Agents.md - AI Agent Guidelines for Product Requirements Assistant
+
+**CRITICAL**: Read this file FIRST before working on this codebase.
+
+**📐 Design Patterns**: See [DESIGN-PATTERNS.md](./docs/DESIGN-PATTERNS.md) for architecture and coding patterns used across all genesis-tools repos.
+
+---
+
+## 🎯 Core Principles
+
+### 0. **MANDATORY: Manual Deployment After CI Passes**
+
+**ALL deployments MUST follow this 3-step process:**
+
+```bash
+# Step 1: Push changes to GitHub
+git add .
+git commit -m "feat: description of changes"
+git push origin main
+
+# Step 2: WAIT for CI to pass
+# Check: https://github.com/bordenet/product-requirements-assistant/actions
+# ⚠️ DO NOT PROCEED until all checks are GREEN
+
+# Step 3: Deploy ONLY after CI passes
+./scripts/deploy-web.sh
+```
+
+**Why**:
+- CI runs comprehensive quality gates (lint, test, coverage)
+- Deploying before CI passes can ship broken code
+- CI is the single source of truth for code quality
+
+### 1. **ALWAYS Complete the Full Workflow**
+When asked to do a task, you MUST:
+1. ✅ Complete the work
+2. ✅ Lint the code (`npm run lint` or `npm run lint:fix`)
+3. ✅ Run tests (`npm test`)
+4. ✅ Verify tests pass
+5. ✅ Check coverage if applicable
+6. ✅ **PROACTIVELY tell the user what's left** - don't wait to be asked
+
+**BAD**: "I've created the files."
+**GOOD**: "I've created the files, linted them (0 errors), ran tests (37/37 passing), and verified coverage (73%). What's left: [specific list]"
+
+### 2. **NEVER Include Build Artifacts**
+When creating examples or templates:
+- ❌ NEVER commit `node_modules/`
+- ❌ NEVER commit `coverage/`
+- ❌ NEVER commit `dist/` or `build/`
+- ✅ ALWAYS create `.gitignore` files
+- ✅ ALWAYS verify directory size before committing
+
+### 3. **Proactive Status Updates**
+After EVERY significant change:
+```
+✅ What I did: [specific actions]
+✅ Quality checks: [linting, tests, coverage]
+✅ What's left: [specific remaining tasks]
+```
+
+Don't make the user ask "what's left?" multiple times.
+
+---
+
+## 📋 Standard Workflow Checklist
+
+### When Creating New Code
+- [ ] Write the code
+- [ ] Create/update tests
+- [ ] Run linter: `npm run lint` or `npm run lint:fix`
+- [ ] Run tests: `npm test`
+- [ ] Check coverage: `npm run test:coverage` (if applicable)
+- [ ] Verify all checks pass
+- [ ] Create `.gitignore` if needed
+- [ ] **Tell user: what's done, what's left**
+
+### When Modifying Existing Code
+- [ ] Make changes
+- [ ] Update affected tests
+- [ ] Run linter
+- [ ] Run tests
+- [ ] Verify no regressions
+- [ ] **Tell user: what's done, what's left**
+
+### When Asked "What's Left?"
+This means you failed to proactively communicate. Improve by:
+1. Always ending responses with "What's left: [list]"
+2. Being specific about remaining tasks
+3. Prioritizing tasks (blocking vs. nice-to-have)
+
+---
+
+## 🏗️ Project Structure
+
+### Main Application
+- `index.html` - Main application (3-phase PRD workflow)
+- `css/` - Styles (Tailwind + custom)
+- `js/` - JavaScript modules (ES6)
+- `tests/` - Jest unit tests
+- `e2e/` - Playwright E2E tests
+
+### Genesis Template System
+- `genesis/` - **GITIGNORED** template system for derivative projects
+- Genesis is a local development tool, NOT committed to repo
+- Contains templates for COE Generator, One-Pager Generator, etc.
+
+### Configuration
+- `.env.example` - Environment template (tracked in git)
+- `.env` - Actual secrets (gitignored, never commit)
+- `package.json` - Dependencies and scripts
+- `jest.config.js` - Test configuration
+- `.eslintrc.json` - Linting rules (if exists)
+
+---
+
+## 🧪 Testing Standards
+
+### Coverage Requirements
+- **Main application**: 85% minimum (statements, branches, functions, lines)
+- **Examples/templates**: 70% minimum (lower bar for demos)
+- **UI code**: Can be excluded if E2E tested
+
+### Test Commands
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Run E2E tests
+npm run test:e2e
+
+# Run linter
+npm run lint
+
+# Fix linting errors
+npm run lint:fix
+```
+
+### ALWAYS Run These After Code Changes
+1. `npm run lint` (or `lint:fix`)
+2. `npm test`
+3. Verify output shows all passing
+
+### ALWAYS Fix Lint Warnings Immediately
+- No exceptions - fix lint warnings in the same commit
+- Don't leave warnings for "later" - they accumulate and become tech debt
+- If a warning seems wrong, add an eslint-disable comment with explanation
+
+---
+
+## 🚫 What NOT to Do
+
+### NEVER
+- ❌ Create files without linting them
+- ❌ Create tests without running them
+- ❌ Commit `node_modules/` or build artifacts
+- ❌ Make user ask "what's left?" multiple times
+- ❌ Use hyperbolic language ("amazing", "revolutionary", "production-grade")
+- ❌ Create documentation files unless explicitly requested
+- ❌ Do more than the user asked
+
+### ALWAYS
+- ✅ Lint after creating/modifying code
+- ✅ Run tests after creating/modifying tests
+- ✅ Create `.gitignore` for new directories with dependencies
+- ✅ Proactively communicate what's left
+- ✅ Use factual, professional language
+- ✅ Ask before committing, pushing, or deploying
+
+---
+
+## 📝 Communication Style
+
+### User Expectations
+- **No flattery**: Don't say "great question", "excellent idea", etc.
+- **Be direct**: Skip pleasantries, get to the point
+- **Be specific**: "37/37 tests passing" not "tests are working"
+- **Be proactive**: Always end with "What's left: [list]"
+
+### Status Update Template
+```
+✅ Completed:
+- [Specific action 1]
+- [Specific action 2]
+
+✅ Quality Checks:
+- Linting: PASSED (0 errors)
+- Tests: PASSED (37/37)
+- Coverage: 73% (exceeds 70% threshold)
+
+✅ What's Left:
+- [Specific remaining task 1]
+- [Specific remaining task 2]
+```
+
+---
+
+## 🎓 Learning from Mistakes
+
+### Recent Issues
+1. **Forgot to lint** - User had to ask "did you lint?"
+   - **Fix**: ALWAYS run `npm run lint` after creating code
+
+2. **Included node_modules** - 55MB bloat in genesis
+   - **Fix**: ALWAYS create `.gitignore`, verify size with `du -sh`
+
+3. **User asked "what's left?" 3+ times**
+   - **Fix**: ALWAYS end responses with specific "What's left" section
+
+### Prevention
+- Use task management tools for complex work
+- Mark tasks complete as you go
+- Always run quality checks (lint, test, coverage)
+- Always communicate what's left
+
+---
+
+**Remember**: The user is a principal engineer at Expedia Group with high standards. Match that level of professionalism and completeness.
+
+---
+
+## Superpowers Skills
+
+At the START of every conversation, run:
+
+```bash
+node ~/.codex/superpowers-augment/superpowers-augment.js bootstrap
+```
+
+This loads available skills. Key skills:
+- `superpowers:brainstorming` - Before creative/feature work
+- `superpowers:systematic-debugging` - Before fixing bugs
+- `superpowers:test-driven-development` - Before writing implementation
+- `superpowers:verification-before-completion` - Before claiming done
+- `superpowers:writing-plans` - Before multi-step tasks
+
+**To load a skill:**
+```bash
+node ~/.codex/superpowers-augment/superpowers-augment.js use-skill superpowers:<skill-name>
+```
+
+**To list all skills:**
+```bash
+node ~/.codex/superpowers-augment/superpowers-augment.js find-skills
+```
+
+**The Rule:** IF A SKILL APPLIES TO YOUR TASK (even 1% chance), YOU MUST INVOKE IT.

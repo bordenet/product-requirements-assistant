@@ -516,12 +516,18 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 
+  // Next phase button - re-fetch project to ensure fresh data
   if (nextPhaseBtn && project.phases?.[phase]?.completed) {
-    nextPhaseBtn.addEventListener('click', () => {
-      project.phase = phase + 1;
-      updatePhaseTabStyles(phase + 1);
-      document.getElementById('phase-content').innerHTML = renderPhaseContent(project, phase + 1);
-      attachPhaseEventListeners(project, phase + 1);
+    nextPhaseBtn.addEventListener('click', async () => {
+      const nextPhase = phase + 1;
+
+      // Re-fetch project from storage to get fresh data
+      const freshProject = await getProject(project.id);
+      freshProject.phase = nextPhase;
+
+      updatePhaseTabStyles(nextPhase);
+      document.getElementById('phase-content').innerHTML = renderPhaseContent(freshProject, nextPhase);
+      attachPhaseEventListeners(freshProject, nextPhase);
     });
   }
 
