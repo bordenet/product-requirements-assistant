@@ -2,6 +2,8 @@
 
 Write PRDs with AI. Three phases: draft, review, refine.
 
+[![Star this repo](https://img.shields.io/github/stars/bordenet/product-requirements-assistant?style=social)](https://github.com/bordenet/product-requirements-assistant)
+
 **Try it**: [bordenet.github.io/product-requirements-assistant](https://bordenet.github.io/product-requirements-assistant/)
 
 > **What is a PRD?** A [Product Requirements Document](https://en.wikipedia.org/wiki/Product_requirements_document) defines what a product should do and why. It specifies user needs, features, constraints, and success criteria—without prescribing implementation. PRDs align engineering, design, and business before development begins.
