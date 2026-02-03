@@ -7,7 +7,7 @@
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboardAsync, confirm, showDocumentPreviewModal } from './ui.js';
+import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
 

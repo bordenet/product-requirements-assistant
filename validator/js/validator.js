@@ -1,0 +1,849 @@
+/**
+ * PRD Validator - Scoring Logic
+ *
+ * Scoring Dimensions:
+ * 1. Document Structure (25 pts) - Section presence, organization, formatting
+ * 2. Requirements Clarity (30 pts) - Precision, completeness, consistency
+ * 3. User Focus (25 pts) - Personas, problem statement, alignment
+ * 4. Technical Quality (20 pts) - Non-functional reqs, acceptance criteria, traceability
+ */
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const REQUIRED_SECTIONS = [
+  { pattern: /^#+\s*(purpose|introduction|overview|objective)/im, name: 'Purpose/Introduction', weight: 2 },
+  { pattern: /^#+\s*(user|persona|audience|customer)/im, name: 'User Personas', weight: 2 },
+  { pattern: /^#+\s*(feature|requirement|functional)/im, name: 'Features/Requirements', weight: 2 },
+  { pattern: /^#+\s*(success|metric|kpi|measure)/im, name: 'Success Metrics', weight: 2 },
+  { pattern: /^#+\s*(scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 1 },
+  { pattern: /^#+\s*(timeline|milestone|schedule|roadmap)/im, name: 'Timeline/Milestones', weight: 1 },
+  { pattern: /^#+\s*(risk|dependency|dependencies|assumption)/im, name: 'Risks/Dependencies', weight: 1 },
+  { pattern: /^#+\s*(constraint|limitation)/im, name: 'Constraints', weight: 1 }
+];
+
+const VAGUE_QUALIFIERS = [
+  'easy to use', 'user-friendly', 'fast', 'quick', 'responsive',
+  'good performance', 'high quality', 'scalable', 'flexible',
+  'intuitive', 'seamless', 'robust', 'efficient', 'optimal',
+  'minimal', 'sufficient', 'reasonable', 'appropriate', 'adequate'
+];
+
+// Enhanced vague language detection - categorized for better feedback
+const VAGUE_LANGUAGE = {
+  qualifiers: [
+    'easy to use', 'user-friendly', 'fast', 'quick', 'responsive',
+    'good performance', 'high quality', 'scalable', 'flexible',
+    'intuitive', 'seamless', 'robust', 'efficient', 'optimal',
+    'minimal', 'sufficient', 'reasonable', 'appropriate', 'adequate'
+  ],
+  quantifiers: [
+    'many', 'several', 'some', 'few', 'various', 'numerous', 'multiple',
+    'a lot', 'a number of', 'a bit', 'a little'
+  ],
+  temporal: [
+    'soon', 'quickly', 'rapidly', 'promptly', 'eventually', 'in the future',
+    'as soon as possible', 'asap', 'shortly', 'in due time'
+  ],
+  weaselWords: [
+    'should be able to', 'might', 'could potentially', 'may', 'possibly',
+    'generally', 'typically', 'usually', 'often', 'sometimes'
+  ],
+  marketingFluff: [
+    'best-in-class', 'world-class', 'cutting-edge', 'next-generation',
+    'state-of-the-art', 'industry-leading', 'innovative', 'revolutionary'
+  ],
+  unquantifiedComparatives: [
+    'better', 'faster', 'more efficient', 'improved', 'enhanced',
+    'easier', 'simpler', 'cheaper', 'superior', 'optimized'
+  ]
+};
+
+// Prioritization detection patterns
+const PRIORITIZATION_PATTERNS = {
+  // MoSCoW requires the full phrase with "have" to avoid false positives
+  moscow: /\b(must have|should have|could have|won't have|must-have|should-have|could-have|won't-have)\b/gi,
+  pLevel: /\b(p0|p1|p2|p3|priority\s*[0-3]|priority:\s*(high|medium|low|critical))\b/gi,
+  numbered: /\b(priority|pri|importance):\s*\d/gi,
+  tiered: /\b(tier\s*[1-3]|phase\s*[1-3]|wave\s*[1-3]|mvp|v1|v2)\b/gi,
+  section: /^#+\s*(priority|priorities|prioritization)/im
+};
+
+// Customer evidence detection patterns
+const CUSTOMER_EVIDENCE_PATTERNS = {
+  research: /\b(user research|customer research|user interview|customer interview|usability test|user study|survey result|focus group)\b/gi,
+  data: /\b(data shows|analytics indicate|metrics show|we found that|research indicates|\d+%\s+of\s+(users|customers))\b/gi,
+  quotes: /"[^"]{10,}"|\u201c[^\u201d]{10,}\u201d/g,
+  feedback: /\b(customer feedback|user feedback|nps|csat|support ticket|feature request)\b/gi,
+  validation: /\b(validated|tested with|confirmed by|based on feedback from)\b/gi
+};
+
+// Scope boundary detection patterns
+const SCOPE_PATTERNS = {
+  inScope: /\b(in.scope|included|within scope|we will)\b/gi,
+  outOfScope: /\b(out.of.scope|not included|excluded|we will not|won't|outside scope|future consideration|not in v1|post.mvp|phase 2)\b/gi,
+  scopeSection: /^#+\s*(scope|boundaries)/im
+};
+
+const USER_STORY_PATTERN = /as\s+a[n]?\s+[\w\s]+,?\s+i\s+want/gi;
+const ACCEPTANCE_CRITERIA_PATTERN = /given\s+.+when\s+.+then\s+/gi;
+const MEASURABLE_PATTERN = /\d+\s*(ms|millisecond|second|minute|hour|%|percent|\$|dollar|user|request|transaction)/gi;
+
+// ============================================================================
+// Section Detection
+// ============================================================================
+
+/**
+ * Detect which required sections are present in the document
+ * @param {string} text - PRD content
+ * @returns {Object} Sections found and missing
+ */
+export function detectSections(text) {
+  const found = [];
+  const missing = [];
+
+  for (const section of REQUIRED_SECTIONS) {
+    if (section.pattern.test(text)) {
+      found.push({ name: section.name, weight: section.weight });
+    } else {
+      missing.push({ name: section.name, weight: section.weight });
+    }
+  }
+
+  return { found, missing };
+}
+
+/**
+ * Score document structure (25 pts max)
+ * @param {string} text - PRD content
+ * @returns {Object} Score result with issues and strengths
+ */
+export function scoreDocumentStructure(text) {
+  const issues = [];
+  const strengths = [];
+  let score = 0;
+  const maxScore = 25;
+
+  // Core structural elements (0-12 pts)
+  const sections = detectSections(text);
+  const sectionScore = sections.found.reduce((sum, s) => sum + s.weight, 0);
+  score += sectionScore;
+
+  if (sections.found.length >= 6) {
+    strengths.push(`${sections.found.length} core sections present`);
+  }
+  sections.missing.forEach(s => {
+    issues.push(`Missing section: ${s.name}`);
+  });
+
+  // Document organization (0-7 pts) - check heading hierarchy
+  const headings = text.match(/^#+\s+.+$/gm) || [];
+  const hasH1 = headings.some(h => h.startsWith('# '));
+  const hasH2 = headings.some(h => h.startsWith('## '));
+
+  if (hasH1 && hasH2) {
+    score += 4;
+    strengths.push('Good heading hierarchy');
+  } else if (headings.length > 0) {
+    score += 2;
+  } else {
+    issues.push('No clear heading structure');
+  }
+
+  // Check for logical flow (purpose before features)
+  const purposeIndex = text.search(/^#+\s*(purpose|introduction|overview)/im);
+  const featuresIndex = text.search(/^#+\s*(feature|requirement)/im);
+  if (purposeIndex >= 0 && featuresIndex >= 0 && purposeIndex < featuresIndex) {
+    score += 3;
+    strengths.push('Logical document flow (context before requirements)');
+  }
+
+  // Formatting consistency (0-4 pts) - reduced from 6 to make room for scope
+  const bulletTypes = new Set();
+  if (text.includes('- ')) bulletTypes.add('dash');
+  if (text.includes('* ')) bulletTypes.add('asterisk');
+  if (/^\d+\.\s/m.test(text)) bulletTypes.add('numbered');
+
+  if (bulletTypes.size <= 2 && text.length > 200) {
+    score += 2;
+    strengths.push('Consistent formatting');
+  } else if (bulletTypes.size > 2) {
+    score += 1;
+    issues.push('Inconsistent bullet point formatting');
+  }
+
+  // Check for tables (structured data)
+  if (/\|.+\|/.test(text)) {
+    score += 2;
+    strengths.push('Uses tables for structured information');
+  }
+
+  // Scope boundaries (0-2 pts bonus) - NEW
+  const scopeBoundaries = detectScopeBoundaries(text);
+  if (scopeBoundaries.hasBothBoundaries) {
+    score += 2;
+    strengths.push('Clear scope boundaries with explicit in-scope and out-of-scope definitions');
+  } else if (scopeBoundaries.hasOutOfScope) {
+    score += 1;
+    issues.push('Add explicit "In Scope" items to complement out-of-scope definitions');
+  } else if (scopeBoundaries.hasScopeSection) {
+    issues.push('Scope section found but missing explicit "Out of Scope" items - define what you\'re NOT building');
+  }
+
+  return {
+    score: Math.min(score, maxScore),
+    maxScore,
+    issues,
+    strengths,
+    sections,
+    scopeBoundaries
+  };
+}
+
+// ============================================================================
+// Requirements Clarity Detection
+// ============================================================================
+
+/**
+ * Detect vague qualifiers in text
+ * @param {string} text - Text to analyze
+ * @returns {string[]} List of vague qualifiers found
+ */
+export function detectVagueQualifiers(text) {
+  const found = [];
+  const lowerText = text.toLowerCase();
+
+  for (const qualifier of VAGUE_QUALIFIERS) {
+    if (lowerText.includes(qualifier)) {
+      found.push(qualifier);
+    }
+  }
+
+  return found;
+}
+
+/**
+ * Detect vague language across all categories
+ * @param {string} text - Text to analyze
+ * @returns {Object} Categorized vague language findings
+ */
+export function detectVagueLanguage(text) {
+  const lowerText = text.toLowerCase();
+  const result = {
+    qualifiers: [],
+    quantifiers: [],
+    temporal: [],
+    weaselWords: [],
+    marketingFluff: [],
+    unquantifiedComparatives: [],
+    totalCount: 0
+  };
+
+  // Check each category
+  for (const term of VAGUE_LANGUAGE.qualifiers) {
+    if (lowerText.includes(term.toLowerCase())) {
+      result.qualifiers.push(term);
+    }
+  }
+
+  for (const term of VAGUE_LANGUAGE.quantifiers) {
+    if (lowerText.includes(term.toLowerCase())) {
+      result.quantifiers.push(term);
+    }
+  }
+
+  for (const term of VAGUE_LANGUAGE.temporal) {
+    if (lowerText.includes(term.toLowerCase())) {
+      result.temporal.push(term);
+    }
+  }
+
+  for (const term of VAGUE_LANGUAGE.weaselWords) {
+    if (lowerText.includes(term.toLowerCase())) {
+      result.weaselWords.push(term);
+    }
+  }
+
+  for (const term of VAGUE_LANGUAGE.marketingFluff) {
+    if (lowerText.includes(term.toLowerCase())) {
+      result.marketingFluff.push(term);
+    }
+  }
+
+  for (const term of VAGUE_LANGUAGE.unquantifiedComparatives) {
+    if (lowerText.includes(term.toLowerCase())) {
+      result.unquantifiedComparatives.push(term);
+    }
+  }
+
+  result.totalCount =
+    result.qualifiers.length +
+    result.quantifiers.length +
+    result.temporal.length +
+    result.weaselWords.length +
+    result.marketingFluff.length +
+    result.unquantifiedComparatives.length;
+
+  return result;
+}
+
+/**
+ * Detect prioritization signals in text
+ * @param {string} text - Text to analyze
+ * @returns {Object} Prioritization detection results
+ */
+export function detectPrioritization(text) {
+  const moscowMatches = text.match(PRIORITIZATION_PATTERNS.moscow) || [];
+  const pLevelMatches = text.match(PRIORITIZATION_PATTERNS.pLevel) || [];
+  const numberedMatches = text.match(PRIORITIZATION_PATTERNS.numbered) || [];
+  const tieredMatches = text.match(PRIORITIZATION_PATTERNS.tiered) || [];
+  const hasPrioritySection = PRIORITIZATION_PATTERNS.section.test(text);
+
+  return {
+    hasMoscow: moscowMatches.length > 0,
+    moscowCount: moscowMatches.length,
+    hasPLevel: pLevelMatches.length > 0,
+    pLevelCount: pLevelMatches.length,
+    hasNumbered: numberedMatches.length > 0,
+    hasTiered: tieredMatches.length > 0,
+    hasPrioritySection,
+    totalSignals: moscowMatches.length + pLevelMatches.length + numberedMatches.length + tieredMatches.length
+  };
+}
+
+/**
+ * Detect customer evidence in text
+ * @param {string} text - Text to analyze
+ * @returns {Object} Customer evidence detection results
+ */
+export function detectCustomerEvidence(text) {
+  const researchMatches = text.match(CUSTOMER_EVIDENCE_PATTERNS.research) || [];
+  const dataMatches = text.match(CUSTOMER_EVIDENCE_PATTERNS.data) || [];
+  const quoteMatches = text.match(CUSTOMER_EVIDENCE_PATTERNS.quotes) || [];
+  const feedbackMatches = text.match(CUSTOMER_EVIDENCE_PATTERNS.feedback) || [];
+  const validationMatches = text.match(CUSTOMER_EVIDENCE_PATTERNS.validation) || [];
+
+  const hasResearch = researchMatches.length > 0;
+  const hasData = dataMatches.length > 0;
+  const hasQuotes = quoteMatches.length > 0;
+  const hasFeedback = feedbackMatches.length > 0;
+  const hasValidation = validationMatches.length > 0;
+
+  // Count how many evidence types are present
+  let evidenceTypes = 0;
+  if (hasResearch) evidenceTypes++;
+  if (hasData) evidenceTypes++;
+  if (hasQuotes) evidenceTypes++;
+  if (hasFeedback) evidenceTypes++;
+  if (hasValidation) evidenceTypes++;
+
+  return {
+    hasResearch,
+    researchTerms: researchMatches.map(m => m.toLowerCase()),
+    hasData,
+    hasQuotes,
+    quoteCount: quoteMatches.length,
+    hasFeedback,
+    hasValidation,
+    evidenceTypes
+  };
+}
+
+/**
+ * Detect scope boundary definitions in text
+ * @param {string} text - Text to analyze
+ * @returns {Object} Scope boundary detection results
+ */
+export function detectScopeBoundaries(text) {
+  const inScopeMatches = text.match(SCOPE_PATTERNS.inScope) || [];
+  const outOfScopeMatches = text.match(SCOPE_PATTERNS.outOfScope) || [];
+  const hasScopeSection = SCOPE_PATTERNS.scopeSection.test(text);
+
+  const hasInScope = inScopeMatches.length > 0;
+  const hasOutOfScope = outOfScopeMatches.length > 0;
+
+  return {
+    hasInScope,
+    hasOutOfScope,
+    hasBothBoundaries: hasInScope && hasOutOfScope,
+    hasScopeSection
+  };
+}
+
+/**
+ * Count user stories in text
+ * @param {string} text - Text to analyze
+ * @returns {number} Number of user stories found
+ */
+export function countUserStories(text) {
+  const matches = text.match(USER_STORY_PATTERN) || [];
+  return matches.length;
+}
+
+/**
+ * Count acceptance criteria in text
+ * @param {string} text - Text to analyze
+ * @returns {number} Number of acceptance criteria found
+ */
+export function countAcceptanceCriteria(text) {
+  const matches = text.match(ACCEPTANCE_CRITERIA_PATTERN) || [];
+  return matches.length;
+}
+
+/**
+ * Count measurable requirements in text
+ * @param {string} text - Text to analyze
+ * @returns {number} Number of measurable requirements found
+ */
+export function countMeasurableRequirements(text) {
+  const matches = text.match(MEASURABLE_PATTERN) || [];
+  return matches.length;
+}
+
+/**
+ * Score requirements clarity (30 pts max)
+ * Updated allocation: Precision 8, Completeness 8, Measurability 8, Prioritization 6
+ * @param {string} text - PRD content
+ * @returns {Object} Score result with issues and strengths
+ */
+export function scoreRequirementsClarity(text) {
+  const issues = [];
+  const strengths = [];
+  let score = 0;
+  const maxScore = 30;
+
+  // Requirement precision (0-8 pts) - penalize vague language across all categories
+  const vagueQualifiers = detectVagueQualifiers(text);
+  const vagueLanguage = detectVagueLanguage(text);
+  const totalVagueCount = vagueLanguage.totalCount;
+
+  // Harsher penalties for marketing fluff and weasel words
+  const severeCount = vagueLanguage.marketingFluff.length + vagueLanguage.weaselWords.length;
+
+  if (totalVagueCount === 0) {
+    score += 8;
+    strengths.push('No vague language detected');
+  } else if (severeCount > 0) {
+    // Marketing fluff or weasel words present - harsh penalty
+    score += Math.max(0, 4 - severeCount);
+    const examples = [...vagueLanguage.marketingFluff, ...vagueLanguage.weaselWords].slice(0, 3);
+    issues.push(`Found problematic language: ${examples.join(', ')}`);
+  } else if (totalVagueCount <= 3) {
+    score += 6;
+    const examples = [...vagueLanguage.qualifiers, ...vagueLanguage.quantifiers, ...vagueLanguage.temporal].slice(0, 2);
+    issues.push(`Found vague terms: ${examples.join(', ')}`);
+  } else if (totalVagueCount <= 6) {
+    score += 4;
+    issues.push(`Multiple vague terms (${totalVagueCount} found)`);
+  } else {
+    score += 2;
+    issues.push(`Many vague terms (${totalVagueCount} found) - add specific, measurable criteria`);
+  }
+
+  // Completeness of details (0-8 pts) - user stories with context
+  const userStoryCount = countUserStories(text);
+
+  if (userStoryCount >= 3) {
+    score += 8;
+    strengths.push(`${userStoryCount} user stories with proper format`);
+  } else if (userStoryCount >= 1) {
+    score += 5;
+    strengths.push(`${userStoryCount} user story found`);
+  } else {
+    // Check for alternative requirement formats
+    const requirementPatterns = text.match(/\b(shall|must|should|will)\b/gi) || [];
+    if (requirementPatterns.length >= 5) {
+      score += 3;
+      issues.push('Consider using user story format (As a..., I want..., So that...)');
+    } else {
+      issues.push('No user stories found - use format: "As a [user], I want [feature] so that [benefit]"');
+    }
+  }
+
+  // Measurable criteria (0-8 pts)
+  const measurableCount = countMeasurableRequirements(text);
+
+  if (measurableCount >= 5) {
+    score += 8;
+    strengths.push(`${measurableCount} measurable criteria found`);
+  } else if (measurableCount >= 2) {
+    score += 5;
+    strengths.push(`${measurableCount} measurable criteria found`);
+  } else if (measurableCount >= 1) {
+    score += 2;
+    issues.push('Add more measurable criteria (e.g., response times, percentages, counts)');
+  } else {
+    issues.push('No measurable criteria - requirements should include specific numbers');
+  }
+
+  // Prioritization (0-6 pts) - NEW
+  const prioritization = detectPrioritization(text);
+
+  if (prioritization.hasPrioritySection && (prioritization.hasMoscow || prioritization.hasPLevel)) {
+    score += 6;
+    const method = prioritization.hasMoscow ? 'MoSCoW' : 'P-level';
+    strengths.push(`Uses ${method} prioritization with dedicated section`);
+  } else if (prioritization.hasMoscow || prioritization.hasPLevel) {
+    score += 4;
+    const method = prioritization.hasMoscow ? 'MoSCoW' : 'P-level';
+    strengths.push(`Uses ${method} prioritization`);
+  } else if (prioritization.hasTiered || prioritization.totalSignals > 0) {
+    score += 2;
+    issues.push('Consider using explicit prioritization (MoSCoW: Must/Should/Could/Won\'t or P0/P1/P2)');
+  } else {
+    issues.push('No feature prioritization found - use MoSCoW or P0/P1/P2 labels');
+  }
+
+  return {
+    score: Math.min(score, maxScore),
+    maxScore,
+    issues,
+    strengths,
+    vagueQualifiers,
+    vagueLanguage,
+    userStoryCount,
+    measurableCount,
+    prioritization
+  };
+}
+
+// ============================================================================
+// User Focus Detection
+// ============================================================================
+
+/**
+ * Detect user persona indicators in text
+ * @param {string} text - Text to analyze
+ * @returns {Object} Persona detection results
+ */
+export function detectUserPersonas(text) {
+  const personaIndicators = [];
+
+  // Check for persona section
+  const hasPersonaSection = /^#+\s*(user|persona|audience|customer)/im.test(text);
+  if (hasPersonaSection) {
+    personaIndicators.push('Dedicated persona section');
+  }
+
+  // Check for specific user type mentions
+  const userTypes = text.match(/\b(admin|administrator|end.?user|power.?user|developer|manager|customer|stakeholder|buyer|seller)\b/gi) || [];
+  const uniqueUserTypes = [...new Set(userTypes.map(u => u.toLowerCase()))];
+
+  // Check for pain point language
+  const hasPainPoints = /\b(pain.?point|problem|challenge|frustrat|struggle|difficult|issue)\b/i.test(text);
+  if (hasPainPoints) {
+    personaIndicators.push('Pain points addressed');
+  }
+
+  // Check for user journey/scenario language
+  const hasScenarios = /\b(scenario|use.?case|user.?journey|workflow|user.?flow)\b/i.test(text);
+  if (hasScenarios) {
+    personaIndicators.push('User scenarios described');
+  }
+
+  return {
+    hasPersonaSection,
+    userTypes: uniqueUserTypes,
+    hasPainPoints,
+    hasScenarios,
+    indicators: personaIndicators
+  };
+}
+
+/**
+ * Detect problem statement in text
+ * @param {string} text - Text to analyze
+ * @returns {Object} Problem statement detection results
+ */
+export function detectProblemStatement(text) {
+  const indicators = [];
+
+  // Check for problem/goal statement section
+  const hasProblemSection = /^#+\s*(problem|goal|objective|why|motivation)/im.test(text);
+  if (hasProblemSection) {
+    indicators.push('Dedicated problem statement section');
+  }
+
+  // Check for problem framing language
+  const hasProblemLanguage = /\b(problem|challenge|current.?state|today|existing|pain)\b/i.test(text);
+  if (hasProblemLanguage) {
+    indicators.push('Problem framing language');
+  }
+
+  // Check for value proposition language
+  const hasValueProp = /\b(value|benefit|outcome|result|enable|empower|improve|reduce|increase)\b/i.test(text);
+  if (hasValueProp) {
+    indicators.push('Value proposition language');
+  }
+
+  // Check for "why" explanations
+  const hasWhyExplanation = /\b(so\s+that|in\s+order\s+to|because|this\s+will|enabling)\b/i.test(text);
+  if (hasWhyExplanation) {
+    indicators.push('Explains "why" behind requirements');
+  }
+
+  return {
+    hasProblemSection,
+    hasProblemLanguage,
+    hasValueProp,
+    hasWhyExplanation,
+    indicators
+  };
+}
+
+/**
+ * Score user focus (25 pts max)
+ * Updated allocation: Personas 7, Problem Statement 7, Alignment 6, Customer Evidence 5
+ * @param {string} text - PRD content
+ * @returns {Object} Score result with issues and strengths
+ */
+export function scoreUserFocus(text) {
+  const issues = [];
+  const strengths = [];
+  let score = 0;
+  const maxScore = 25;
+
+  // User persona definition (0-7 pts)
+  const personas = detectUserPersonas(text);
+
+  if (personas.hasPersonaSection && personas.userTypes.length >= 2) {
+    score += 7;
+    strengths.push(`${personas.userTypes.length} user types identified with dedicated section`);
+  } else if (personas.hasPersonaSection || personas.userTypes.length >= 2) {
+    score += 4;
+    if (personas.userTypes.length > 0) {
+      strengths.push(`User types identified: ${personas.userTypes.slice(0, 3).join(', ')}`);
+    }
+  } else if (personas.userTypes.length >= 1) {
+    score += 2;
+    issues.push('Add dedicated User Personas section with detailed descriptions');
+  } else {
+    issues.push('No user personas found - identify who will use this product');
+  }
+
+  // Pain points (bonus within persona - now part of the 7 pts)
+  if (personas.hasPainPoints && score < 7) {
+    score += 1;
+    strengths.push('User pain points addressed');
+  }
+
+  // Problem statement (0-7 pts)
+  const problem = detectProblemStatement(text);
+
+  if (problem.hasProblemSection && problem.hasValueProp) {
+    score += 7;
+    strengths.push('Clear problem statement with value proposition');
+  } else if (problem.hasProblemLanguage && problem.hasValueProp) {
+    score += 4;
+    issues.push('Consider adding a dedicated Problem Statement section');
+  } else if (problem.hasProblemLanguage || problem.hasValueProp) {
+    score += 2;
+    issues.push('Strengthen the problem statement and value proposition');
+  } else {
+    issues.push('Missing problem statement - explain what problem this solves');
+  }
+
+  // Alignment between requirements and user needs (0-6 pts)
+  const userStoryCount = countUserStories(text);
+
+  if (userStoryCount >= 3 && problem.hasWhyExplanation) {
+    score += 6;
+    strengths.push('Requirements clearly linked to user needs');
+  } else if (userStoryCount >= 1 || problem.hasWhyExplanation) {
+    score += 3;
+    if (userStoryCount === 0) {
+      issues.push('Use user stories to connect features to user needs');
+    }
+  } else {
+    issues.push('Requirements should trace back to user needs');
+  }
+
+  // Customer evidence (0-5 pts) - NEW
+  const customerEvidence = detectCustomerEvidence(text);
+
+  if (customerEvidence.evidenceTypes >= 3) {
+    score += 5;
+    const types = [];
+    if (customerEvidence.hasResearch) types.push('research');
+    if (customerEvidence.hasData) types.push('data');
+    if (customerEvidence.hasQuotes) types.push('quotes');
+    if (customerEvidence.hasFeedback) types.push('feedback');
+    strengths.push(`Customer evidence: ${types.join(', ')}`);
+  } else if (customerEvidence.evidenceTypes >= 2) {
+    score += 3;
+    strengths.push('Some customer evidence present');
+  } else if (customerEvidence.evidenceTypes >= 1) {
+    score += 1;
+    issues.push('Add more customer evidence (research, data, quotes, feedback)');
+  } else {
+    issues.push('No customer evidence found - include user research, quotes, or usage data');
+  }
+
+  return {
+    score: Math.min(score, maxScore),
+    maxScore,
+    issues,
+    strengths,
+    personas,
+    problem,
+    customerEvidence
+  };
+}
+
+// ============================================================================
+// Technical Quality Detection
+// ============================================================================
+
+/**
+ * Detect non-functional requirements in text
+ * @param {string} text - Text to analyze
+ * @returns {Object} Non-functional requirements detection results
+ */
+export function detectNonFunctionalRequirements(text) {
+  const categories = [];
+
+  // Performance requirements
+  if (/\b(performance|latency|response.?time|throughput|speed)\b/i.test(text)) {
+    categories.push('performance');
+  }
+
+  // Reliability requirements
+  if (/\b(reliability|uptime|availability|recovery|backup|failover)\b/i.test(text)) {
+    categories.push('reliability');
+  }
+
+  // Security requirements
+  if (/\b(security|authentication|authorization|encrypt|privacy|access.?control)\b/i.test(text)) {
+    categories.push('security');
+  }
+
+  // Scalability requirements
+  if (/\b(scalab|capacity|concurrent|load|volume)\b/i.test(text)) {
+    categories.push('scalability');
+  }
+
+  // Usability/Accessibility requirements
+  if (/\b(usability|accessibility|wcag|508|a11y)\b/i.test(text)) {
+    categories.push('usability');
+  }
+
+  // Compliance requirements
+  if (/\b(compliance|regulatory|gdpr|hipaa|sox|pci)\b/i.test(text)) {
+    categories.push('compliance');
+  }
+
+  return {
+    categories,
+    count: categories.length,
+    hasNFRSection: /^#+\s*(non.?functional|quality|nfr|performance|security)/im.test(text)
+  };
+}
+
+/**
+ * Score technical quality (20 pts max)
+ * @param {string} text - PRD content
+ * @returns {Object} Score result with issues and strengths
+ */
+export function scoreTechnicalQuality(text) {
+  const issues = [];
+  const strengths = [];
+  let score = 0;
+  const maxScore = 20;
+
+  // Non-functional requirements (0-7 pts)
+  const nfr = detectNonFunctionalRequirements(text);
+
+  if (nfr.count >= 4 && nfr.hasNFRSection) {
+    score += 7;
+    strengths.push(`${nfr.count} NFR categories addressed in dedicated section`);
+  } else if (nfr.count >= 3) {
+    score += 5;
+    strengths.push(`${nfr.count} NFR categories mentioned: ${nfr.categories.join(', ')}`);
+  } else if (nfr.count >= 1) {
+    score += 2;
+    issues.push('Add more non-functional requirements (performance, security, reliability)');
+  } else {
+    issues.push('Missing non-functional requirements - define quality attributes');
+  }
+
+  // Acceptance criteria (0-7 pts)
+  const acceptanceCriteriaCount = countAcceptanceCriteria(text);
+
+  if (acceptanceCriteriaCount >= 3) {
+    score += 7;
+    strengths.push(`${acceptanceCriteriaCount} acceptance criteria in Given/When/Then format`);
+  } else if (acceptanceCriteriaCount >= 1) {
+    score += 4;
+    strengths.push(`${acceptanceCriteriaCount} acceptance criteria found`);
+  } else {
+    // Check for alternative acceptance criteria formats
+    const hasCheckboxes = /\[[ x]\]/i.test(text);
+    if (hasCheckboxes) {
+      score += 2;
+      issues.push('Consider using Given/When/Then format for acceptance criteria');
+    } else {
+      issues.push('No acceptance criteria - add testable verification conditions');
+    }
+  }
+
+  // Dependencies and constraints (0-6 pts)
+  const hasDependencies = /^#+\s*(depend|risk|assumption|constraint)/im.test(text);
+  const mentionsDependencies = /\b(depends.?on|requires|prerequisite|blocker|assumption)\b/i.test(text);
+
+  if (hasDependencies && mentionsDependencies) {
+    score += 6;
+    strengths.push('Dependencies and constraints documented');
+  } else if (hasDependencies || mentionsDependencies) {
+    score += 3;
+    issues.push('Document all dependencies, assumptions, and constraints');
+  } else {
+    issues.push('Missing dependencies/constraints section');
+  }
+
+  return {
+    score: Math.min(score, maxScore),
+    maxScore,
+    issues,
+    strengths,
+    nfr,
+    acceptanceCriteriaCount
+  };
+}
+
+// ============================================================================
+// Main Validation Function
+// ============================================================================
+
+/**
+ * Validate a PRD and return comprehensive scoring results
+ * @param {string} text - PRD content
+ * @returns {Object} Complete validation results
+ */
+export function validatePRD(text) {
+  if (!text || typeof text !== 'string') {
+    return {
+      totalScore: 0,
+      structure: { score: 0, maxScore: 25, issues: ['No content to validate'], strengths: [] },
+      clarity: { score: 0, maxScore: 30, issues: ['No content to validate'], strengths: [] },
+      userFocus: { score: 0, maxScore: 25, issues: ['No content to validate'], strengths: [] },
+      technical: { score: 0, maxScore: 20, issues: ['No content to validate'], strengths: [] }
+    };
+  }
+
+  const structure = scoreDocumentStructure(text);
+  const clarity = scoreRequirementsClarity(text);
+  const userFocus = scoreUserFocus(text);
+  const technical = scoreTechnicalQuality(text);
+
+  const totalScore = structure.score + clarity.score + userFocus.score + technical.score;
+
+  return {
+    totalScore,
+    structure,
+    clarity,
+    userFocus,
+    technical,
+    vagueQualifiers: clarity.vagueQualifiers
+  };
+}

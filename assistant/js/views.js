@@ -47,12 +47,12 @@ export async function renderProjectsList() {
         ` : `
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 ${projects.map(project => {
-                    // Check if all phases are complete
-                    const isComplete = project.phases &&
+    // Check if all phases are complete
+    const isComplete = project.phases &&
                         project.phases[1]?.completed &&
                         project.phases[2]?.completed &&
                         project.phases[3]?.completed;
-                    return `
+    return `
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer" data-project-id="${project.id}">
                         <div class="p-6">
                             <div class="flex items-start justify-between mb-3">

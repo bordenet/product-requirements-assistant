@@ -1,0 +1,90 @@
+{
+  "documentStructure": [
+    {
+      "name": "complete-structure",
+      "input": "# Purpose\nThis product solves X\n\n## User Personas\nAs a developer, I want...\n\n## Features\nFeature 1\n\n## Success Metrics\n50% improvement\n\n## Scope\nIn scope: X\n\n## Timeline\nQ1 2026\n\n## Risks\nDependency on team X\n\n## Constraints\nBudget limited",
+      "expected": {
+        "minScore": 20,
+        "sectionsFound": 8
+      }
+    },
+    {
+      "name": "minimal-structure",
+      "input": "# My PRD\n\nSome content here.",
+      "expected": {
+        "minScore": 0,
+        "sectionsFound": 0
+      }
+    }
+  ],
+  "requirementsClarity": [
+    {
+      "name": "user-story-format",
+      "input": "As a user, I want to save my progress so that I can continue later.",
+      "expected": {
+        "minScore": 6,
+        "userStoriesFound": 1
+      }
+    },
+    {
+      "name": "vague-qualifiers",
+      "input": "The system needs to be fast, easy to use, and scalable.",
+      "expected": {
+        "maxScore": 6,
+        "vagueQualifiersFound": 3
+      }
+    },
+    {
+      "name": "measurable-requirements",
+      "input": "Response time must be under 200ms. Support 10000 concurrent users. 99.9% uptime.",
+      "expected": {
+        "minScore": 8,
+        "measurableFound": 3
+      }
+    }
+  ],
+  "userFocus": [
+    {
+      "name": "detailed-personas",
+      "input": "## User Personas\n\n### Admin User\nAdministrators need to manage user accounts and permissions.\n\n### End User\nEnd users interact with the product daily for their workflows.",
+      "expected": {
+        "minScore": 8,
+        "personasFound": 2
+      }
+    },
+    {
+      "name": "problem-statement",
+      "input": "## Problem Statement\n\nUsers currently struggle with manual data entry, wasting 10 hours per week. This solution will reduce that to 1 hour.",
+      "expected": {
+        "minScore": 8,
+        "hasProblemStatement": true
+      }
+    }
+  ],
+  "technicalQuality": [
+    {
+      "name": "acceptance-criteria",
+      "input": "Given a user is logged in, When they click save, Then their data is persisted within 500ms.",
+      "expected": {
+        "minScore": 4,
+        "acceptanceCriteriaFound": 1
+      }
+    },
+    {
+      "name": "nfr-requirements",
+      "input": "## Non-Functional Requirements\n\n- Performance: 99th percentile latency < 100ms\n- Security: All data encrypted at rest\n- Reliability: 99.95% uptime SLA",
+      "expected": {
+        "minScore": 5,
+        "nfrCategoriesFound": 3
+      }
+    },
+    {
+      "name": "dependencies-documented",
+      "input": "## Dependencies\n\n- Depends on Auth Service v2.0\n- Requires database migration\n\n## Risks\n\n- Team availability during Q4",
+      "expected": {
+        "minScore": 4,
+        "hasDependencies": true
+      }
+    }
+  ]
+}
