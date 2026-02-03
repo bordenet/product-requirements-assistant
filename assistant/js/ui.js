@@ -5,6 +5,8 @@
  * @module ui
  */
 
+import { EXPORT_FORMATS, convertToFormat, getFormat } from './exporters.js';
+
 /**
  * Show a toast notification
  * @module ui
@@ -302,16 +304,25 @@ export function showDocumentPreviewModal(markdown, title = 'Your Document is Rea
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
                     💡 <strong>Tip:</strong> Click "Copy Formatted Text", then paste into Word or Google Docs — the formatting transfers automatically.
                 </p>
-                <div class="flex flex-wrap justify-end gap-3">
-                    <button id="copy-formatted-btn" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        📋 Copy Formatted Text
-                    </button>
-                    <button id="download-md-btn" class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                        📄 Download .md File
-                    </button>
-                    <button id="close-modal-btn" class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                        Close
-                    </button>
+                <div class="flex flex-wrap justify-between items-center gap-3">
+                    <div class="flex flex-wrap gap-2">
+                        ${EXPORT_FORMATS.filter(f => f.id !== 'markdown').map(format => `
+                            <button data-export-format="${format.id}" class="export-format-btn px-3 py-2 text-sm bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors" title="${format.description}">
+                                ${format.icon} Copy for ${format.name}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button id="copy-formatted-btn" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            📋 Copy Formatted Text
+                        </button>
+                        <button id="download-md-btn" class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                            📄 Download .md File
+                        </button>
+                        <button id="close-modal-btn" class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -371,6 +382,23 @@ export function showDocumentPreviewModal(markdown, title = 'Your Document is Rea
     if (onDownload) {
       onDownload();
     }
+  });
+
+  // Export format buttons (Confluence, Notion, etc.)
+  modal.querySelectorAll('.export-format-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const formatId = btn.dataset.exportFormat;
+      const format = getFormat(formatId);
+      if (!format) return;
+
+      try {
+        const converted = convertToFormat(markdown, formatId);
+        await copyToClipboard(converted);
+        showToast(`${format.icon} Copied as ${format.name}! Paste into ${format.name}.`, 'success');
+      } catch {
+        showToast(`Failed to copy ${format.name} format.`, 'error');
+      }
+    });
   });
 
   // Close on background click
