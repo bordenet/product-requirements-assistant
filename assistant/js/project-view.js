@@ -64,29 +64,18 @@ export async function renderProjectView(projectId) {
 
   const container = document.getElementById('app-container');
   container.innerHTML = `
-        <div class="mb-6">
-            <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center mb-4">
+        <div class="mb-6 flex items-center justify-between">
+            <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
                 Back to PRDs
             </button>
-
-            <div class="flex items-start justify-between">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        ${escapeHtml(project.title)}
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400 line-clamp-3">
-                        ${escapeHtml(project.problems)}
-                    </p>
-                </div>
-                ${project.phases?.[3]?.completed ? `
+            ${project.phases?.[3]?.completed ? `
                 <button id="export-prd-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                     📄 Preview & Copy
                 </button>
-                ` : ''}
-            </div>
+            ` : ''}
         </div>
 
         <!-- Phase Tabs -->
