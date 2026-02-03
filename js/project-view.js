@@ -250,12 +250,18 @@ function renderPhaseContent(project, phase) {
                             <span class="mr-2">🎉</span> Your PRD is Complete!
                         </h4>
                         <p class="text-green-700 dark:text-green-400 mt-1">
-                            <strong>Next step:</strong> Copy this into Word or Google Docs so you can edit and share it.
+                            <strong>Next steps:</strong> Preview & copy, then validate your document.
                         </p>
                     </div>
-                    <button id="export-complete-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
-                        📄 Preview & Copy
-                    </button>
+                    <div class="flex gap-3 flex-wrap items-center">
+                        <button id="export-complete-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
+                            📄 Preview & Copy
+                        </button>
+                        <span class="text-gray-500 dark:text-gray-400">then</span>
+                        <a href="https://bordenet.github.io/prd-validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline font-medium text-lg">
+                            Validate & Score ↗
+                        </a>
+                    </div>
                 </div>
                 <!-- Expandable Help Section -->
                 <details class="mt-4">
@@ -264,13 +270,13 @@ function renderPhaseContent(project, phase) {
                     </summary>
                     <div class="mt-3 p-4 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300">
                         <ol class="list-decimal list-inside space-y-2">
-                            <li>Click <strong>"Preview & Copy"</strong> above to see your formatted document</li>
+                            <li>Click <strong>"Preview & Copy"</strong> to see your formatted document</li>
                             <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
-                            <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong></li>
-                            <li>Paste (Ctrl+V / ⌘V) — your headings and bullets will appear automatically</li>
+                            <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong> and paste</li>
+                            <li>Use <strong><a href="https://bordenet.github.io/prd-validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">PRD Validator</a></strong> to score and improve your document</li>
                         </ol>
                         <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
-                            💡 You can also download the raw file (.md format) if needed.
+                            💡 The validator provides instant feedback and AI-powered suggestions for improvement.
                         </p>
                     </div>
                 </details>
