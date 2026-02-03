@@ -488,37 +488,44 @@ function attachPhaseEventListeners(project, phase) {
     saveResponseBtn.addEventListener('click', async () => {
       const response = responseTextarea ? responseTextarea.value.trim() : '';
       if (response && response.length >= 3) {
-        // Generate prompt if it hasn't been generated yet
-        let prompt = project.phases?.[phase]?.prompt || '';
-        if (!prompt) {
-          prompt = await generatePromptForPhase(project, phase);
-        }
-        await updatePhase(project.id, phase, prompt, response);
+        try {
+          // Re-fetch project from storage to ensure we have fresh data (not stale closure)
+          const freshProject = await getProject(project.id);
 
-        // Auto-advance to next phase if not on final phase
-        if (phase < 3) {
-          showToast('Response saved! Moving to next phase...', 'success');
-          // Re-fetch the updated project and advance
-          const updatedProject = await getProject(project.id);
-          updatedProject.phase = phase + 1;
-          updatePhaseTabStyles(phase + 1);
-          // Add completion checkmark to the current phase tab
-          const currentPhaseTab = document.querySelector(`button.phase-tab[data-phase="${phase}"]`);
-          if (currentPhaseTab && !currentPhaseTab.querySelector('.text-green-500')) {
-            currentPhaseTab.insertAdjacentHTML('beforeend', '<span class="ml-2 text-green-500">✓</span>');
+          // Generate prompt if it hasn't been generated yet
+          let prompt = freshProject.phases?.[phase]?.prompt || '';
+          if (!prompt) {
+            prompt = await generatePromptForPhase(freshProject, phase);
           }
-          document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
-          attachPhaseEventListeners(updatedProject, phase + 1);
-        } else {
-          // Phase 3 complete - extract and update project title if changed
-          const extractedTitle = extractTitleFromMarkdown(response);
-          if (extractedTitle && extractedTitle !== project.title) {
-            await updateProject(project.id, { title: extractedTitle });
-            showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+          await updatePhase(project.id, phase, prompt, response);
+
+          // Auto-advance to next phase if not on final phase
+          if (phase < 3) {
+            showToast('Response saved! Moving to next phase...', 'success');
+            // Re-fetch the updated project and advance
+            const updatedProject = await getProject(project.id);
+            updatePhaseTabStyles(phase + 1);
+            // Add completion checkmark to the current phase tab
+            const currentPhaseTab = document.querySelector(`button.phase-tab[data-phase="${phase}"]`);
+            if (currentPhaseTab && !currentPhaseTab.querySelector('.text-green-500')) {
+              currentPhaseTab.insertAdjacentHTML('beforeend', '<span class="ml-2 text-green-500">✓</span>');
+            }
+            document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
+            attachPhaseEventListeners(updatedProject, phase + 1);
           } else {
-            showToast('Phase 3 complete! Your PRD is ready.', 'success');
+            // Phase 3 complete - extract and update project title if changed
+            const extractedTitle = extractTitleFromMarkdown(response);
+            if (extractedTitle && extractedTitle !== freshProject.title) {
+              await updateProject(project.id, { title: extractedTitle });
+              showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+            } else {
+              showToast('Phase 3 complete! Your PRD is ready.', 'success');
+            }
+            renderProjectView(project.id);
           }
-          renderProjectView(project.id);
+        } catch (error) {
+          console.error('Error saving response:', error);
+          showToast(`Failed to save response: ${error.message}`, 'error');
         }
       } else {
         showToast('Please enter at least 3 characters', 'warning');
