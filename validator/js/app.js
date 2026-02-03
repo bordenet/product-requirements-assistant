@@ -302,6 +302,15 @@ function initScoringMode() {
   }
 }
 
+function enableViewLLMPromptButton() {
+  if (btnViewLLMPrompt) {
+    btnViewLLMPrompt.classList.remove('bg-slate-300', 'dark:bg-slate-600', 'text-slate-500', 'dark:text-slate-400', 'cursor-not-allowed');
+    btnViewLLMPrompt.classList.add('bg-teal-600', 'hover:bg-teal-700', 'text-white');
+    btnViewLLMPrompt.disabled = false;
+    btnViewLLMPrompt.removeAttribute('aria-disabled');
+  }
+}
+
 function enableClaudeLLMButton() {
   if (btnOpenClaudeLLM) {
     btnOpenClaudeLLM.classList.remove('bg-slate-300', 'dark:bg-slate-600', 'text-slate-500', 'dark:text-slate-400', 'cursor-not-allowed', 'pointer-events-none');
@@ -320,6 +329,7 @@ function handleCopyLLMPrompt() {
   const prompt = generateLLMScoringPrompt(content);
   currentPrompt = { text: prompt, type: 'LLM Scoring' };
 
+  enableViewLLMPromptButton();
   enableClaudeLLMButton();
 
   copyToClipboard(prompt).then(success => {

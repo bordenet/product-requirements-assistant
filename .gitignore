@@ -79,3 +79,5 @@ docs/index.html
 docs/data/
 docs/*.html
 !docs/*.md
+ADOPT-PROMPT.md
+Agents.md.original
