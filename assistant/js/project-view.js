@@ -82,7 +82,10 @@ export async function renderProjectView(projectId) {
         <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex space-x-1">
                 ${[1, 2, 3].map(phase => {
-    const meta = getPhaseMetadata(phase);
+    const rawMeta = getPhaseMetadata(phase);
+    // Defensive fallback for tab icons
+    const iconMap = { 1: '📝', 2: '🔍', 3: '✨' };
+    const icon = rawMeta?.icon || iconMap[phase] || '📋';
     const isActive = project.phase === phase;
     const isCompleted = project.phases?.[phase]?.completed;
 
@@ -95,7 +98,7 @@ export async function renderProjectView(projectId) {
 }"
                             data-phase="${phase}"
                         >
-                            <span class="mr-2">${meta.icon}</span>
+                            <span class="mr-2">${icon}</span>
                             Phase ${phase}
                             ${isCompleted ? '<span class="ml-2 text-green-500">✓</span>' : ''}
                         </button>
@@ -158,7 +161,24 @@ export async function renderProjectView(projectId) {
  * @module project-view
  */
 function renderPhaseContent(project, phase) {
-  const meta = getPhaseMetadata(phase);
+  const rawMeta = getPhaseMetadata(phase);
+  // Defensive fallbacks for phase metadata - prevents "undefined" in UI
+  const phaseDefaults = {
+    1: { name: 'Initial Draft', icon: '📝', aiModel: 'Claude', description: 'Generate the first draft' },
+    2: { name: 'Critical Review', icon: '🔍', aiModel: 'Gemini', description: 'Get a critical review' },
+    3: { name: 'Final Synthesis', icon: '✨', aiModel: 'Claude', description: 'Combine into final document' }
+  };
+  const defaults = phaseDefaults[phase] || phaseDefaults[1];
+  const meta = {
+    name: rawMeta?.name || defaults.name,
+    icon: rawMeta?.icon || defaults.icon,
+    aiModel: rawMeta?.aiModel || defaults.aiModel,
+    description: rawMeta?.description || defaults.description
+  };
+  // Debug logging to help identify WORKFLOW_CONFIG issues
+  if (!rawMeta || !rawMeta.name || !rawMeta.aiModel) {
+    console.warn('[PRD] Phase metadata missing or incomplete:', { phase, rawMeta, usedDefaults: true });
+  }
   const phaseData = project.phases?.[phase] || { prompt: '', response: '', completed: false };
   // Determine AI URL based on phase (Phase 2 uses Gemini, others use Claude)
   const aiUrl = phase === 2 ? 'https://gemini.google.com' : 'https://claude.ai';
