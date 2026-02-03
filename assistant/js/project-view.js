@@ -268,13 +268,13 @@ function renderPhaseContent(project, phase) {
             <!-- Step B: Paste Response -->
             <div class="mb-6">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Step B: Paste ${meta.ai}'s Response
+                    Step B: Paste ${meta.aiModel}'s Response
                 </h4>
                 <textarea
                     id="response-textarea"
                     rows="12"
                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-800"
-                    placeholder="Paste ${meta.ai}'s response here..."
+                    placeholder="Paste ${meta.aiModel}'s response here..."
                     ${!textareaEnabled ? 'disabled' : ''}
                 >${escapeHtml(phaseData.response || '')}</textarea>
 
