@@ -290,9 +290,15 @@ function renderPhaseContent(project, phase) {
             <!-- Footer Navigation (One-Pager style) -->
             <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div class="flex gap-3">
+                    ${phase === 1 && !phaseData.response ? `
                     <button id="edit-details-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                         ← Edit Details
                     </button>
+                    ` : phase > 1 ? `
+                    <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        ← Previous Phase
+                    </button>
+                    ` : ''}
                     ${phase < 3 && phaseData.completed ? `
                     <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                         Next Phase →
@@ -374,6 +380,7 @@ function attachPhaseEventListeners(project, phase) {
   const saveResponseBtn = document.getElementById('save-response-btn');
   const responseTextarea = document.getElementById('response-textarea');
   const nextPhaseBtn = document.getElementById('next-phase-btn');
+  const prevPhaseBtn = document.getElementById('prev-phase-btn');
   const viewPromptBtn = document.getElementById('view-prompt-btn');
   const editDetailsBtn = document.getElementById('edit-details-btn');
   const deleteProjectBtn = document.getElementById('delete-project-btn');
@@ -552,6 +559,22 @@ function attachPhaseEventListeners(project, phase) {
   if (editDetailsBtn) {
     editDetailsBtn.addEventListener('click', () => {
       navigateTo('edit-project', project.id);
+    });
+  }
+
+  // Previous phase button - re-fetch project to ensure fresh data
+  if (prevPhaseBtn) {
+    prevPhaseBtn.addEventListener('click', async () => {
+      const prevPhase = phase - 1;
+      if (prevPhase < 1) return;
+
+      // Re-fetch project from storage to get fresh data
+      const freshProject = await getProject(project.id);
+      freshProject.phase = prevPhase;
+
+      updatePhaseTabStyles(prevPhase);
+      document.getElementById('phase-content').innerHTML = renderPhaseContent(freshProject, prevPhase);
+      attachPhaseEventListeners(freshProject, prevPhase);
     });
   }
 }
