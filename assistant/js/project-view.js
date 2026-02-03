@@ -11,7 +11,6 @@ import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, 
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
 import { validatePRD, getScoreColor, getScoreLabel } from './validator-inline.js';
-import { getMutationSummary, renderMutationList } from './mutation-tracker.js';
 import { computeWordDiff, renderDiffHtml, getDiffStats } from './diff-view.js';
 
 /**
@@ -303,26 +302,9 @@ function renderPhaseContent(project, phase) {
                 <p class="text-gray-600 dark:text-gray-400 mb-2">
                     ${meta.description}
                 </p>
-                <div class="flex flex-wrap items-center gap-2">
-                    <div class="inline-flex items-center px-3 py-1 bg-${color}-100 dark:bg-${color}-900/20 text-${color}-800 dark:text-${color}-300 rounded-full text-sm">
-                        <span class="mr-2">🤖</span>
-                        Use with ${meta.aiModel}
-                    </div>
-                    <details class="inline-block">
-                        <summary class="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm cursor-pointer hover:bg-purple-200 dark:hover:bg-purple-900/50">
-                            <span>🧬</span>
-                            <span class="font-medium">${getMutationSummary().count} optimizations active</span>
-                            <span class="text-purple-500 dark:text-purple-400">${getMutationSummary().totalImprovement} quality</span>
-                        </summary>
-                        <div class="absolute z-10 mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-w-md">
-                            <h5 class="font-semibold text-gray-900 dark:text-white mb-3">Active Prompt Optimizations</h5>
-                            ${renderMutationList(getMutationSummary().mutations)}
-                            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                                These optimizations were discovered through evolutionary prompt tuning.
-                                <a href="https://github.com/bordenet/product-requirements-assistant/blob/main/evolutionary-optimization/FINAL-REPORT.md" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">Learn more ↗</a>
-                            </p>
-                        </div>
-                    </details>
+                <div class="inline-flex items-center px-3 py-1 bg-${color}-100 dark:bg-${color}-900/20 text-${color}-800 dark:text-${color}-300 rounded-full text-sm">
+                    <span class="mr-2">🤖</span>
+                    Use with ${meta.aiModel}
                 </div>
             </div>
 

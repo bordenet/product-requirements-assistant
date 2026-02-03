@@ -6,10 +6,12 @@
  */
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
-import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename } from './workflow.js';
+import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename, Workflow } from './workflow.js';
 import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
+import { validatePRD, getScoreColor, getScoreLabel } from './validator-inline.js';
+import { computeWordDiff, renderDiffHtml, getDiffStats } from './diff-view.js';
 
 /**
  * Extract title from markdown content (looks for # Title at the beginning)
@@ -64,29 +66,13 @@ export async function renderProjectView(projectId) {
 
   const container = document.getElementById('app-container');
   container.innerHTML = `
-        <div class="mb-6">
-            <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center mb-4">
+        <div class="mb-6 flex items-center justify-between">
+            <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
                 Back to PRDs
             </button>
-
-            <div class="flex items-start justify-between">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        ${escapeHtml(project.title)}
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400 line-clamp-3">
-                        ${escapeHtml(project.problems)}
-                    </p>
-                </div>
-                ${project.phases?.[3]?.completed ? `
-                <button id="export-prd-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                    📄 Preview & Copy
-                </button>
-                ` : ''}
-            </div>
         </div>
 
         <!-- Phase Tabs -->
@@ -123,19 +109,6 @@ export async function renderProjectView(projectId) {
 
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
-  const exportPrdBtn = document.getElementById('export-prd-btn');
-  if (exportPrdBtn) {
-    exportPrdBtn.addEventListener('click', async () => {
-      // Re-fetch project to get latest data from storage (responses may have been saved)
-      const updatedProject = await getProject(project.id);
-      const markdown = getFinalMarkdown(updatedProject);
-      if (markdown) {
-        showDocumentPreviewModal(markdown, 'Your PRD is Ready', getExportFilename(updatedProject));
-      } else {
-        showToast('No PRD content to export', 'warning');
-      }
-    });
-  }
 
   document.querySelectorAll('.phase-tab').forEach(tab => {
     tab.addEventListener('click', async () => {
@@ -176,8 +149,16 @@ function renderPhaseContent(project, phase) {
   // Textarea should be enabled if: has existing response OR prompt was already copied
   const textareaEnabled = phaseData.response || phaseData.prompt;
 
-  // Completion banner shown above Phase 3 content when phase is complete
-  const completionBanner = phase === 3 && phaseData.completed ? `
+  // Completion banner with inline PRD scoring when Phase 3 is complete
+  let completionBanner = '';
+  if (phase === 3 && phaseData.completed) {
+    // Run inline validation on the PRD content
+    const prdContent = phaseData.response || '';
+    const validationResult = validatePRD(prdContent);
+    const scoreColor = getScoreColor(validationResult.totalScore);
+    const scoreLabel = getScoreLabel(validationResult.totalScore);
+
+    completionBanner = `
         <div class="mb-6 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <div>
@@ -185,17 +166,49 @@ function renderPhaseContent(project, phase) {
                         <span class="mr-2">🎉</span> Your PRD is Complete!
                     </h4>
                     <p class="text-green-700 dark:text-green-400 mt-1">
-                        <strong>Next steps:</strong> Preview & copy, then validate your document.
+                        <strong>Next steps:</strong> Preview & copy, then validate for detailed feedback.
                     </p>
                 </div>
                 <div class="flex gap-3 flex-wrap items-center">
                     <button id="export-complete-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
                         📄 Preview & Copy
                     </button>
-                    <span class="text-gray-500 dark:text-gray-400">then</span>
-                    <a href="https://bordenet.github.io/product-requirements-assistant/validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline font-medium text-lg">
-                        Validate & Score ↗
+                    <button id="compare-phases-btn" class="px-4 py-2 border border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors font-medium">
+                        🔄 Compare Phases
+                    </button>
+                    <a href="https://bordenet.github.io/product-requirements-assistant/validator/" target="_blank" rel="noopener noreferrer" class="px-4 py-2 border border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors font-medium">
+                        Full Validation ↗
                     </a>
+                </div>
+            </div>
+            <!-- Inline Quality Score -->
+            <div class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl font-bold text-${scoreColor}-600 dark:text-${scoreColor}-400">${validationResult.totalScore}</span>
+                        <div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${scoreLabel}</span>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Quality Score (out of 100)</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 text-sm">
+                        <div class="text-center">
+                            <span class="block font-semibold text-gray-700 dark:text-gray-300">${validationResult.structure.score}/${validationResult.structure.maxScore}</span>
+                            <span class="text-xs text-gray-500">Structure</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="block font-semibold text-gray-700 dark:text-gray-300">${validationResult.clarity.score}/${validationResult.clarity.maxScore}</span>
+                            <span class="text-xs text-gray-500">Clarity</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="block font-semibold text-gray-700 dark:text-gray-300">${validationResult.userFocus.score}/${validationResult.userFocus.maxScore}</span>
+                            <span class="text-xs text-gray-500">User Focus</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="block font-semibold text-gray-700 dark:text-gray-300">${validationResult.technical.score}/${validationResult.technical.maxScore}</span>
+                            <span class="text-xs text-gray-500">Technical</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Expandable Help Section -->
@@ -208,15 +221,13 @@ function renderPhaseContent(project, phase) {
                         <li>Click <strong>"Preview & Copy"</strong> to see your formatted document</li>
                         <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
                         <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong> and paste</li>
-                        <li>Use <strong><a href="https://bordenet.github.io/product-requirements-assistant/validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">PRD Validator</a></strong> to score and improve your document</li>
+                        <li>Use <strong><a href="https://bordenet.github.io/product-requirements-assistant/validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">Full Validation</a></strong> for detailed AI-powered feedback</li>
                     </ol>
-                    <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs">
-                        💡 The validator provides instant feedback and AI-powered suggestions for improvement.
-                    </p>
                 </div>
             </details>
         </div>
-  ` : '';
+    `;
+  }
 
   return `
         ${completionBanner}
@@ -366,6 +377,69 @@ function showPromptModal(prompt, onCopySuccess = null) {
 }
 
 /**
+ * Show a modal with diff between Phase 1 and Phase 2 outputs
+ * @param {Object} project - The project object
+ */
+function showDiffModal(project) {
+  const workflow = new Workflow(project);
+  const phase1Output = workflow.getPhaseOutput(1) || '';
+  const phase2Output = workflow.getPhaseOutput(2) || '';
+
+  if (!phase1Output || !phase2Output) {
+    showToast('Need both Phase 1 and Phase 2 outputs to compare', 'warning');
+    return;
+  }
+
+  const diff = computeWordDiff(phase1Output, phase2Output);
+  const diffHtml = renderDiffHtml(diff);
+  const stats = getDiffStats(diff);
+
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+  modal.innerHTML = `
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+            🔄 Phase Comparison: Initial Draft → Refined
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <span class="text-green-600">+${stats.additions} additions</span> ·
+            <span class="text-red-600">-${stats.deletions} deletions</span> ·
+            ${stats.unchanged} unchanged
+          </p>
+        </div>
+        <button id="close-diff-modal-btn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto flex-1">
+        <div class="prose dark:prose-invert max-w-none text-sm leading-relaxed">
+          ${diffHtml}
+        </div>
+      </div>
+      <div class="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+        <button id="close-diff-modal-btn-2" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+          Close
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+
+  modal.querySelector('#close-diff-modal-btn').addEventListener('click', closeModal);
+  modal.querySelector('#close-diff-modal-btn-2').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+}
+
+/**
  * Attach event listeners for phase interactions
  * @module project-view
  */
@@ -399,6 +473,14 @@ function attachPhaseEventListeners(project, phase) {
       } else {
         showToast('No PRD content to export', 'warning');
       }
+    });
+  }
+
+  // Compare Phases button handler
+  const comparePhasesBtn = document.getElementById('compare-phases-btn');
+  if (comparePhasesBtn) {
+    comparePhasesBtn.addEventListener('click', () => {
+      showDiffModal(project);
     });
   }
 
