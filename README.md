@@ -36,6 +36,12 @@ Write PRDs with AI. Three phases: draft, review, refine.
 
 **Phase 3** — Claude takes the draft plus critique and produces a final version.
 
+## Validate Your PRD
+
+Once you've completed your PRD, run it through the **[PRD Validator](https://bordenet.github.io/prd-validator/)** for instant scoring and AI-powered improvement suggestions. The validator checks document structure, requirements clarity, user focus, and technical quality—giving you a 0-100 score with actionable feedback.
+
+→ **[Try the Validator](https://bordenet.github.io/prd-validator/)** | [Source Code](https://github.com/bordenet/prd-validator)
+
 ## Usage
 
 1. Open the app
