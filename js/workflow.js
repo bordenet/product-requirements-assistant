@@ -148,7 +148,13 @@ export class Workflow {
    * Export final output as Markdown
    */
   exportAsMarkdown() {
-    const attribution = '\n\n---\n\n*Generated with [Product Requirements Assistant](https://bordenet.github.io/product-requirements-assistant/)*';
+    const footer = `
+
+---
+
+*Generated with [Product Requirements Assistant](https://bordenet.github.io/product-requirements-assistant/)*
+
+**📋 Ready to iterate?** Validate and improve your PRD with the [PRD Validator](https://bordenet.github.io/prd-validator/) — get actionable feedback to strengthen your document.`;
 
     // Return Phase 3 output if available, otherwise earlier phases (flat format first)
     const phase3Output = this.getPhaseOutput(3);
@@ -158,14 +164,14 @@ export class Workflow {
     const finalResponse = phase3Output || phase2Output || phase1Output;
 
     if (finalResponse) {
-      return finalResponse + attribution;
+      return finalResponse + footer;
     }
 
     // Fallback to project metadata
     let markdown = `# ${this.project.title || 'Untitled PRD'}\n\n`;
     markdown += `## Problem Statement\n\n${this.project.problems || ''}\n\n`;
     markdown += `## Context\n\n${this.project.context || ''}\n`;
-    return markdown + attribution;
+    return markdown + footer;
   }
 
   /**
@@ -363,7 +369,13 @@ export function getExportFilename(project) {
 export function getFinalMarkdown(project) {
   if (!project) return null;
 
-  const attribution = '\n\n---\n\n*Generated with [Product Requirements Assistant](https://bordenet.github.io/product-requirements-assistant/)*';
+  const footer = `
+
+---
+
+*Generated with [Product Requirements Assistant](https://bordenet.github.io/product-requirements-assistant/)*
+
+**📋 Ready to iterate?** Validate and improve your PRD with the [PRD Validator](https://bordenet.github.io/prd-validator/) — get actionable feedback to strengthen your document.`;
 
   // Flat format first (canonical), then nested format (legacy)
   const phase3Output = project.phase3_output || project.phases?.[3]?.response;
@@ -373,7 +385,7 @@ export function getFinalMarkdown(project) {
   const finalResponse = phase3Output || phase2Output || phase1Output;
 
   if (finalResponse) {
-    return finalResponse + attribution;
+    return finalResponse + footer;
   }
 
   return null;
