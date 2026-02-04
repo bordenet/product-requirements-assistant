@@ -194,11 +194,12 @@ describe('detectVagueLanguage', () => {
   });
 
   test('detects weasel words', () => {
-    const input = 'Users should be able to do this and might need that. It could potentially work.';
+    // Note: "might" was removed from weaselWords - it's legitimate in risks/assumptions sections
+    const input = 'Users should be able to do this. It could potentially work and is typically fine.';
     const result = detectVagueLanguage(input);
     expect(result.weaselWords).toContain('should be able to');
-    expect(result.weaselWords).toContain('might');
     expect(result.weaselWords).toContain('could potentially');
+    expect(result.weaselWords).toContain('typically');
   });
 
   test('detects marketing fluff', () => {

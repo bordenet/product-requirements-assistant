@@ -6,16 +6,16 @@
  * It enables inline PRD scoring directly in the assistant after Phase 3 completion.
  */
 
-// Required sections detection patterns
+// Required sections detection patterns - supports numbered headers (e.g., "1.1 Purpose")
 const REQUIRED_SECTIONS = [
-  { pattern: /^#+\s*(purpose|introduction|overview|objective)/im, name: 'Purpose/Introduction', weight: 2 },
-  { pattern: /^#+\s*(user|persona|audience|customer)/im, name: 'User Personas', weight: 2 },
-  { pattern: /^#+\s*(feature|requirement|functional)/im, name: 'Features/Requirements', weight: 2 },
-  { pattern: /^#+\s*(success|metric|kpi|measure)/im, name: 'Success Metrics', weight: 2 },
-  { pattern: /^#+\s*(scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 1 },
-  { pattern: /^#+\s*(timeline|milestone|schedule|roadmap)/im, name: 'Timeline/Milestones', weight: 1 },
-  { pattern: /^#+\s*(risk|dependency|dependencies|assumption)/im, name: 'Risks/Dependencies', weight: 1 },
-  { pattern: /^#+\s*(constraint|limitation)/im, name: 'Constraints', weight: 1 }
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(purpose|introduction|overview|objective|executive\s+summary)/im, name: 'Purpose/Introduction', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|audience|target\s+user|customer\s+profile)/im, name: 'User Personas', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(feature|requirement|user\s+stor|functional)/im, name: 'Features/Requirements', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(success|metric|kpi|measure)/im, name: 'Success Metrics', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(timeline|milestone|schedule|roadmap|phase)/im, name: 'Timeline/Milestones', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(risk|dependency|dependencies|assumption)/im, name: 'Risks/Dependencies', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(constraint|limitation)/im, name: 'Constraints', weight: 1 }
 ];
 
 // Vague language patterns
@@ -28,8 +28,11 @@ const VAGUE_QUALIFIERS = [
 
 // Patterns for requirements quality
 const USER_STORY_PATTERN = /as\s+a[n]?\s+[\w\s]+,?\s+i\s+want/gi;
-const ACCEPTANCE_CRITERIA_PATTERN = /given\s+.+when\s+.+then\s+/gi;
-const MEASURABLE_PATTERN = /\d+\s*(ms|millisecond|second|minute|hour|%|percent|\$|dollar|user|request|transaction)/gi;
+// Accept both inline and markdown bold Given/When/Then
+const ACCEPTANCE_CRITERIA_PATTERN = /(?:\*\*)?given(?:\*\*)?\s+.+?(?:\*\*)?when(?:\*\*)?\s+.+?(?:\*\*)?then(?:\*\*)?\s+/gi;
+const AC_KEYWORD_PATTERN = /-\s*\*\*Given\*\*/gi;
+// Expanded measurable pattern with comparison operators and more units
+const MEASURABLE_PATTERN = /(?:≤|≥|<|>|=)?\s*\d+(?:\.\d+)?\s*(ms|millisecond|second|minute|hour|day|week|%|percent|\$|dollar|user|request|transaction|item|task|point|pt)/gi;
 
 // MoSCoW prioritization patterns
 const MOSCOW_PATTERN = /\b(must have|should have|could have|won't have|must-have|should-have|could-have|won't-have)\b/gi;
@@ -129,13 +132,13 @@ function scoreUserFocus(text) {
   let score = 0;
   const issues = [];
 
-  // User Personas (7 pts)
-  const hasPersonaSection = /^#+\s*(user|persona|audience|customer)/im.test(text);
+  // User Personas (7 pts) - supports numbered headers
+  const hasPersonaSection = /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|target\s+user|audience|customer\s+profile)/im.test(text);
   if (hasPersonaSection) score += 7;
   else issues.push('No user personas section');
 
-  // Problem Statement (7 pts)
-  const hasProblemSection = /^#+\s*(problem|goal|objective|why|motivation)/im.test(text);
+  // Problem Statement (7 pts) - supports numbered headers
+  const hasProblemSection = /^#+\s*(\d+\.?\d*\.?\s*)?(problem|goal|objective|why|motivation|current\s+state|target\s+state)/im.test(text);
   if (hasProblemSection) score += 7;
   else issues.push('No problem statement');
 
@@ -171,8 +174,10 @@ function scoreTechnicalQuality(text) {
   score += Math.min(7, nfrCount * 2);
   if (nfrCount === 0) issues.push('No non-functional requirements');
 
-  // Acceptance criteria (7 pts)
-  const acCount = (text.match(ACCEPTANCE_CRITERIA_PATTERN) || []).length;
+  // Acceptance criteria (7 pts) - detect both inline and bullet-point formats
+  const inlineAC = (text.match(ACCEPTANCE_CRITERIA_PATTERN) || []).length;
+  const bulletAC = (text.match(AC_KEYWORD_PATTERN) || []).length;
+  const acCount = Math.max(inlineAC, bulletAC);
   if (acCount >= 3) score += 7;
   else if (acCount >= 1) score += 4;
   else issues.push('No Given/When/Then acceptance criteria');

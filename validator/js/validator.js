@@ -12,15 +12,16 @@
 // Constants
 // ============================================================================
 
+// Section patterns support both direct headers and numbered headers (e.g., "1.1 Purpose", "## Purpose")
 const REQUIRED_SECTIONS = [
-  { pattern: /^#+\s*(purpose|introduction|overview|objective)/im, name: 'Purpose/Introduction', weight: 2 },
-  { pattern: /^#+\s*(user|persona|audience|customer)/im, name: 'User Personas', weight: 2 },
-  { pattern: /^#+\s*(feature|requirement|functional)/im, name: 'Features/Requirements', weight: 2 },
-  { pattern: /^#+\s*(success|metric|kpi|measure)/im, name: 'Success Metrics', weight: 2 },
-  { pattern: /^#+\s*(scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 1 },
-  { pattern: /^#+\s*(timeline|milestone|schedule|roadmap)/im, name: 'Timeline/Milestones', weight: 1 },
-  { pattern: /^#+\s*(risk|dependency|dependencies|assumption)/im, name: 'Risks/Dependencies', weight: 1 },
-  { pattern: /^#+\s*(constraint|limitation)/im, name: 'Constraints', weight: 1 }
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(purpose|introduction|overview|objective|executive\s+summary)/im, name: 'Purpose/Introduction', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|audience|target\s+user|customer\s+profile)/im, name: 'User Personas', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(feature|requirement|user\s+stor|functional)/im, name: 'Features/Requirements', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(success|metric|kpi|measure)/im, name: 'Success Metrics', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(timeline|milestone|schedule|roadmap|phase)/im, name: 'Timeline/Milestones', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(risk|dependency|dependencies|assumption)/im, name: 'Risks/Dependencies', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(constraint|limitation)/im, name: 'Constraints', weight: 1 }
 ];
 
 const VAGUE_QUALIFIERS = [
@@ -46,8 +47,9 @@ const VAGUE_LANGUAGE = {
     'soon', 'quickly', 'rapidly', 'promptly', 'eventually', 'in the future',
     'as soon as possible', 'asap', 'shortly', 'in due time'
   ],
+  // Note: "may", "might", "possibly" removed - legitimate in risks/assumptions sections
   weaselWords: [
-    'should be able to', 'might', 'could potentially', 'may', 'possibly',
+    'should be able to', 'could potentially',
     'generally', 'typically', 'usually', 'often', 'sometimes'
   ],
   marketingFluff: [
@@ -67,7 +69,8 @@ const PRIORITIZATION_PATTERNS = {
   pLevel: /\b(p0|p1|p2|p3|priority\s*[0-3]|priority:\s*(high|medium|low|critical))\b/gi,
   numbered: /\b(priority|pri|importance):\s*\d/gi,
   tiered: /\b(tier\s*[1-3]|phase\s*[1-3]|wave\s*[1-3]|mvp|v1|v2)\b/gi,
-  section: /^#+\s*(priority|priorities|prioritization)/im
+  // Section detection: explicit priority sections OR MoSCoW-style headers
+  section: /^#+\s*(\d+\.?\d*\.?\s*)?(priority|priorities|prioritization|must\s+have|should\s+have|could\s+have|won't\s+have)/im
 };
 
 // Customer evidence detection patterns
@@ -87,8 +90,12 @@ const SCOPE_PATTERNS = {
 };
 
 const USER_STORY_PATTERN = /as\s+a[n]?\s+[\w\s]+,?\s+i\s+want/gi;
-const ACCEPTANCE_CRITERIA_PATTERN = /given\s+.+when\s+.+then\s+/gi;
-const MEASURABLE_PATTERN = /\d+\s*(ms|millisecond|second|minute|hour|%|percent|\$|dollar|user|request|transaction)/gi;
+// Accept both inline "given...when...then" and markdown bold "**Given**...When...Then"
+const ACCEPTANCE_CRITERIA_PATTERN = /(?:\*\*)?given(?:\*\*)?\s+.+?(?:\*\*)?when(?:\*\*)?\s+.+?(?:\*\*)?then(?:\*\*)?\s+/gi;
+// Also count structured acceptance criteria with bullet points using Given/When/Then keywords
+const AC_KEYWORD_PATTERN = /-\s*\*\*Given\*\*/gi;
+// Expanded measurable pattern to include more units and comparison operators
+const MEASURABLE_PATTERN = /(?:≤|≥|<|>|=)?\s*\d+(?:\.\d+)?\s*(ms|millisecond|second|minute|hour|day|week|%|percent|\$|dollar|user|request|transaction|item|task|point|pt)/gi;
 
 // ============================================================================
 // Section Detection
@@ -159,18 +166,21 @@ export function scoreDocumentStructure(text) {
     strengths.push('Logical document flow (context before requirements)');
   }
 
-  // Formatting consistency (0-4 pts) - reduced from 6 to make room for scope
+  // Formatting consistency (0-4 pts) - check for bullet list consistency
   const bulletTypes = new Set();
-  if (text.includes('- ')) bulletTypes.add('dash');
-  if (text.includes('* ')) bulletTypes.add('asterisk');
+  if (/^-\s+/m.test(text)) bulletTypes.add('dash');
+  // Only count asterisk bullets at start of line (not bold **text**)
+  if (/^\*\s+[^*]/m.test(text)) bulletTypes.add('asterisk');
   if (/^\d+\.\s/m.test(text)) bulletTypes.add('numbered');
 
-  if (bulletTypes.size <= 2 && text.length > 200) {
+  // Having both dash and numbered is fine (common pattern); only penalize mixing dash/asterisk bullets
+  const hasMixedBullets = bulletTypes.has('dash') && bulletTypes.has('asterisk');
+  if (!hasMixedBullets && text.length > 200) {
     score += 2;
     strengths.push('Consistent formatting');
-  } else if (bulletTypes.size > 2) {
+  } else if (hasMixedBullets) {
     score += 1;
-    issues.push('Inconsistent bullet point formatting');
+    issues.push('Inconsistent bullet point formatting (mixing - and * bullets)');
   }
 
   // Check for tables (structured data)
@@ -224,12 +234,25 @@ export function detectVagueQualifiers(text) {
 }
 
 /**
+ * Check if a term appears as a whole word in text using word boundaries
+ * @param {string} text - Text to search in
+ * @param {string} term - Term to find
+ * @returns {boolean} True if term found as whole word
+ */
+function hasWholeWord(text, term) {
+  // Escape special regex characters in the term
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`\\b${escaped}\\b`, 'i');
+  return pattern.test(text);
+}
+
+/**
  * Detect vague language across all categories
+ * Uses word boundary matching to avoid false positives like "some" matching "sometimes"
  * @param {string} text - Text to analyze
  * @returns {Object} Categorized vague language findings
  */
 export function detectVagueLanguage(text) {
-  const lowerText = text.toLowerCase();
   const result = {
     qualifiers: [],
     quantifiers: [],
@@ -240,39 +263,39 @@ export function detectVagueLanguage(text) {
     totalCount: 0
   };
 
-  // Check each category
+  // Check each category using word boundary matching
   for (const term of VAGUE_LANGUAGE.qualifiers) {
-    if (lowerText.includes(term.toLowerCase())) {
+    if (hasWholeWord(text, term)) {
       result.qualifiers.push(term);
     }
   }
 
   for (const term of VAGUE_LANGUAGE.quantifiers) {
-    if (lowerText.includes(term.toLowerCase())) {
+    if (hasWholeWord(text, term)) {
       result.quantifiers.push(term);
     }
   }
 
   for (const term of VAGUE_LANGUAGE.temporal) {
-    if (lowerText.includes(term.toLowerCase())) {
+    if (hasWholeWord(text, term)) {
       result.temporal.push(term);
     }
   }
 
   for (const term of VAGUE_LANGUAGE.weaselWords) {
-    if (lowerText.includes(term.toLowerCase())) {
+    if (hasWholeWord(text, term)) {
       result.weaselWords.push(term);
     }
   }
 
   for (const term of VAGUE_LANGUAGE.marketingFluff) {
-    if (lowerText.includes(term.toLowerCase())) {
+    if (hasWholeWord(text, term)) {
       result.marketingFluff.push(term);
     }
   }
 
   for (const term of VAGUE_LANGUAGE.unquantifiedComparatives) {
-    if (lowerText.includes(term.toLowerCase())) {
+    if (hasWholeWord(text, term)) {
       result.unquantifiedComparatives.push(term);
     }
   }
@@ -383,12 +406,17 @@ export function countUserStories(text) {
 
 /**
  * Count acceptance criteria in text
+ * Detects both inline "given...when...then" and markdown "**Given**" bullet format
  * @param {string} text - Text to analyze
  * @returns {number} Number of acceptance criteria found
  */
 export function countAcceptanceCriteria(text) {
-  const matches = text.match(ACCEPTANCE_CRITERIA_PATTERN) || [];
-  return matches.length;
+  // Count inline given/when/then patterns
+  const inlineMatches = text.match(ACCEPTANCE_CRITERIA_PATTERN) || [];
+  // Count structured bullet-point Given keywords (each represents one AC)
+  const bulletMatches = text.match(AC_KEYWORD_PATTERN) || [];
+  // Return max to avoid double-counting same criteria in different formats
+  return Math.max(inlineMatches.length, bulletMatches.length);
 }
 
 /**
@@ -520,8 +548,8 @@ export function scoreRequirementsClarity(text) {
 export function detectUserPersonas(text) {
   const personaIndicators = [];
 
-  // Check for persona section
-  const hasPersonaSection = /^#+\s*(user|persona|audience|customer)/im.test(text);
+  // Check for persona section - supports numbered headers and various naming conventions
+  const hasPersonaSection = /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|target\s+user|audience|customer\s+profile)/im.test(text);
   if (hasPersonaSection) {
     personaIndicators.push('Dedicated persona section');
   }
@@ -559,8 +587,8 @@ export function detectUserPersonas(text) {
 export function detectProblemStatement(text) {
   const indicators = [];
 
-  // Check for problem/goal statement section
-  const hasProblemSection = /^#+\s*(problem|goal|objective|why|motivation)/im.test(text);
+  // Check for problem/goal statement section - supports numbered headers
+  const hasProblemSection = /^#+\s*(\d+\.?\d*\.?\s*)?(problem|goal|objective|why|motivation|current\s+state|target\s+state)/im.test(text);
   if (hasProblemSection) {
     indicators.push('Dedicated problem statement section');
   }
@@ -736,7 +764,8 @@ export function detectNonFunctionalRequirements(text) {
   return {
     categories,
     count: categories.length,
-    hasNFRSection: /^#+\s*(non.?functional|quality|nfr|performance|security)/im.test(text)
+    // Support numbered headers and various NFR naming conventions
+    hasNFRSection: /^#+\s*(\d+\.?\d*\.?\s*)?(non.?functional|quality\s+attribute|nfr|performance|security|technical\s+requirement)/im.test(text)
   };
 }
 
