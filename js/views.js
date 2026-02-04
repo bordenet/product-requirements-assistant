@@ -162,7 +162,7 @@ export async function renderProjectsList() {
 export function renderNewProjectForm() {
   const container = document.getElementById('app-container');
   container.innerHTML = `
-        <div class="max-w-3xl mx-auto">
+        <div class="max-w-5xl mx-auto">
             <div class="mb-6">
                 <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center">
                     <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,7 +306,7 @@ export async function renderEditProjectForm(projectId) {
 
   const container = document.getElementById('app-container');
   container.innerHTML = `
-        <div class="max-w-3xl mx-auto">
+        <div class="max-w-5xl mx-auto">
             <div class="mb-6">
                 <button id="back-btn" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center">
                     <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
