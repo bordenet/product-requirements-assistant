@@ -18,4 +18,4 @@ export {
 export { createProjectStorage, generateId } from './storage.js';
 
 // Workflow utilities
-export { createWorkflow, createWorkflowConfig } from './workflow.js';
+export { createWorkflow, createWorkflowConfig, detectPromptPaste } from './workflow.js';
