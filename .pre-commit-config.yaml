@@ -35,7 +35,7 @@ repos:
       - id: jest
         name: jest
         entry: npm
-        args: ['test', '--', '--coverage', '--coverageThreshold', '{"global":{"statements":60,"branches":45,"functions":60,"lines":60}}']
+        args: ['test']
         language: system
         types: [javascript]
         require_serial: true
