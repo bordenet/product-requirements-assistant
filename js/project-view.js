@@ -73,13 +73,21 @@ export async function renderProjectView(projectId) {
                 </svg>
                 Back to PRDs
             </button>
+            ${project.phases?.[3]?.completed ? `
+                <button id="export-prd-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    📄 Preview & Copy
+                </button>
+            ` : ''}
         </div>
 
         <!-- Phase Tabs -->
         <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex space-x-1">
                 ${[1, 2, 3].map(phase => {
-    const meta = getPhaseMetadata(phase);
+    const rawMeta = getPhaseMetadata(phase);
+    // Defensive fallback for tab icons
+    const iconMap = { 1: '📝', 2: '🔍', 3: '✨' };
+    const icon = rawMeta?.icon || iconMap[phase] || '📋';
     const isActive = project.phase === phase;
     const isCompleted = project.phases?.[phase]?.completed;
 
@@ -92,7 +100,7 @@ export async function renderProjectView(projectId) {
 }"
                             data-phase="${phase}"
                         >
-                            <span class="mr-2">${meta.icon}</span>
+                            <span class="mr-2">${icon}</span>
                             Phase ${phase}
                             ${isCompleted ? '<span class="ml-2 text-green-500">✓</span>' : ''}
                         </button>
@@ -109,6 +117,19 @@ export async function renderProjectView(projectId) {
 
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
+  const exportPrdBtn = document.getElementById('export-prd-btn');
+  if (exportPrdBtn) {
+    exportPrdBtn.addEventListener('click', async () => {
+      // Re-fetch project to get latest data from storage (responses may have been saved)
+      const updatedProject = await getProject(project.id);
+      const markdown = getFinalMarkdown(updatedProject);
+      if (markdown) {
+        showDocumentPreviewModal(markdown, 'Your PRD is Ready', getExportFilename(updatedProject));
+      } else {
+        showToast('No PRD content to export', 'warning');
+      }
+    });
+  }
 
   document.querySelectorAll('.phase-tab').forEach(tab => {
     tab.addEventListener('click', async () => {
@@ -142,10 +163,30 @@ export async function renderProjectView(projectId) {
  * @module project-view
  */
 function renderPhaseContent(project, phase) {
-  const meta = getPhaseMetadata(phase);
+  const rawMeta = getPhaseMetadata(phase);
+  // Defensive fallbacks for phase metadata - prevents "undefined" in UI
+  const phaseDefaults = {
+    1: { name: 'Initial Draft', icon: '📝', aiModel: 'Claude', description: 'Generate the first draft' },
+    2: { name: 'Critical Review', icon: '🔍', aiModel: 'Gemini', description: 'Get a critical review' },
+    3: { name: 'Final Synthesis', icon: '✨', aiModel: 'Claude', description: 'Combine into final document' }
+  };
+  const defaults = phaseDefaults[phase] || phaseDefaults[1];
+  const meta = {
+    name: rawMeta?.name || defaults.name,
+    icon: rawMeta?.icon || defaults.icon,
+    aiModel: rawMeta?.aiModel || defaults.aiModel,
+    description: rawMeta?.description || defaults.description
+  };
+  // Debug logging to help identify WORKFLOW_CONFIG issues
+  if (!rawMeta || !rawMeta.name || !rawMeta.aiModel) {
+    console.warn('[PRD] Phase metadata missing or incomplete:', { phase, rawMeta, usedDefaults: true });
+  }
   const phaseData = project.phases?.[phase] || { prompt: '', response: '', completed: false };
   // Determine AI URL based on phase (Phase 2 uses Gemini, others use Claude)
   const aiUrl = phase === 2 ? 'https://gemini.google.com' : 'https://claude.ai';
+  // Color mapping for phases (canonical WORKFLOW_CONFIG doesn't include colors)
+  const colorMap = { 1: 'blue', 2: 'green', 3: 'purple' };
+  const color = colorMap[phase] || 'blue';
   // Textarea should be enabled if: has existing response OR prompt was already copied
   const textareaEnabled = phaseData.response || phaseData.prompt;
 
@@ -181,36 +222,57 @@ function renderPhaseContent(project, phase) {
                     </button>
                 </div>
             </div>
+
             <!-- Inline Quality Score -->
             <div class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center justify-between flex-wrap gap-3">
-                    <div class="flex items-center gap-3">
+                <div class="flex items-center justify-between mb-3">
+                    <h5 class="font-semibold text-gray-900 dark:text-white flex items-center">
+                        📊 PRD Quality Score
+                    </h5>
+                    <div class="flex items-center gap-2">
                         <span class="text-3xl font-bold text-${scoreColor}-600 dark:text-${scoreColor}-400">${validationResult.totalScore}</span>
-                        <div>
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${scoreLabel}</span>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Quality Score (out of 100)</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 text-sm">
-                        <div class="text-center">
-                            <span class="block font-semibold text-gray-700 dark:text-gray-300">${validationResult.structure.score}/${validationResult.structure.maxScore}</span>
-                            <span class="text-xs text-gray-500">Structure</span>
-                        </div>
-                        <div class="text-center">
-                            <span class="block font-semibold text-gray-700 dark:text-gray-300">${validationResult.clarity.score}/${validationResult.clarity.maxScore}</span>
-                            <span class="text-xs text-gray-500">Clarity</span>
-                        </div>
-                        <div class="text-center">
-                            <span class="block font-semibold text-gray-700 dark:text-gray-300">${validationResult.userFocus.score}/${validationResult.userFocus.maxScore}</span>
-                            <span class="text-xs text-gray-500">User Focus</span>
-                        </div>
-                        <div class="text-center">
-                            <span class="block font-semibold text-gray-700 dark:text-gray-300">${validationResult.technical.score}/${validationResult.technical.maxScore}</span>
-                            <span class="text-xs text-gray-500">Technical</span>
-                        </div>
+                        <span class="text-gray-500 dark:text-gray-400">/100</span>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-${scoreColor}-100 dark:bg-${scoreColor}-900/30 text-${scoreColor}-700 dark:text-${scoreColor}-300">${scoreLabel}</span>
                     </div>
                 </div>
+
+                <!-- Score Breakdown -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">Structure</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">${validationResult.structure.score}/${validationResult.structure.maxScore}</div>
+                    </div>
+                    <div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">Clarity</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">${validationResult.clarity.score}/${validationResult.clarity.maxScore}</div>
+                    </div>
+                    <div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">User Focus</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">${validationResult.userFocus.score}/${validationResult.userFocus.maxScore}</div>
+                    </div>
+                    <div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">Technical</div>
+                        <div class="font-semibold text-gray-900 dark:text-white">${validationResult.technical.score}/${validationResult.technical.maxScore}</div>
+                    </div>
+                </div>
+
+                <!-- Top Issues (if any) -->
+                ${validationResult.totalScore < 70 ? `
+                <details class="mt-3">
+                    <summary class="text-sm text-orange-600 dark:text-orange-400 cursor-pointer hover:text-orange-700">
+                        ⚠️ Top issues to address
+                    </summary>
+                    <ul class="mt-2 text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
+                        ${[...validationResult.structure.issues, ...validationResult.clarity.issues, ...validationResult.userFocus.issues, ...validationResult.technical.issues].slice(0, 5).map(issue => `<li>${escapeHtml(issue)}</li>`).join('')}
+                    </ul>
+                </details>
+                ` : `
+                <p class="mt-3 text-sm text-green-600 dark:text-green-400">
+                    ✓ Your PRD meets quality standards for development handoff.
+                </p>
+                `}
             </div>
+
             <!-- Expandable Help Section -->
             <details class="mt-4">
                 <summary class="text-sm text-green-700 dark:text-green-400 cursor-pointer hover:text-green-800 dark:hover:text-green-300">
@@ -235,14 +297,14 @@ function renderPhaseContent(project, phase) {
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                    ${meta.icon} ${meta.title}
+                    ${meta.icon} ${meta.name}
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 mb-2">
                     ${meta.description}
                 </p>
-                <div class="inline-flex items-center px-3 py-1 bg-${meta.color}-100 dark:bg-${meta.color}-900/20 text-${meta.color}-800 dark:text-${meta.color}-300 rounded-full text-sm">
+                <div class="inline-flex items-center px-3 py-1 bg-${color}-100 dark:bg-${color}-900/20 text-${color}-800 dark:text-${color}-300 rounded-full text-sm">
                     <span class="mr-2">🤖</span>
-                    Use with ${meta.ai}
+                    Use with ${meta.aiModel}
                 </div>
             </div>
 
@@ -276,13 +338,13 @@ function renderPhaseContent(project, phase) {
             <!-- Step B: Paste Response -->
             <div class="mb-6">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Step B: Paste ${meta.ai}'s Response
+                    Step B: Paste ${meta.aiModel}'s Response
                 </h4>
                 <textarea
                     id="response-textarea"
                     rows="12"
                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-800"
-                    placeholder="Paste ${meta.ai}'s response here..."
+                    placeholder="Paste ${meta.aiModel}'s response here..."
                     ${!textareaEnabled ? 'disabled' : ''}
                 >${escapeHtml(phaseData.response || '')}</textarea>
 
@@ -301,9 +363,15 @@ function renderPhaseContent(project, phase) {
             <!-- Footer Navigation (One-Pager style) -->
             <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div class="flex gap-3">
+                    ${phase === 1 && !phaseData.response ? `
                     <button id="edit-details-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                         ← Edit Details
                     </button>
+                    ` : phase > 1 ? `
+                    <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        ← Previous Phase
+                    </button>
+                    ` : ''}
                     ${phase < 3 && phaseData.completed ? `
                     <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                         Next Phase →
@@ -316,6 +384,74 @@ function renderPhaseContent(project, phase) {
             </div>
         </div>
     `;
+}
+
+/**
+ * Show diff modal comparing Phase 1 and Phase 2 outputs
+ * @module project-view
+ * @param {string} phase1 - Phase 1 output (Claude draft)
+ * @param {string} phase2 - Phase 2 output (Gemini review)
+ */
+function showDiffModal(phase1, phase2) {
+  const diff = computeWordDiff(phase1, phase2);
+  const stats = getDiffStats(diff);
+  const diffHtml = renderDiffHtml(diff);
+
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+  modal.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                        🔄 Phase Comparison: Claude Draft → Gemini Review
+                    </h3>
+                    <div class="flex gap-4 mt-2 text-sm">
+                        <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded">
+                            +${stats.additions} added
+                        </span>
+                        <span class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+                            -${stats.deletions} removed
+                        </span>
+                        <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                            ${stats.unchanged} unchanged
+                        </span>
+                    </div>
+                </div>
+                <button id="close-diff-modal-btn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1">
+                <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed">
+                    ${diffHtml}
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <span class="bg-green-200 dark:bg-green-900/50 px-1">Green text</span> = added by Gemini review &nbsp;|&nbsp;
+                    <span class="bg-red-200 dark:bg-red-900/50 px-1 line-through">Red strikethrough</span> = removed from Claude draft
+                </p>
+            </div>
+        </div>
+    `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector('#close-diff-modal-btn').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
 }
 
 /**
@@ -377,69 +513,6 @@ function showPromptModal(prompt, onCopySuccess = null) {
 }
 
 /**
- * Show a modal with diff between Phase 1 and Phase 2 outputs
- * @param {Object} project - The project object
- */
-function showDiffModal(project) {
-  const workflow = new Workflow(project);
-  const phase1Output = workflow.getPhaseOutput(1) || '';
-  const phase2Output = workflow.getPhaseOutput(2) || '';
-
-  if (!phase1Output || !phase2Output) {
-    showToast('Need both Phase 1 and Phase 2 outputs to compare', 'warning');
-    return;
-  }
-
-  const diff = computeWordDiff(phase1Output, phase2Output);
-  const diffHtml = renderDiffHtml(diff);
-  const stats = getDiffStats(diff);
-
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-  modal.innerHTML = `
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <div>
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-            🔄 Phase Comparison: Initial Draft → Refined
-          </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            <span class="text-green-600">+${stats.additions} additions</span> ·
-            <span class="text-red-600">-${stats.deletions} deletions</span> ·
-            ${stats.unchanged} unchanged
-          </p>
-        </div>
-        <button id="close-diff-modal-btn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-          <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="p-4 overflow-y-auto flex-1">
-        <div class="prose dark:prose-invert max-w-none text-sm leading-relaxed">
-          ${diffHtml}
-        </div>
-      </div>
-      <div class="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
-        <button id="close-diff-modal-btn-2" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-          Close
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  const closeModal = () => modal.remove();
-
-  modal.querySelector('#close-diff-modal-btn').addEventListener('click', closeModal);
-  modal.querySelector('#close-diff-modal-btn-2').addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-}
-
-/**
  * Attach event listeners for phase interactions
  * @module project-view
  */
@@ -448,6 +521,7 @@ function attachPhaseEventListeners(project, phase) {
   const saveResponseBtn = document.getElementById('save-response-btn');
   const responseTextarea = document.getElementById('response-textarea');
   const nextPhaseBtn = document.getElementById('next-phase-btn');
+  const prevPhaseBtn = document.getElementById('prev-phase-btn');
   const viewPromptBtn = document.getElementById('view-prompt-btn');
   const editDetailsBtn = document.getElementById('edit-details-btn');
   const deleteProjectBtn = document.getElementById('delete-project-btn');
@@ -494,11 +568,20 @@ function attachPhaseEventListeners(project, phase) {
     }
   });
 
-  // Compare Phases button handler
+  // Compare phases button handler (shows diff between Phase 1 and Phase 2)
   const comparePhasesBtn = document.getElementById('compare-phases-btn');
   if (comparePhasesBtn) {
     comparePhasesBtn.addEventListener('click', () => {
-      showDiffModal(project);
+      const workflow = new Workflow(project);
+      const phase1Output = workflow.getPhaseOutput(1);
+      const phase2Output = workflow.getPhaseOutput(2);
+
+      if (!phase1Output || !phase2Output) {
+        showToast('Both Phase 1 and Phase 2 must be completed to compare', 'warning');
+        return;
+      }
+
+      showDiffModal(phase1Output, phase2Output);
     });
   }
 
@@ -588,37 +671,44 @@ function attachPhaseEventListeners(project, phase) {
     saveResponseBtn.addEventListener('click', async () => {
       const response = responseTextarea ? responseTextarea.value.trim() : '';
       if (response && response.length >= 3) {
-        // Generate prompt if it hasn't been generated yet
-        let prompt = project.phases?.[phase]?.prompt || '';
-        if (!prompt) {
-          prompt = await generatePromptForPhase(project, phase);
-        }
-        await updatePhase(project.id, phase, prompt, response);
+        try {
+          // Re-fetch project from storage to ensure we have fresh data (not stale closure)
+          const freshProject = await getProject(project.id);
 
-        // Auto-advance to next phase if not on final phase
-        if (phase < 3) {
-          showToast('Response saved! Moving to next phase...', 'success');
-          // Re-fetch the updated project and advance
-          const updatedProject = await getProject(project.id);
-          updatedProject.phase = phase + 1;
-          updatePhaseTabStyles(phase + 1);
-          // Add completion checkmark to the current phase tab
-          const currentPhaseTab = document.querySelector(`button.phase-tab[data-phase="${phase}"]`);
-          if (currentPhaseTab && !currentPhaseTab.querySelector('.text-green-500')) {
-            currentPhaseTab.insertAdjacentHTML('beforeend', '<span class="ml-2 text-green-500">✓</span>');
+          // Generate prompt if it hasn't been generated yet
+          let prompt = freshProject.phases?.[phase]?.prompt || '';
+          if (!prompt) {
+            prompt = await generatePromptForPhase(freshProject, phase);
           }
-          document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
-          attachPhaseEventListeners(updatedProject, phase + 1);
-        } else {
-          // Phase 3 complete - extract and update project title if changed
-          const extractedTitle = extractTitleFromMarkdown(response);
-          if (extractedTitle && extractedTitle !== project.title) {
-            await updateProject(project.id, { title: extractedTitle });
-            showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+          await updatePhase(project.id, phase, prompt, response);
+
+          // Auto-advance to next phase if not on final phase
+          if (phase < 3) {
+            showToast('Response saved! Moving to next phase...', 'success');
+            // Re-fetch the updated project and advance
+            const updatedProject = await getProject(project.id);
+            updatePhaseTabStyles(phase + 1);
+            // Add completion checkmark to the current phase tab
+            const currentPhaseTab = document.querySelector(`button.phase-tab[data-phase="${phase}"]`);
+            if (currentPhaseTab && !currentPhaseTab.querySelector('.text-green-500')) {
+              currentPhaseTab.insertAdjacentHTML('beforeend', '<span class="ml-2 text-green-500">✓</span>');
+            }
+            document.getElementById('phase-content').innerHTML = renderPhaseContent(updatedProject, phase + 1);
+            attachPhaseEventListeners(updatedProject, phase + 1);
           } else {
-            showToast('Phase 3 complete! Your PRD is ready.', 'success');
+            // Phase 3 complete - extract and update project title if changed
+            const extractedTitle = extractTitleFromMarkdown(response);
+            if (extractedTitle && extractedTitle !== freshProject.title) {
+              await updateProject(project.id, { title: extractedTitle });
+              showToast(`Phase 3 complete! Title updated to "${extractedTitle}"`, 'success');
+            } else {
+              showToast('Phase 3 complete! Your PRD is ready.', 'success');
+            }
+            renderProjectView(project.id);
           }
-          renderProjectView(project.id);
+        } catch (error) {
+          console.error('Error saving response:', error);
+          showToast(`Failed to save response: ${error.message}`, 'error');
         }
       } else {
         showToast('Please enter at least 3 characters', 'warning');
@@ -645,6 +735,22 @@ function attachPhaseEventListeners(project, phase) {
   if (editDetailsBtn) {
     editDetailsBtn.addEventListener('click', () => {
       navigateTo('edit-project', project.id);
+    });
+  }
+
+  // Previous phase button - re-fetch project to ensure fresh data
+  if (prevPhaseBtn) {
+    prevPhaseBtn.addEventListener('click', async () => {
+      const prevPhase = phase - 1;
+      if (prevPhase < 1) return;
+
+      // Re-fetch project from storage to get fresh data
+      const freshProject = await getProject(project.id);
+      freshProject.phase = prevPhase;
+
+      updatePhaseTabStyles(prevPhase);
+      document.getElementById('phase-content').innerHTML = renderPhaseContent(freshProject, prevPhase);
+      attachPhaseEventListeners(freshProject, prevPhase);
     });
   }
 }
