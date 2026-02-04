@@ -74,12 +74,13 @@ const PRIORITIZATION_PATTERNS = {
 };
 
 // Customer evidence detection patterns
+// Expanded to recognize evidence signals common in internal/pilot PRDs
 const CUSTOMER_EVIDENCE_PATTERNS = {
-  research: /\b(user research|customer research|user interview|customer interview|usability test|user study|survey result|focus group)\b/gi,
-  data: /\b(data shows|analytics indicate|metrics show|we found that|research indicates|\d+%\s+of\s+(users|customers))\b/gi,
+  research: /\b(user research|customer research|user interview|customer interview|usability test|user study|survey result|focus group|market research|competitive analysis|discovery)\b/gi,
+  data: /\b(data shows|analytics indicate|metrics show|we found that|research indicates|\d+%\s+of\s+(users|customers)|based on experience|observed that|common pattern|industry standard|best practice)\b/gi,
   quotes: /"[^"]{10,}"|\u201c[^\u201d]{10,}\u201d/g,
-  feedback: /\b(customer feedback|user feedback|nps|csat|support ticket|feature request)\b/gi,
-  validation: /\b(validated|tested with|confirmed by|based on feedback from)\b/gi
+  feedback: /\b(customer feedback|user feedback|nps|csat|support ticket|feature request|pain point|user complaint|friction)\b/gi,
+  validation: /\b(validated|tested with|confirmed by|based on feedback from|pilot|dogfood|internal testing|beta|prototype testing|proof of concept)\b/gi
 };
 
 // Scope boundary detection patterns
@@ -549,25 +550,31 @@ export function detectUserPersonas(text) {
   const personaIndicators = [];
 
   // Check for persona section - supports numbered headers and various naming conventions
-  const hasPersonaSection = /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|target\s+user|audience|customer\s+profile)/im.test(text);
+  const hasPersonaSection = /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|target\s+user|audience|customer\s+profile|primary\s+user)/im.test(text);
   if (hasPersonaSection) {
     personaIndicators.push('Dedicated persona section');
   }
 
-  // Check for specific user type mentions
-  const userTypes = text.match(/\b(admin|administrator|end.?user|power.?user|developer|manager|customer|stakeholder|buyer|seller)\b/gi) || [];
-  const uniqueUserTypes = [...new Set(userTypes.map(u => u.toLowerCase()))];
+  // Check for specific user type mentions - expanded list of common roles
+  const userTypes = text.match(/\b(admin|administrator|end.?user|power.?user|developer|manager|customer|stakeholder|buyer|seller|operator|analyst|engineer|designer|user|professional|owner|team\s+lead|solo\s+developer)\b/gi) || [];
+  const uniqueUserTypes = [...new Set(userTypes.map(u => u.toLowerCase().trim()))];
 
   // Check for pain point language
-  const hasPainPoints = /\b(pain.?point|problem|challenge|frustrat|struggle|difficult|issue)\b/i.test(text);
+  const hasPainPoints = /\b(pain.?point|problem|challenge|frustrat|struggle|difficult|issue|context.?switch|cognitive\s+overhead|loses?\s+track|scattered|disorganized)\b/i.test(text);
   if (hasPainPoints) {
     personaIndicators.push('Pain points addressed');
   }
 
   // Check for user journey/scenario language
-  const hasScenarios = /\b(scenario|use.?case|user.?journey|workflow|user.?flow)\b/i.test(text);
+  const hasScenarios = /\b(scenario|use.?case|user.?journey|workflow|user.?flow|daily\s+routine|typical\s+day)\b/i.test(text);
   if (hasScenarios) {
     personaIndicators.push('User scenarios described');
+  }
+
+  // Check for persona depth indicators (detailed description, not just a label)
+  const hasPersonaDepth = /\*\*primary\s+user\*\*:|\*\*target\s+user\*\*:|who\s+(will|would)\s+use|target\s+audience\s+is/i.test(text);
+  if (hasPersonaDepth) {
+    personaIndicators.push('Detailed persona description');
   }
 
   return {
@@ -575,6 +582,7 @@ export function detectUserPersonas(text) {
     userTypes: uniqueUserTypes,
     hasPainPoints,
     hasScenarios,
+    hasPersonaDepth,
     indicators: personaIndicators
   };
 }
@@ -599,8 +607,9 @@ export function detectProblemStatement(text) {
     indicators.push('Problem framing language');
   }
 
-  // Check for value proposition language
-  const hasValueProp = /\b(value|benefit|outcome|result|enable|empower|improve|reduce|increase)\b/i.test(text);
+  // Check for value proposition language - common terms that express benefits/outcomes
+  // Includes: direct value words, action verbs that imply benefit, solution-oriented language
+  const hasValueProp = /\b(value|benefit|outcome|result|enable|empower|improve|reduce|increase|streamline|automate|simplify|eliminate|save|prevent|accelerate|enhance|optimize|transform|deliver|provide|ensure|achieve|solution|unified|integrated|seamless|efficient)\b/i.test(text);
   if (hasValueProp) {
     indicators.push('Value proposition language');
   }
@@ -633,27 +642,43 @@ export function scoreUserFocus(text) {
   const maxScore = 25;
 
   // User persona definition (0-7 pts)
+  // Credit well-defined single personas as much as multiple shallow personas
   const personas = detectUserPersonas(text);
 
-  if (personas.hasPersonaSection && personas.userTypes.length >= 2) {
+  // Calculate persona quality score based on depth indicators
+  const personaQuality =
+    (personas.hasPersonaSection ? 2 : 0) +
+    (personas.userTypes.length >= 2 ? 2 : (personas.userTypes.length >= 1 ? 1 : 0)) +
+    (personas.hasPainPoints ? 1 : 0) +
+    (personas.hasScenarios ? 1 : 0) +
+    (personas.hasPersonaDepth ? 1 : 0);
+
+  if (personaQuality >= 5) {
     score += 7;
-    strengths.push(`${personas.userTypes.length} user types identified with dedicated section`);
-  } else if (personas.hasPersonaSection || personas.userTypes.length >= 2) {
-    score += 4;
+    if (personas.userTypes.length >= 2) {
+      strengths.push(`${personas.userTypes.length} user types identified with dedicated section`);
+    } else {
+      strengths.push('Well-defined user persona with pain points and context');
+    }
+  } else if (personaQuality >= 3) {
+    score += 5;
     if (personas.userTypes.length > 0) {
       strengths.push(`User types identified: ${personas.userTypes.slice(0, 3).join(', ')}`);
     }
+    if (personas.hasPainPoints) {
+      strengths.push('User pain points addressed');
+    }
+  } else if (personaQuality >= 2) {
+    score += 3;
+    if (personas.userTypes.length > 0) {
+      strengths.push(`User types identified: ${personas.userTypes.slice(0, 3).join(', ')}`);
+    }
+    issues.push('Add more persona depth (pain points, scenarios, detailed descriptions)');
   } else if (personas.userTypes.length >= 1) {
     score += 2;
     issues.push('Add dedicated User Personas section with detailed descriptions');
   } else {
     issues.push('No user personas found - identify who will use this product');
-  }
-
-  // Pain points (bonus within persona - now part of the 7 pts)
-  if (personas.hasPainPoints && score < 7) {
-    score += 1;
-    strengths.push('User pain points addressed');
   }
 
   // Problem statement (0-7 pts)

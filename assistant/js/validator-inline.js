@@ -133,13 +133,18 @@ function scoreUserFocus(text) {
   const issues = [];
 
   // User Personas (7 pts) - supports numbered headers
-  const hasPersonaSection = /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|target\s+user|audience|customer\s+profile)/im.test(text);
-  if (hasPersonaSection) score += 7;
+  const hasPersonaSection = /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|target\s+user|audience|customer\s+profile|primary\s+user)/im.test(text);
+  const hasPainPoints = /\b(pain.?point|problem|challenge|frustrat|struggle|context.?switch|cognitive\s+overhead)\b/i.test(text);
+  if (hasPersonaSection && hasPainPoints) score += 7;
+  else if (hasPersonaSection) score += 5;
   else issues.push('No user personas section');
 
-  // Problem Statement (7 pts) - supports numbered headers
+  // Problem Statement (7 pts) - supports numbered headers + value proposition
   const hasProblemSection = /^#+\s*(\d+\.?\d*\.?\s*)?(problem|goal|objective|why|motivation|current\s+state|target\s+state)/im.test(text);
-  if (hasProblemSection) score += 7;
+  // Expanded value proposition patterns
+  const hasValueProp = /\b(value|benefit|outcome|result|enable|empower|improve|reduce|increase|streamline|automate|simplify|eliminate|save|prevent|unified|integrated|solution)\b/i.test(text);
+  if (hasProblemSection && hasValueProp) score += 7;
+  else if (hasProblemSection) score += 4;
   else issues.push('No problem statement');
 
   // Alignment (6 pts) - check if requirements reference users
@@ -148,10 +153,12 @@ function scoreUserFocus(text) {
   else if (userRefs >= 5) score += 4;
   else if (userRefs >= 2) score += 2;
 
-  // Customer Evidence (5 pts)
-  const hasResearch = /\b(user research|customer research|user interview|survey result)\b/i.test(text);
+  // Customer Evidence (5 pts) - expanded patterns for internal/pilot PRDs
+  const hasResearch = /\b(user research|customer research|user interview|survey result|discovery|competitive analysis)\b/i.test(text);
   const hasQuotes = /"[^"]{10,}"/.test(text);
+  const hasValidation = /\b(pilot|dogfood|beta|prototype|based on experience|common pattern)\b/i.test(text);
   if (hasResearch || hasQuotes) score += 5;
+  else if (hasValidation) score += 3;
 
   return { score: Math.min(25, score), maxScore: 25, issues };
 }
