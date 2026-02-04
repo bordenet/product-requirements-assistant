@@ -79,7 +79,13 @@ Evaluate the document on these dimensions:
 - Are there gaps or missing information?
 - Are open questions identified?
 
-### 7. Cross-Section Consistency (1-10)
+### 7. Value Proposition (1-10)
+- Are customer/partner benefits specific and quantified?
+- Are company benefits tied to measurable outcomes (revenue, cost, strategic)?
+- Is value articulated from both perspectives (external and internal)?
+- Are the claimed benefits supported by evidence or data?
+
+### 8. Cross-Section Consistency (1-10)
 - Do success metrics directly map to business goals?
 - Do requirements support the proposed solution?
 - Does the timeline account for all requirements?

@@ -77,16 +77,39 @@ Create a well-structured PRD with the following sections:
 ### 2.2 Impact
 {Who is affected and how? Quantify if possible}
 
-## 3. Goals and Objectives
+## 3. Value Proposition
+
+**Dual-Perspective Value Articulation Required**
+
+For EACH perspective, provide:
+- **Specific benefit:** What exactly improves?
+- **Quantification:** By how much? (time, cost, revenue, effort)
+- **Evidence:** Based on what data or research?
+
+### 3.1 Value to Customer/Partner
+{What specific, measurable benefits do customers/partners receive?}
+- Time saved: Quantify hours/week or days/month
+- Cost reduced: Quantify dollar amount or percentage
+- Capability gained: What can they do now that they couldn't before?
+- Risk mitigated: What problems are prevented?
+
+### 3.2 Value to [Company Name]
+{What specific, measurable benefits does our business receive?}
+- Revenue impact: New revenue, retained revenue, upsell opportunity
+- Cost savings: Reduced support tickets, automation savings
+- Strategic value: Market position, competitive advantage
+- Operational efficiency: Reduced manual work, faster processes
+
+## 4. Goals and Objectives
 {What are we trying to achieve?}
 
-### 3.1 Business Goals
+### 4.1 Business Goals
 {High-level business outcomes}
 
-### 3.2 User Goals
+### 4.2 User Goals
 {What will users be able to do?}
 
-### 3.3 Success Metrics
+### 4.3 Success Metrics
 
 **Mutation 5: Require Quantified Success Metrics**
 
@@ -104,42 +127,42 @@ Example:
 - **Timeline:** 3 months post-launch
 - **Measurement:** Weekly time tracking reports from support team
 
-## 4. Proposed Solution
+## 5. Proposed Solution
 {High-level description of what we're building}
 
-### 4.1 Core Functionality
+### 5.1 Core Functionality
 {Key features and capabilities}
 
-### 4.2 User Experience
+### 5.2 User Experience
 {How will users interact with this?}
 
-### 4.3 Key Workflows
+### 5.3 Key Workflows
 {Main user journeys}
 
-## 5. Scope
+## 6. Scope
 {What's in and out of scope}
 
-### 5.1 In Scope
+### 6.1 In Scope
 {What we're building in this effort}
 
-### 5.2 Out of Scope
+### 6.2 Out of Scope
 {What we're explicitly NOT building}
 
-### 5.3 Future Considerations
+### 6.3 Future Considerations
 {What might come later}
 
-## 6. Requirements
+## 7. Requirements
 
-### 6.1 Functional Requirements
+### 7.1 Functional Requirements
 {What the system must do}
 
-### 6.2 Non-Functional Requirements
+### 7.2 Non-Functional Requirements
 {Performance, security, scalability, etc.}
 
-### 6.3 Constraints
+### 7.3 Constraints
 {Technical, business, or regulatory constraints}
 
-## 7. Stakeholders
+## 8. Stakeholders
 
 **Mutation 4: Stakeholder Impact Requirements**
 
@@ -150,19 +173,19 @@ For EACH stakeholder group, specify:
 - **Success Criteria:** How they'll measure success
 
 Example:
-### 7.2 Customer Support Team
+### 8.1 Customer Support Team
 - **Role:** Handle customer inquiries and feedback
 - **Impact:** Workload reduced from 200 emails/day to 50 emails/day (75% reduction)
 - **Needs:** Training on new feedback categorization system, access to analytics dashboard
 - **Success Criteria:** Average response time <2 hours, customer satisfaction >90%
 
-## 8. Timeline and Milestones
+## 9. Timeline and Milestones
 {High-level project phases}
 
-## 9. Risks and Mitigation
+## 10. Risks and Mitigation
 {What could go wrong and how we'll address it}
 
-## 10. Open Questions
+## 11. Open Questions
 {What needs to be resolved}
 ```
 

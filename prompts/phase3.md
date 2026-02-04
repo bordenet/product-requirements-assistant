@@ -46,6 +46,8 @@ Before finalizing, verify:
 - ✅ All formulas and scoring mechanisms are explicitly defined
 - ✅ All integrations specify exact APIs, protocols, or third-party services
 - ✅ All compliance requirements are identified (HIPAA, SOC 2, PCI-DSS, GDPR, etc.)
+- ✅ Value Proposition includes both customer/partner AND company perspectives
+- ✅ All value claims are quantified with specific metrics (not "improved" or "enhanced")
 - ✅ No vague terms remain ("fast", "scalable", "near-real-time" replaced with specific thresholds)
 - ✅ All non-functional requirements include measurable thresholds
 
