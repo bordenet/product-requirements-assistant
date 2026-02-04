@@ -349,25 +349,20 @@ function renderPhaseContent(project, phase) {
                 >${escapeHtml(phaseData.response || '')}</textarea>
 
                 <div class="mt-3 flex justify-between items-center">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">
-                        ${phaseData.completed ? '✓ Phase completed' : 'Paste response to complete this phase'}
-                    </span>
+                    ${phaseData.completed && phase < 3 ? `
+                        <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Next Phase →
+                        </button>
+                    ` : `
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            Paste response to complete this phase
+                        </span>
+                    `}
                     <button id="save-response-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600" ${!phaseData.response || phaseData.response.trim().length < 3 ? 'disabled' : ''}>
                         Save Response
                     </button>
                 </div>
             </div>
-
-
-
-            <!-- Footer Navigation -->
-            ${phase < 3 && phaseData.completed ? `
-            <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
-                <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Next Phase →
-                </button>
-            </div>
-            ` : ''}
         </div>
     `;
 }
