@@ -1,48 +1,88 @@
+# ==============================================================================
+# GENESIS PROJECT .gitignore
+# ==============================================================================
+# Unified gitignore for all genesis-tools assistant projects.
+# IMPORTANT: .env must ALWAYS be in .gitignore. NEVER track .env in git.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Environment Variables (CRITICAL - never commit secrets)
+# ------------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ------------------------------------------------------------------------------
 # Test artifacts and scaffolding
+# ------------------------------------------------------------------------------
 setup-test.log
+backend.log
+frontend.log
+git_reset.log
 .setup-cache/
 
+# ------------------------------------------------------------------------------
 # Project data directories (keep directory structure but ignore contents)
+# ------------------------------------------------------------------------------
 outputs/*
 !outputs/.gitkeep
 inputs/*
 !inputs/.gitkeep
 
-# Environment variables
-.env
+# ------------------------------------------------------------------------------
+# Cruft Prevention - Never commit these directories
+# ------------------------------------------------------------------------------
+archive/
+docs-temp/
+temp-docs-*/
+*_results*/
+temp/
+tmp/
+DO_NOT_COMMIT/
 
+# ------------------------------------------------------------------------------
 # Python
+# ------------------------------------------------------------------------------
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
 venv/
+.venv/
 .mypy_cache/
 .pytest_cache/
-
-# Node.js / JavaScript
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Test coverage
-coverage/
-*.lcov
-.nyc_output/
 .coverage
+htmlcov/
 
+# ------------------------------------------------------------------------------
+# Go
+# ------------------------------------------------------------------------------
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+coverage.out
+*.test
+
+# ------------------------------------------------------------------------------
 # IDE
+# ------------------------------------------------------------------------------
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
 
+# ------------------------------------------------------------------------------
 # OS
+# ------------------------------------------------------------------------------
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -52,29 +92,52 @@ desktop.ini
 .Trashes
 ehthumbs.db
 
-# Genesis project template system (local development only)
-genesis/
+# ------------------------------------------------------------------------------
+# Node.js / JavaScript
+# ------------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Temporary documentation (scheduled for review/deletion)
-temp-docs-*/
+# ------------------------------------------------------------------------------
+# Test coverage
+# ------------------------------------------------------------------------------
+coverage/
+*.lcov
+.nyc_output/
 
+# ------------------------------------------------------------------------------
 # Playwright
+# ------------------------------------------------------------------------------
 test-results/
 playwright-report/
 playwright/.cache/
 
+# ------------------------------------------------------------------------------
 # Build artifacts
+# ------------------------------------------------------------------------------
 build/
 dist/
 *.log
+app-bundle.js
 
-################################################################################
-# GitHub Pages Architecture B: Serving from root (/)
-################################################################################
-# When GitHub Pages serves from root, docs/ should ONLY contain documentation,
-# NOT copies of app files. This prevents drift between root and docs/.
+# ------------------------------------------------------------------------------
+# Genesis (local development only)
+# ------------------------------------------------------------------------------
+genesis/
+prompt_tuning_results_*/
+
+# ------------------------------------------------------------------------------
+# GitHub Pages (served from root)
+# ------------------------------------------------------------------------------
+# When GitHub Pages serves from root, docs/ should ONLY contain documentation
 docs/js/
 docs/css/
+docs/prompts/
+docs/templates/
 docs/index.html
 docs/data/
 docs/*.html

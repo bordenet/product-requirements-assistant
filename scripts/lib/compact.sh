@@ -1,168 +1,166 @@
 #!/usr/bin/env bash
+################################################################################
+# compact.sh - Compact display utilities for shell scripts
+#
+# DESCRIPTION
+#     Provides functions for compact, minimal-vertical-space output in shell
+#     scripts. Uses ANSI escape codes to overwrite lines and create inline
+#     status updates.
+#
+# USAGE
+#     source "${SCRIPT_DIR}/lib/compact.sh"
+#
+# FUNCTIONS
+#     compact_start "message"     - Start a compact status line
+#     compact_update "message"    - Update the current status line
+#     compact_done "message"      - Complete with success (✓)
+#     compact_fail "message"      - Complete with failure (✗)
+#     compact_skip "message"      - Complete with skip (⊘)
+#     compact_newline             - Force a newline (end compact mode)
+#
+# NOTES
+#     - Only works in compact mode (VERBOSE=false)
+#     - In verbose mode, functions behave like normal log functions
+#     - Uses ANSI escape codes for line manipulation
+#
+################################################################################
 
-################################################################################
-# Compact Output Library - Vertical Real Estate Optimized
-################################################################################
-# PURPOSE: Minimal vertical space usage with in-place updates and timer
-# USAGE: source "$(dirname "${BASH_SOURCE[0]}")/lib/compact.sh"
-################################################################################
-
-# ANSI escape sequences
-readonly ANSI_CLEAR_LINE='\033[2K'
+# ANSI escape codes
+ERASE_LINE="\033[2K"
 # shellcheck disable=SC2034  # May be used by scripts sourcing this library
-readonly ANSI_CURSOR_UP='\033[1A'
-readonly ANSI_CURSOR_SAVE='\033[s'
-readonly ANSI_CURSOR_RESTORE='\033[u'
-readonly ANSI_HIDE_CURSOR='\033[?25l'
-readonly ANSI_SHOW_CURSOR='\033[?25h'
+CURSOR_UP="\033[1A"
 # shellcheck disable=SC2034  # May be used by scripts sourcing this library
-readonly ANSI_MOVE_TO_COL='\033[%dG'
-
-# Colors
-readonly C_RED='\033[0;31m'
-readonly C_GREEN='\033[0;32m'
-readonly C_YELLOW='\033[1;33m'
-readonly C_BLUE='\033[0;34m'
-readonly C_CYAN='\033[0;36m'
-readonly C_GRAY='\033[0;90m'
-readonly C_BOLD='\033[1m'
-readonly C_RESET='\033[0m'
+CURSOR_SAVE="\033[s"
+# shellcheck disable=SC2034  # May be used by scripts sourcing this library
+CURSOR_RESTORE="\033[u"
 
 # Symbols
-readonly SYM_OK="${C_GREEN}✓${C_RESET}"
-readonly SYM_FAIL="${C_RED}✗${C_RESET}"
-readonly SYM_WARN="${C_YELLOW}⚠${C_RESET}"
-readonly SYM_RUN="${C_BLUE}▸${C_RESET}"
-
-# Global state
-SCRIPT_START_TIME=$(date +%s)
-CURRENT_TASK=""
-# VERBOSE can be "true"/"false" (string) or 0/1 (integer)
-# We normalize to string "true"/"false" for consistent comparisons
-if [[ "${VERBOSE:-}" == "1" || "${VERBOSE:-}" == "true" ]]; then
-    VERBOSE="true"
-else
-    VERBOSE="false"
-fi
+SYMBOL_SUCCESS="✓"
+SYMBOL_FAIL="✗"
+SYMBOL_SKIP="⊘"
+SYMBOL_WORKING="▶"
 
 ################################################################################
-# Timer Functions
+# Compact Display Functions
 ################################################################################
 
-# Get elapsed time in HH:MM:SS format
-get_elapsed_time() {
-    local now
-    now=$(date +%s)
-    local elapsed=$((now - SCRIPT_START_TIME))
-    printf "%02d:%02d:%02d" $((elapsed/3600)) $(((elapsed%3600)/60)) $((elapsed%60))
-}
+compact_start() {
+    local message="$1"
 
-# Print timer in top-right corner
-print_timer() {
-    local cols
-    cols=$(tput cols 2>/dev/null || echo 80)
-    local timer
-    timer=$(get_elapsed_time)
-    local timer_text="${C_GRAY}[${timer}]${C_RESET}"
-    local timer_len=11  # Length of [HH:MM:SS] with ANSI codes stripped
-    local pos=$((cols - timer_len))
-
-    # Save cursor, move to position, print timer, restore cursor
-    printf "\033[s"
-    printf "\033[%dG" "$pos"  # Move to column
-    printf "%b" "${timer_text}"
-    printf "\033[u"
-}
-
-# Update status line in place
-update_status() {
-    local symbol="$1"
-    local message="$2"
-
-    # Clear line and print status with timer
-    printf "\r%b" "${ANSI_CLEAR_LINE}"
-    printf "%b %s" "${symbol}" "${message}"
-    print_timer
-}
-
-# Finalize status line (move to next line)
-finalize_status() {
-    printf "\n"
-}
-
-# Skip task (already done)
-task_skip() {
-    local message="${1:-$CURRENT_TASK}"
-    update_status "${C_GRAY}○${C_RESET}" "${message} ${C_GRAY}(cached)${C_RESET}"
-    finalize_status
-}
-
-################################################################################
-# Compact Logging Functions
-################################################################################
-
-# Start a task (shows spinner/progress)
-task_start() {
-    CURRENT_TASK="$1"
-    update_status "${SYM_RUN}" "${CURRENT_TASK}..."
-
-    if [[ "$VERBOSE" == "true" ]]; then
-        finalize_status
+    if [[ "${VERBOSE:-false}" == "true" ]]; then
+        echo ""
+        echo -e "${COLOR_BOLD:-}${SYMBOL_WORKING}${COLOR_RESET:-} $message"
+    else
+        echo -ne "\r\033[2K${SYMBOL_WORKING} $message"
     fi
 }
 
-# Complete task successfully
-task_ok() {
-    local message="${1:-$CURRENT_TASK}"
-    update_status "${SYM_OK}" "${message}"
-    finalize_status
+compact_update() {
+    local message="$1"
+
+    if [[ "${VERBOSE:-false}" == "true" ]]; then
+        echo -e "${COLOR_BLUE:-}[INFO]${COLOR_RESET:-} $message"
+    else
+        echo -ne "\r\033[2K${SYMBOL_WORKING} $message"
+    fi
 }
 
-# Task failed
-task_fail() {
-    local message="${1:-$CURRENT_TASK}"
-    update_status "${SYM_FAIL}" "${message}"
-    finalize_status
+compact_done() {
+    local message="$1"
+
+    if [[ "${VERBOSE:-false}" == "true" ]]; then
+        echo -e "${COLOR_GREEN:-}[${SYMBOL_SUCCESS}]${COLOR_RESET:-} $message"
+    else
+        echo -e "\r\033[2K${SYMBOL_WORKING} $message\t\t${COLOR_GREEN:-}[${SYMBOL_SUCCESS}]${COLOR_RESET:-}"
+    fi
 }
 
-# Task warning
-task_warn() {
-    local message="${1:-$CURRENT_TASK}"
-    update_status "${SYM_WARN}" "${message}"
-    finalize_status
+compact_fail() {
+    local message="$1"
+
+    if [[ "${VERBOSE:-false}" == "true" ]]; then
+        echo -e "${COLOR_RED:-}[${SYMBOL_FAIL}]${COLOR_RESET:-} $message" >&2
+    else
+        echo -e "\r\033[2K${SYMBOL_WORKING} $message\t\t${COLOR_RED:-}[${SYMBOL_FAIL}]${COLOR_RESET:-}" >&2
+    fi
 }
 
-# Verbose-only output
-verbose() {
-    if [[ "$VERBOSE" == "true" ]]; then
-        echo -e "${C_GRAY}  $*${C_RESET}"
+compact_skip() {
+    local message="$1"
+
+    if [[ "${VERBOSE:-false}" == "true" ]]; then
+        echo -e "${COLOR_YELLOW:-}[${SYMBOL_SKIP}]${COLOR_RESET:-} $message"
+    else
+        echo -e "\r\033[2K${SYMBOL_WORKING} $message\t\t${COLOR_YELLOW:-}[${SYMBOL_SKIP}]${COLOR_RESET:-}"
+    fi
+}
+
+compact_newline() {
+    if [[ "${VERBOSE:-false}" != "true" ]]; then
+        echo ""
     fi
 }
 
 ################################################################################
-# Header/Section Functions
+# Progress Bar (Optional)
 ################################################################################
 
-# Print compact header (single line)
-print_header() {
-    echo -e "${C_CYAN}${C_BOLD}$*${C_RESET}"
-}
+compact_progress() {
+    local current="$1"
+    local total="$2"
+    local message="${3:-Processing}"
 
-# Print section (minimal)
-print_section() {
-    echo -e "${C_BLUE}▸${C_RESET} ${C_BOLD}$*${C_RESET}"
+    if [[ "${VERBOSE:-false}" == "true" ]]; then
+        echo -e "${COLOR_BLUE:-}[INFO]${COLOR_RESET:-} $message ($current/$total)"
+        return
+    fi
+
+    local percent=$((current * 100 / total))
+    local filled=$((percent / 5))
+    local empty=$((20 - filled))
+
+    local bar=""
+    for ((i=0; i<filled; i++)); do bar+="█"; done
+    for ((i=0; i<empty; i++)); do bar+="░"; done
+
+    echo -ne "\r\033[2K${SYMBOL_WORKING} $message [$bar] $percent%"
+
+    if [[ "$current" -eq "$total" ]]; then
+        echo -e "\r\033[2K${SYMBOL_WORKING} $message [$bar] 100%\t${COLOR_GREEN:-}[${SYMBOL_SUCCESS}]${COLOR_RESET:-}"
+    fi
 }
 
 ################################################################################
-# Cleanup
+# Spinner (Optional)
 ################################################################################
 
-# Show cursor on exit
-cleanup_display() {
-    printf "%b" "${ANSI_SHOW_CURSOR}"
+SPINNER_PID=""
+SPINNER_FRAMES=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+
+compact_spinner_start() {
+    local message="$1"
+
+    if [[ "${VERBOSE:-false}" == "true" ]]; then
+        echo -e "${COLOR_BLUE:-}[INFO]${COLOR_RESET:-} $message"
+        return
+    fi
+
+    (
+        local i=0
+        while true; do
+            echo -ne "\r\033[2K${SPINNER_FRAMES[$i]} $message"
+            i=$(( (i + 1) % ${#SPINNER_FRAMES[@]} ))
+            sleep 0.1
+        done
+    ) &
+    SPINNER_PID=$!
 }
 
-trap cleanup_display EXIT
-
-# Hide cursor for cleaner updates
-printf "%b" "${ANSI_HIDE_CURSOR}"
+compact_spinner_stop() {
+    if [[ -n "$SPINNER_PID" ]]; then
+        kill "$SPINNER_PID" 2>/dev/null || true
+        wait "$SPINNER_PID" 2>/dev/null || true
+        SPINNER_PID=""
+        echo -ne "\r\033[2K"
+    fi
+}

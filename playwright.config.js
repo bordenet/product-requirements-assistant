@@ -1,31 +1,15 @@
-import { defineConfig, devices } from '@playwright/test';
-
-export default defineConfig({
-  testDir: './e2e',
-  fullyParallel: true,  // Run tests in parallel - each gets fresh context
-  forbidOnly: !!process.env.CI,
-  retries: 2,  // Retry failed tests to handle flakiness
-  workers: undefined,  // Use default workers
-  reporter: 'html',
+export default {
+  testDir: "./e2e",
+  timeout: 30000,
   use: {
-    baseURL: 'http://localhost:8000',
-    trace: 'on-first-retry',
-    // Ensure clean storage state for each test
-    storageState: { cookies: [], origins: [] },
-    // Grant clipboard permissions for tests that use clipboard API
-    permissions: ['clipboard-read', 'clipboard-write'],
+    baseURL: "http://localhost:8000",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure"
   },
-
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
-
   webServer: {
-    command: 'npm run serve',
-    url: 'http://localhost:8000',
+    command: "npm run serve",
+    port: 8000,
     reuseExistingServer: !process.env.CI,
-  },
-});
+    timeout: 120000
+  }
+};

@@ -16,11 +16,9 @@ global.jest = jest;
 const originalConsoleError = console.error;
 console.error = (...args) => {
   const message = args[0]?.toString?.() || '';
-  // Suppress known jsdom limitations and expected test environment errors
+  // Suppress known jsdom limitations
   if (message.includes('Not implemented: navigation') ||
-      message.includes('Error: Not implemented') ||
-      message.includes('fetch is not defined') ||
-      message.includes('Error loading prompt template')) {
+      message.includes('Error: Not implemented')) {
     return; // Silently ignore these expected jsdom warnings
   }
   originalConsoleError.apply(console, args);
