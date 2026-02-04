@@ -90,6 +90,15 @@ const SCOPE_PATTERNS = {
   scopeSection: /^#+\s*(scope|boundaries)/im
 };
 
+// Value Proposition detection patterns
+const VALUE_PROPOSITION_PATTERNS = {
+  section: /^#+\s*(\d+\.?\d*\.?\s*)?(value\s+proposition|value\s+to\s+customer|value\s+to\s+partner|value\s+to\s+company|customer\s+value|business\s+value)/im,
+  customerValue: /\b(value\s+to\s+(customer|partner|user|client)|customer\s+benefit|partner\s+benefit|user\s+benefit)\b/gi,
+  companyValue: /\b(value\s+to\s+(company|business|organization)|business\s+value|revenue\s+impact|cost\s+saving|strategic\s+value)\b/gi,
+  quantifiedBenefit: /\b(\d+%|\$\d+|\d+\s*(hours?|days?|minutes?|weeks?)\s*(saved|reduced|faster)|reduce[ds]?\s+from\s+\d+|increase[ds]?\s+from\s+\d+)\b/gi,
+  vagueValue: /\b(improve[ds]?|enhance[ds]?|better|more\s+efficient|streamline[ds]?)\s+(the\s+)?(experience|process|workflow|operations?)\b/gi
+};
+
 const USER_STORY_PATTERN = /as\s+a[n]?\s+[\w\s]+,?\s+i\s+want/gi;
 // Accept both inline "given...when...then" and markdown bold "**Given**...When...Then"
 const ACCEPTANCE_CRITERIA_PATTERN = /(?:\*\*)?given(?:\*\*)?\s+.+?(?:\*\*)?when(?:\*\*)?\s+.+?(?:\*\*)?then(?:\*\*)?\s+/gi;
@@ -396,6 +405,44 @@ export function detectScopeBoundaries(text) {
 }
 
 /**
+ * Detect Value Proposition section and quality in text
+ * @param {string} text - Text to analyze
+ * @returns {Object} Value proposition detection results
+ */
+export function detectValueProposition(text) {
+  const hasSection = VALUE_PROPOSITION_PATTERNS.section.test(text);
+  const customerValueMatches = text.match(VALUE_PROPOSITION_PATTERNS.customerValue) || [];
+  const companyValueMatches = text.match(VALUE_PROPOSITION_PATTERNS.companyValue) || [];
+  const quantifiedMatches = text.match(VALUE_PROPOSITION_PATTERNS.quantifiedBenefit) || [];
+  const vagueMatches = text.match(VALUE_PROPOSITION_PATTERNS.vagueValue) || [];
+
+  const hasCustomerValue = customerValueMatches.length > 0;
+  const hasCompanyValue = companyValueMatches.length > 0;
+  const hasBothPerspectives = hasCustomerValue && hasCompanyValue;
+  const hasQuantification = quantifiedMatches.length > 0;
+  const hasVagueValue = vagueMatches.length > 0;
+
+  // Quality score: 0-4
+  let qualityScore = 0;
+  if (hasSection) qualityScore += 1;
+  if (hasBothPerspectives) qualityScore += 1;
+  if (hasQuantification) qualityScore += 1;
+  if (!hasVagueValue || quantifiedMatches.length > vagueMatches.length) qualityScore += 1;
+
+  return {
+    hasSection,
+    hasCustomerValue,
+    hasCompanyValue,
+    hasBothPerspectives,
+    hasQuantification,
+    hasVagueValue,
+    quantifiedCount: quantifiedMatches.length,
+    vagueCount: vagueMatches.length,
+    qualityScore
+  };
+}
+
+/**
  * Count user stories in text
  * @param {string} text - Text to analyze
  * @returns {number} Number of user stories found
@@ -631,7 +678,7 @@ export function detectProblemStatement(text) {
 
 /**
  * Score user focus (25 pts max)
- * Updated allocation: Personas 7, Problem Statement 7, Alignment 6, Customer Evidence 5
+ * Allocation: Personas 7, Problem Statement 7, Alignment 4, Customer Evidence 3, Value Proposition 4
  * @param {string} text - PRD content
  * @returns {Object} Score result with issues and strengths
  */
@@ -697,14 +744,14 @@ export function scoreUserFocus(text) {
     issues.push('Missing problem statement - explain what problem this solves');
   }
 
-  // Alignment between requirements and user needs (0-6 pts)
+  // Alignment between requirements and user needs (0-4 pts)
   const userStoryCount = countUserStories(text);
 
   if (userStoryCount >= 3 && problem.hasWhyExplanation) {
-    score += 6;
+    score += 4;
     strengths.push('Requirements clearly linked to user needs');
   } else if (userStoryCount >= 1 || problem.hasWhyExplanation) {
-    score += 3;
+    score += 2;
     if (userStoryCount === 0) {
       issues.push('Use user stories to connect features to user needs');
     }
@@ -712,11 +759,11 @@ export function scoreUserFocus(text) {
     issues.push('Requirements should trace back to user needs');
   }
 
-  // Customer evidence (0-5 pts) - NEW
+  // Customer evidence (0-3 pts)
   const customerEvidence = detectCustomerEvidence(text);
 
   if (customerEvidence.evidenceTypes >= 3) {
-    score += 5;
+    score += 3;
     const types = [];
     if (customerEvidence.hasResearch) types.push('research');
     if (customerEvidence.hasData) types.push('data');
@@ -724,13 +771,39 @@ export function scoreUserFocus(text) {
     if (customerEvidence.hasFeedback) types.push('feedback');
     strengths.push(`Customer evidence: ${types.join(', ')}`);
   } else if (customerEvidence.evidenceTypes >= 2) {
-    score += 3;
+    score += 2;
     strengths.push('Some customer evidence present');
   } else if (customerEvidence.evidenceTypes >= 1) {
     score += 1;
     issues.push('Add more customer evidence (research, data, quotes, feedback)');
   } else {
     issues.push('No customer evidence found - include user research, quotes, or usage data');
+  }
+
+  // Value Proposition (0-4 pts)
+  const valueProposition = detectValueProposition(text);
+
+  if (valueProposition.qualityScore >= 4) {
+    score += 4;
+    strengths.push('Value proposition with dual perspective and quantified benefits');
+  } else if (valueProposition.qualityScore >= 3) {
+    score += 3;
+    if (valueProposition.hasBothPerspectives) {
+      strengths.push('Value proposition addresses both customer and company perspectives');
+    }
+  } else if (valueProposition.qualityScore >= 2) {
+    score += 2;
+    if (!valueProposition.hasBothPerspectives) {
+      issues.push('Add value from both customer/partner AND company perspectives');
+    }
+    if (!valueProposition.hasQuantification) {
+      issues.push('Quantify value claims with specific metrics');
+    }
+  } else if (valueProposition.hasSection || valueProposition.hasCustomerValue || valueProposition.hasCompanyValue) {
+    score += 1;
+    issues.push('Strengthen value proposition with quantified benefits and dual perspective');
+  } else {
+    issues.push('Add Value Proposition section with customer/partner AND company benefits');
   }
 
   return {
@@ -740,7 +813,8 @@ export function scoreUserFocus(text) {
     strengths,
     personas,
     problem,
-    customerEvidence
+    customerEvidence,
+    valueProposition
   };
 }
 

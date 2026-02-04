@@ -127,6 +127,7 @@ function scoreRequirementsClarity(text) {
 
 /**
  * Score user focus (25 pts max)
+ * Allocation: Personas 7, Problem Statement 7, Alignment 4, Customer Evidence 3, Value Proposition 4
  */
 function scoreUserFocus(text) {
   let score = 0;
@@ -141,24 +142,36 @@ function scoreUserFocus(text) {
 
   // Problem Statement (7 pts) - supports numbered headers + value proposition
   const hasProblemSection = /^#+\s*(\d+\.?\d*\.?\s*)?(problem|goal|objective|why|motivation|current\s+state|target\s+state)/im.test(text);
-  // Expanded value proposition patterns
   const hasValueProp = /\b(value|benefit|outcome|result|enable|empower|improve|reduce|increase|streamline|automate|simplify|eliminate|save|prevent|unified|integrated|solution)\b/i.test(text);
   if (hasProblemSection && hasValueProp) score += 7;
   else if (hasProblemSection) score += 4;
   else issues.push('No problem statement');
 
-  // Alignment (6 pts) - check if requirements reference users
+  // Alignment (4 pts - reduced from 6)
   const userRefs = (text.match(/\b(user|customer|persona)\b/gi) || []).length;
-  if (userRefs >= 10) score += 6;
-  else if (userRefs >= 5) score += 4;
-  else if (userRefs >= 2) score += 2;
+  if (userRefs >= 10) score += 4;
+  else if (userRefs >= 5) score += 3;
+  else if (userRefs >= 2) score += 1;
 
-  // Customer Evidence (5 pts) - expanded patterns for internal/pilot PRDs
+  // Customer Evidence (3 pts - reduced from 5)
   const hasResearch = /\b(user research|customer research|user interview|survey result|discovery|competitive analysis)\b/i.test(text);
   const hasQuotes = /"[^"]{10,}"/.test(text);
   const hasValidation = /\b(pilot|dogfood|beta|prototype|based on experience|common pattern)\b/i.test(text);
-  if (hasResearch || hasQuotes) score += 5;
-  else if (hasValidation) score += 3;
+  if (hasResearch || hasQuotes) score += 3;
+  else if (hasValidation) score += 2;
+
+  // Value Proposition (4 pts - NEW)
+  const hasValueSection = /^#+\s*(\d+\.?\d*\.?\s*)?(value\s+proposition|value\s+to\s+customer|value\s+to\s+partner|value\s+to\s+company|customer\s+value|business\s+value)/im.test(text);
+  const hasCustomerValue = /\b(value\s+to\s+(customer|partner|user|client)|customer\s+benefit|partner\s+benefit)\b/i.test(text);
+  const hasCompanyValue = /\b(value\s+to\s+(company|business|organization)|business\s+value|revenue\s+impact|cost\s+saving|strategic\s+value)\b/i.test(text);
+  const hasQuantified = /\b(\d+%|\$\d+|\d+\s*(hours?|days?)\s*(saved|reduced|faster))\b/i.test(text);
+
+  const hasBothPerspectives = hasCustomerValue && hasCompanyValue;
+  if (hasValueSection && hasBothPerspectives && hasQuantified) score += 4;
+  else if ((hasValueSection && hasBothPerspectives) || (hasBothPerspectives && hasQuantified)) score += 3;
+  else if (hasValueSection || hasBothPerspectives) score += 2;
+  else if (hasCustomerValue || hasCompanyValue) score += 1;
+  else issues.push('Add Value Proposition with customer and company benefits');
 
   return { score: Math.min(25, score), maxScore: 25, issues };
 }

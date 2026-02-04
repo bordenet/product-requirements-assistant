@@ -19,7 +19,8 @@ import {
   detectNonFunctionalRequirements,
   detectPrioritization,
   detectCustomerEvidence,
-  detectScopeBoundaries
+  detectScopeBoundaries,
+  detectValueProposition
 } from '../js/validator.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -351,5 +352,79 @@ describe('detectScopeBoundaries', () => {
     const result = detectScopeBoundaries(input);
     expect(result.hasInScope).toBe(false);
     expect(result.hasOutOfScope).toBe(false);
+  });
+});
+
+// ============================================================================
+// detectValueProposition tests
+// ============================================================================
+describe('detectValueProposition', () => {
+  test('should detect Value Proposition section header', () => {
+    const text = `
+## 3. Value Proposition
+
+### 3.1 Value to Customer
+Customers save 40 hours saved on manual data entry.
+
+### 3.2 Value to Company
+Revenue impact increased from 1M to 2M annually.
+    `;
+    const result = detectValueProposition(text);
+    expect(result.hasSection).toBe(true);
+    expect(result.hasCustomerValue).toBe(true);
+    expect(result.hasCompanyValue).toBe(true);
+    expect(result.hasBothPerspectives).toBe(true);
+    expect(result.hasQuantification).toBe(true);
+    expect(result.qualityScore).toBeGreaterThanOrEqual(3);
+  });
+
+  test('should detect customer value patterns', () => {
+    const text = 'The value to customer includes faster processing and reduced errors.';
+    const result = detectValueProposition(text);
+    expect(result.hasCustomerValue).toBe(true);
+  });
+
+  test('should detect company value patterns', () => {
+    const text = 'The value to company is increased revenue impact and cost savings.';
+    const result = detectValueProposition(text);
+    expect(result.hasCompanyValue).toBe(true);
+  });
+
+  test('should detect quantified benefits', () => {
+    const text = 'This will save 20 hours saved and costs reduced from 100.';
+    const result = detectValueProposition(text);
+    expect(result.hasQuantification).toBe(true);
+    expect(result.quantifiedCount).toBeGreaterThanOrEqual(2);
+  });
+
+  test('should detect vague value language', () => {
+    const text = 'This will improve the experience and streamline the workflow.';
+    const result = detectValueProposition(text);
+    expect(result.hasVagueValue).toBe(true);
+    expect(result.vagueCount).toBeGreaterThanOrEqual(1);
+  });
+
+  test('should calculate quality score correctly', () => {
+    // Full quality (4 pts): section + both perspectives + quantified + low vague
+    const highQuality = `
+## Value Proposition
+### Value to Customer
+Saves 30 hours saved for each user.
+### Value to Company
+Cost savings increased from 100K to 500K.
+    `;
+    expect(detectValueProposition(highQuality).qualityScore).toBe(4);
+
+    // No value proposition content
+    const noValue = 'This is a product requirement document.';
+    expect(detectValueProposition(noValue).qualityScore).toBe(1); // Only the no-vague point
+  });
+
+  test('should return zero quality for vague-only content', () => {
+    const vagueOnly = 'This will improve the experience and enhance the process.';
+    const result = detectValueProposition(vagueOnly);
+    expect(result.hasVagueValue).toBe(true);
+    expect(result.hasBothPerspectives).toBe(false);
+    expect(result.hasQuantification).toBe(false);
   });
 });
