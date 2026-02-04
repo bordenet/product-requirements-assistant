@@ -57,7 +57,7 @@ describe('Project View Module', () => {
       expect(container.innerHTML).toContain('Copy Prompt');
     });
 
-    test('should render delete button', async () => {
+    test('should render more actions button', async () => {
       const project = await createProject(
         'Test PRD',
         'Test problems',
@@ -66,8 +66,8 @@ describe('Project View Module', () => {
 
       await renderProjectView(project.id);
 
-      const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Delete');
+      const moreActionsBtn = document.getElementById('more-actions-btn');
+      expect(moreActionsBtn).toBeTruthy();
     });
 
     test('should render phase content area', async () => {

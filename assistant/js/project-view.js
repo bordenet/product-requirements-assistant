@@ -7,7 +7,7 @@
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename, Workflow } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, showDocumentPreviewModal } from './ui.js';
+import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, showDocumentPreviewModal, showPromptModal, createActionMenu } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
 import { validatePRD, getScoreColor, getScoreLabel } from './validator-inline.js';
@@ -214,10 +214,7 @@ function renderPhaseContent(project, phase) {
                     <button id="export-complete-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
                         📄 Preview & Copy
                     </button>
-                    <button id="compare-phases-btn" class="px-4 py-2 border border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors font-medium">
-                        🔄 Compare Phases
-                    </button>
-                    <button id="validate-score-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    <button id="validate-score-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg">
                         📋 Copy & Full Validation ↗
                     </button>
                 </div>
@@ -295,17 +292,25 @@ function renderPhaseContent(project, phase) {
         ${completionBanner}
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="mb-6">
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                    ${meta.icon} ${meta.name}
-                </h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-2">
-                    ${meta.description}
-                </p>
-                <div class="inline-flex items-center px-3 py-1 bg-${color}-100 dark:bg-${color}-900/20 text-${color}-800 dark:text-${color}-300 rounded-full text-sm">
-                    <span class="mr-2">🤖</span>
-                    Use with ${meta.aiModel}
+            <div class="mb-6 flex justify-between items-start">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        ${meta.icon} ${meta.name}
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-2">
+                        ${meta.description}
+                    </p>
+                    <div class="inline-flex items-center px-3 py-1 bg-${color}-100 dark:bg-${color}-900/20 text-${color}-800 dark:text-${color}-300 rounded-full text-sm">
+                        <span class="mr-2">🤖</span>
+                        Use with ${meta.aiModel}
+                    </div>
                 </div>
+                <!-- Overflow Menu (top-right) -->
+                <button id="more-actions-btn" class="action-menu-trigger text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label="More actions" aria-haspopup="menu" aria-expanded="false">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                    </svg>
+                </button>
             </div>
 
             <!-- Step A: Copy Prompt to AI -->
@@ -313,25 +318,20 @@ function renderPhaseContent(project, phase) {
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                     Step A: Copy Prompt to AI
                 </h4>
-                <div class="flex justify-between items-start">
-                    <div class="flex gap-3 flex-wrap">
-                        <button id="copy-prompt-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                            📋 ${phaseData.prompt ? 'Copy Prompt Again' : 'Generate & Copy Prompt'}
-                        </button>
-                        <a
-                            id="open-ai-btn"
-                            href="${aiUrl}"
-                            target="ai-assistant-tab"
-                            rel="noopener noreferrer"
-                            class="px-6 py-3 bg-green-600 text-white rounded-lg transition-colors font-medium ${phaseData.prompt ? 'hover:bg-green-700' : 'opacity-50 cursor-not-allowed pointer-events-none'}"
-                            ${phaseData.prompt ? '' : 'aria-disabled="true"'}
-                        >
-                            🔗 Open ${phase === 2 ? 'Gemini' : 'Claude'}
-                        </a>
-                    </div>
-                    <button id="view-prompt-btn" class="px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors font-medium ${phaseData.prompt ? '' : 'hidden'}">
-                        👁️ View Prompt
+                <div class="flex gap-3 flex-wrap">
+                    <button id="copy-prompt-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        📋 ${phaseData.prompt ? 'Copy Prompt Again' : 'Generate & Copy Prompt'}
                     </button>
+                    <a
+                        id="open-ai-btn"
+                        href="${aiUrl}"
+                        target="ai-assistant-tab"
+                        rel="noopener noreferrer"
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg transition-colors font-medium ${phaseData.prompt ? 'hover:bg-green-700' : 'opacity-50 cursor-not-allowed pointer-events-none'}"
+                        ${phaseData.prompt ? '' : 'aria-disabled="true"'}
+                    >
+                        🔗 Open ${phase === 2 ? 'Gemini' : 'Claude'}
+                    </a>
                 </div>
             </div>
 
@@ -360,28 +360,14 @@ function renderPhaseContent(project, phase) {
 
 
 
-            <!-- Footer Navigation (One-Pager style) -->
-            <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex gap-3">
-                    ${phase === 1 && !phaseData.response ? `
-                    <button id="edit-details-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                        ← Edit Details
-                    </button>
-                    ` : phase > 1 ? `
-                    <button id="prev-phase-btn" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                        ← Previous Phase
-                    </button>
-                    ` : ''}
-                    ${phase < 3 && phaseData.completed ? `
-                    <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Next Phase →
-                    </button>
-                    ` : ''}
-                </div>
-                <button id="delete-project-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                    Delete
+            <!-- Footer Navigation -->
+            ${phase < 3 && phaseData.completed ? `
+            <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Next Phase →
                 </button>
             </div>
+            ` : ''}
         </div>
     `;
 }
@@ -502,64 +488,6 @@ function showDiffModal(project, phases, completedPhases) {
 }
 
 /**
- * Show the full prompt in a modal
- * @module project-view
- * @param {string} prompt - The prompt text to display
- * @param {Function} [onCopySuccess] - Optional callback to run after successful copy (enables workflow progression)
- */
-function showPromptModal(prompt, onCopySuccess = null) {
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-  modal.innerHTML = `
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-                    📋 Full Prompt
-                </h3>
-                <button id="close-prompt-modal-btn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="p-4 overflow-y-auto flex-1">
-                <pre class="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 font-mono bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">${escapeHtml(prompt)}</pre>
-            </div>
-            <div class="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
-                <button id="copy-prompt-modal-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mr-2">
-                    📋 Copy to Clipboard
-                </button>
-                <button id="close-prompt-modal-btn-2" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                    Close
-                </button>
-            </div>
-        </div>
-    `;
-
-  document.body.appendChild(modal);
-
-  const closeModal = () => modal.remove();
-
-  modal.querySelector('#close-prompt-modal-btn').addEventListener('click', closeModal);
-  modal.querySelector('#close-prompt-modal-btn-2').addEventListener('click', closeModal);
-  modal.querySelector('#copy-prompt-modal-btn').addEventListener('click', async () => {
-    try {
-      await copyToClipboard(prompt);
-      showToast('Prompt copied to clipboard!', 'success');
-      // Run callback to enable workflow progression (Open AI button, textarea, etc.)
-      if (onCopySuccess) {
-        onCopySuccess();
-      }
-    } catch {
-      showToast('Failed to copy to clipboard', 'error');
-    }
-  });
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-}
-
-/**
  * Attach event listeners for phase interactions
  * @module project-view
  */
@@ -568,22 +496,7 @@ function attachPhaseEventListeners(project, phase) {
   const saveResponseBtn = document.getElementById('save-response-btn');
   const responseTextarea = document.getElementById('response-textarea');
   const nextPhaseBtn = document.getElementById('next-phase-btn');
-  const prevPhaseBtn = document.getElementById('prev-phase-btn');
-  const viewPromptBtn = document.getElementById('view-prompt-btn');
-  const editDetailsBtn = document.getElementById('edit-details-btn');
-  const deleteProjectBtn = document.getElementById('delete-project-btn');
   const exportCompleteBtn = document.getElementById('export-complete-btn');
-
-  // Delete project button handler
-  if (deleteProjectBtn) {
-    deleteProjectBtn.addEventListener('click', async () => {
-      if (await confirm(`Are you sure you want to delete "${project.title}"?`, 'Delete PRD')) {
-        await deleteProject(project.id);
-        showToast('PRD deleted', 'success');
-        navigateTo('home');
-      }
-    });
-  }
 
   // Export complete button handler (Phase 3 CTA - Preview & Copy)
   if (exportCompleteBtn) {
@@ -615,28 +528,6 @@ function attachPhaseEventListeners(project, phase) {
     }
   });
 
-  // Compare phases button handler (shows diff with phase selectors)
-  const comparePhasesBtn = document.getElementById('compare-phases-btn');
-  if (comparePhasesBtn) {
-    comparePhasesBtn.addEventListener('click', () => {
-      const workflow = new Workflow(project);
-      const phases = {
-        1: workflow.getPhaseOutput(1),
-        2: workflow.getPhaseOutput(2),
-        3: workflow.getPhaseOutput(3)
-      };
-
-      // Need at least 2 phases completed
-      const completedPhases = Object.entries(phases).filter(([, v]) => v).map(([k]) => parseInt(k));
-      if (completedPhases.length < 2) {
-        showToast('At least 2 phases must be completed to compare', 'warning');
-        return;
-      }
-
-      showDiffModal(project, phases, completedPhases);
-    });
-  }
-
   /**
    * Enable workflow progression after prompt is copied
    * Called from both main copy button and modal copy button
@@ -652,13 +543,6 @@ function attachPhaseEventListeners(project, phase) {
       openAiBtn.removeAttribute('aria-disabled');
     }
 
-    // Show and enable the View Prompt button now that prompt is generated
-    const viewBtn = document.getElementById('view-prompt-btn');
-    if (viewBtn) {
-      viewBtn.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed');
-      viewBtn.disabled = false;
-    }
-
     // Enable the response textarea now that prompt is copied
     if (responseTextarea) {
       responseTextarea.disabled = false;
@@ -666,15 +550,6 @@ function attachPhaseEventListeners(project, phase) {
       responseTextarea.focus();
     }
   };
-
-  // View Prompt button handler - passes callback to enable workflow when copied from modal
-  if (viewPromptBtn && project.phases?.[phase]?.prompt) {
-    viewPromptBtn.addEventListener('click', () => {
-      showPromptModal(project.phases[phase].prompt, () => {
-        enableWorkflowProgression(project.phases[phase].prompt);
-      });
-    });
-  }
 
   // CRITICAL: Safari transient activation fix - call copyToClipboardAsync synchronously
   if (copyPromptBtn) {
@@ -693,14 +568,6 @@ function attachPhaseEventListeners(project, phase) {
         .then(async () => {
           showToast('Prompt copied to clipboard!', 'success');
           await enableWorkflowProgression(generatedPrompt);
-
-          // Add click handler to view prompt if not already attached
-          if (viewPromptBtn && !viewPromptBtn.hasAttribute('data-listener-attached')) {
-            viewPromptBtn.setAttribute('data-listener-attached', 'true');
-            viewPromptBtn.addEventListener('click', () => {
-              showPromptModal(generatedPrompt, () => enableWorkflowProgression(generatedPrompt));
-            });
-          }
         })
         .catch((error) => {
           console.error('Error copying prompt:', error);
@@ -783,26 +650,97 @@ function attachPhaseEventListeners(project, phase) {
     });
   }
 
-  // Edit Details button handler - navigate to edit project view
-  if (editDetailsBtn) {
-    editDetailsBtn.addEventListener('click', () => {
-      navigateTo('edit-project', project.id);
+  // Setup overflow "More" menu with secondary actions
+  const moreActionsBtn = document.getElementById('more-actions-btn');
+  if (moreActionsBtn) {
+    const phaseData = project.phases?.[phase] || {};
+    const hasPrompt = !!phaseData.prompt;
+
+    // Build menu items based on current state
+    const menuItems = [];
+
+    // View Prompt (only if prompt exists)
+    if (hasPrompt) {
+      menuItems.push({
+        label: 'View Prompt',
+        icon: '👁️',
+        onClick: async () => {
+          const meta = getPhaseMetadata(phase);
+          const prompt = await generatePromptForPhase(project, phase);
+          showPromptModal(prompt, `Phase ${phase}: ${meta.name} Prompt`, () => enableWorkflowProgression(prompt));
+        }
+      });
+    }
+
+    // Edit Details (always available)
+    menuItems.push({
+      label: 'Edit Details',
+      icon: '✏️',
+      onClick: () => navigateTo('edit-project/' + project.id)
     });
-  }
 
-  // Previous phase button - re-fetch project to ensure fresh data
-  if (prevPhaseBtn) {
-    prevPhaseBtn.addEventListener('click', async () => {
-      const prevPhase = phase - 1;
-      if (prevPhase < 1) return;
+    // Compare Phases (only if 2+ phases completed)
+    const workflow = new Workflow(project);
+    const completedCount = [1, 2, 3].filter(p => workflow.getPhaseOutput(p)).length;
+    if (completedCount >= 2) {
+      menuItems.push({
+        label: 'Compare Phases',
+        icon: '🔄',
+        onClick: () => {
+          const phases = {
+            1: workflow.getPhaseOutput(1),
+            2: workflow.getPhaseOutput(2),
+            3: workflow.getPhaseOutput(3)
+          };
+          const completedPhases = Object.entries(phases).filter(([, v]) => v).map(([k]) => parseInt(k));
+          showDiffModal(project, phases, completedPhases);
+        }
+      });
+    }
 
-      // Re-fetch project from storage to get fresh data
-      const freshProject = await getProject(project.id);
-      freshProject.phase = prevPhase;
+    // Validate (only if Phase 3 complete)
+    if (project.phases?.[3]?.completed) {
+      menuItems.push({
+        label: 'Copy & Full Validation',
+        icon: '📋',
+        onClick: async () => {
+          const markdown = getFinalMarkdown(project);
+          if (markdown) {
+            try {
+              await copyToClipboard(markdown);
+              showToast('Document copied! Opening validator...', 'success');
+              setTimeout(() => {
+                window.open('https://bordenet.github.io/product-requirements-assistant/validator/', '_blank', 'noopener,noreferrer');
+              }, 500);
+            } catch {
+              showToast('Failed to copy. Please try again.', 'error');
+            }
+          }
+        }
+      });
+    }
 
-      updatePhaseTabStyles(prevPhase);
-      document.getElementById('phase-content').innerHTML = renderPhaseContent(freshProject, prevPhase);
-      attachPhaseEventListeners(freshProject, prevPhase);
+    // Separator before destructive action
+    menuItems.push({ separator: true });
+
+    // Delete (destructive)
+    menuItems.push({
+      label: 'Delete...',
+      icon: '🗑️',
+      destructive: true,
+      onClick: async () => {
+        if (await confirm(`Are you sure you want to delete "${project.title}"?`, 'Delete PRD')) {
+          await deleteProject(project.id);
+          showToast('PRD deleted', 'success');
+          navigateTo('home');
+        }
+      }
+    });
+
+    createActionMenu({
+      triggerElement: moreActionsBtn,
+      items: menuItems,
+      position: 'bottom-end'
     });
   }
 }
