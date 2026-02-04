@@ -4,7 +4,7 @@ Write PRDs with AI. Three phases: draft, review, refine.
 
 [![Star this repo](https://img.shields.io/github/stars/bordenet/product-requirements-assistant?style=social)](https://github.com/bordenet/product-requirements-assistant)
 
-**Try it**: [bordenet.github.io/product-requirements-assistant](https://bordenet.github.io/product-requirements-assistant/)
+**Try it**: [Assistant](https://bordenet.github.io/product-requirements-assistant/) · [Validator](https://bordenet.github.io/product-requirements-assistant/validator/)
 
 > **What is a PRD?** A [Product Requirements Document](https://en.wikipedia.org/wiki/Product_requirements_document) defines what a product should do and why. It specifies user needs, features, constraints, and success criteria—without prescribing implementation. PRDs align engineering, design, and business before development begins.
 
@@ -38,9 +38,9 @@ Write PRDs with AI. Three phases: draft, review, refine.
 
 ## Validate Your PRD
 
-Once you've completed your PRD, run it through the **[PRD Validator](https://bordenet.github.io/prd-validator/)** for instant scoring and AI-powered improvement suggestions. The validator checks document structure, requirements clarity, user focus, and technical quality—giving you a 0-100 score with actionable feedback.
+Once you've completed your PRD, run it through the **[PRD Validator](https://bordenet.github.io/product-requirements-assistant/validator/)** for instant scoring and AI-powered improvement suggestions. The validator checks document structure, requirements clarity, user focus, and technical quality—giving you a 0-100 score with actionable feedback.
 
-→ **[Try the Validator](https://bordenet.github.io/prd-validator/)** | [Source Code](https://github.com/bordenet/prd-validator)
+→ **[Try the Validator](https://bordenet.github.io/product-requirements-assistant/validator/)**
 
 ## Usage
 
