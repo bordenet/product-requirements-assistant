@@ -201,6 +201,21 @@ describe('Projects Module', () => {
 
       await expect(importProjects(file)).rejects.toThrow();
     });
+
+    test('should handle empty backup file', async () => {
+      const backup = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        projectCount: 0,
+        projects: []
+      };
+
+      const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+      const file = new File([blob], 'empty-backup.json', { type: 'application/json' });
+
+      const importedCount = await importProjects(file);
+      expect(importedCount).toBe(0);
+    });
   });
 
   describe('updateProject', () => {
@@ -224,10 +239,21 @@ describe('Projects Module', () => {
   });
 
   describe('exportProject', () => {
+    let capturedBlob;
+    let originalCreateElement;
+
     beforeEach(() => {
-      // Mock URL.createObjectURL and URL.revokeObjectURL
-      global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+      capturedBlob = null;
+      global.URL.createObjectURL = jest.fn((blob) => {
+        capturedBlob = blob;
+        return 'blob:mock-url';
+      });
       global.URL.revokeObjectURL = jest.fn();
+      originalCreateElement = document.createElement.bind(document);
+    });
+
+    afterEach(() => {
+      document.createElement = originalCreateElement;
     });
 
     test('should export single project as JSON', async () => {
@@ -239,6 +265,26 @@ describe('Projects Module', () => {
       expect(global.URL.revokeObjectURL).toHaveBeenCalled();
     });
 
+    test('should include correct project data in blob', async () => {
+      const project = await createProject('Blob Test', 'Test Problems', 'Test Context');
+
+      await exportProject(project.id);
+
+      expect(capturedBlob).toBeInstanceOf(Blob);
+
+      // Use FileReader to read the blob content
+      const blobContent = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsText(capturedBlob);
+      });
+
+      const exportedData = JSON.parse(blobContent);
+      expect(exportedData.id).toBe(project.id);
+      expect(exportedData.title).toBe('Blob Test');
+    });
+
     test('should throw error for non-existent project', async () => {
       await expect(exportProject('non-existent-id'))
         .rejects.toThrow('Project not found');
@@ -246,9 +292,23 @@ describe('Projects Module', () => {
   });
 
   describe('exportAllProjects', () => {
+    let capturedBlob;
+    let capturedDownloadName;
+    let originalCreateElement;
+
     beforeEach(() => {
-      global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+      capturedBlob = null;
+      capturedDownloadName = null;
+      global.URL.createObjectURL = jest.fn((blob) => {
+        capturedBlob = blob;
+        return 'blob:mock-url';
+      });
       global.URL.revokeObjectURL = jest.fn();
+      originalCreateElement = document.createElement.bind(document);
+    });
+
+    afterEach(() => {
+      document.createElement = originalCreateElement;
     });
 
     test('should export all projects as backup JSON', async () => {
@@ -259,6 +319,55 @@ describe('Projects Module', () => {
 
       expect(global.URL.createObjectURL).toHaveBeenCalled();
       expect(global.URL.revokeObjectURL).toHaveBeenCalled();
+    });
+
+    test('should include all projects in backup with correct format', async () => {
+      // Clear all existing projects first
+      const existingProjects = await getAllProjects();
+      for (const p of existingProjects) {
+        await deleteProject(p.id);
+      }
+
+      await createProject('Test Project 1', 'Problems 1', 'Context 1');
+      await createProject('Test Project 2', 'Problems 2', 'Context 2');
+
+      await exportAllProjects();
+
+      expect(capturedBlob).toBeInstanceOf(Blob);
+
+      // Use FileReader to read the blob content
+      const blobContent = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsText(capturedBlob);
+      });
+
+      const backupData = JSON.parse(blobContent);
+      expect(backupData).toHaveProperty('version');
+      expect(backupData).toHaveProperty('exportedAt');
+      expect(backupData).toHaveProperty('projectCount', 2);
+      expect(backupData).toHaveProperty('projects');
+      expect(Array.isArray(backupData.projects)).toBe(true);
+      expect(backupData.projects).toHaveLength(2);
+    });
+
+    test('should include correct filename with date', async () => {
+      const mockAnchor = {
+        href: '',
+        set download(value) { capturedDownloadName = value; },
+        get download() { return capturedDownloadName; },
+        click: jest.fn()
+      };
+      jest.spyOn(document, 'createElement').mockImplementation((tag) => {
+        if (tag === 'a') return mockAnchor;
+        return originalCreateElement(tag);
+      });
+
+      await createProject('Test', 'Problems', 'Context');
+      await exportAllProjects();
+
+      expect(capturedDownloadName).toMatch(/^prd-assistant-backup-\d{4}-\d{2}-\d{2}\.json$/);
     });
 
     test('should export empty backup if no projects', async () => {
