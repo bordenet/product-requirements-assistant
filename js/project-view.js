@@ -280,7 +280,7 @@ function renderPhaseContent(project, phase) {
                         <li>Click <strong>"Preview & Copy"</strong> to see your formatted document</li>
                         <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
                         <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong> and paste</li>
-                        <li>Use <strong><a href="./validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">Full Validation</a></strong> for detailed AI-powered feedback</li>
+                        <li>Use <strong><a href="../validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">Full Validation</a></strong> for detailed AI-powered feedback</li>
                     </ol>
                 </div>
             </details>
@@ -353,11 +353,11 @@ function renderPhaseContent(project, phase) {
                         <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                             Next Phase →
                         </button>
-                    ` : `
+                    ` : phase < 3 ? `
                         <span class="text-sm text-gray-600 dark:text-gray-400">
                             Paste response to complete this phase
                         </span>
-                    `}
+                    ` : '<span></span>'}
                     <button id="save-response-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600" ${!phaseData.response || phaseData.response.trim().length < 3 ? 'disabled' : ''}>
                         Save Response
                     </button>
@@ -513,7 +513,7 @@ function attachPhaseEventListeners(project, phase) {
         await copyToClipboard(markdown);
         showToast('Document copied! Opening validator...', 'success');
         setTimeout(() => {
-          window.open('./validator/', '_blank', 'noopener,noreferrer');
+          window.open('../validator/', '_blank', 'noopener,noreferrer');
         }, 500);
       } catch {
         showToast('Failed to copy. Please try again.', 'error');
@@ -737,7 +737,7 @@ function attachPhaseEventListeners(project, phase) {
               await copyToClipboard(markdown);
               showToast('Document copied! Opening validator...', 'success');
               setTimeout(() => {
-                window.open('./validator/', '_blank', 'noopener,noreferrer');
+                window.open('../validator/', '_blank', 'noopener,noreferrer');
               }, 500);
             } catch {
               showToast('Failed to copy. Please try again.', 'error');

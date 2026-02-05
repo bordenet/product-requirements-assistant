@@ -353,11 +353,11 @@ function renderPhaseContent(project, phase) {
                         <button id="next-phase-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                             Next Phase →
                         </button>
-                    ` : `
+                    ` : phase < 3 ? `
                         <span class="text-sm text-gray-600 dark:text-gray-400">
                             Paste response to complete this phase
                         </span>
-                    `}
+                    ` : '<span></span>'}
                     <button id="save-response-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600" ${!phaseData.response || phaseData.response.trim().length < 3 ? 'disabled' : ''}>
                         Save Response
                     </button>
