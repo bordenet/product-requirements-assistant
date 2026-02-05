@@ -404,14 +404,14 @@ export async function confirm(message, title = 'Confirm') {
  * @param {Object} options - Configuration options
  * @param {string} [options.confirmText='Continue'] - Text for confirm button
  * @param {string} [options.cancelText='Cancel'] - Text for cancel button
- * @param {string} [options.checkboxLabel="Don't remind me again"] - Checkbox label
+ * @param {string} [options.checkboxLabel='Don\'t remind me again'] - Checkbox label
  * @returns {Promise<{confirmed: boolean, remember: boolean}>} Result object
  */
 export async function confirmWithRemember(message, title = 'Confirm', options = {}) {
   const {
     confirmText = 'Continue',
     cancelText = 'Cancel',
-    checkboxLabel = "Don't remind me again"
+    checkboxLabel = 'Don\'t remind me again'
   } = options;
 
   return new Promise((resolve) => {

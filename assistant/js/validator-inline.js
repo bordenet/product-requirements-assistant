@@ -120,7 +120,7 @@ function scoreRequirementsClarity(text) {
   const hasMoscow = MOSCOW_PATTERN.test(text);
   const hasPLevel = P_LEVEL_PATTERN.test(text);
   if (hasMoscow || hasPLevel) score += 6;
-  else issues.push('No prioritization (MoSCoW or P0/P1/P2)');
+  else issues.push('No prioritization (MoSCoW or P1/P2/P3)');
 
   return { score: Math.min(30, score), maxScore: 30, issues };
 }
