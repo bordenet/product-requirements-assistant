@@ -237,4 +237,91 @@ describe('Storage Module', () => {
       }
     });
   });
+
+  describe('exportAll', () => {
+    test('should export all projects', async () => {
+      const project1 = {
+        id: crypto.randomUUID(),
+        title: 'Export 1',
+        problems: 'Problems 1',
+        context: 'Context 1',
+        phase: 1,
+        createdAt: new Date().toISOString(),
+        phases: {}
+      };
+      const project2 = {
+        id: crypto.randomUUID(),
+        title: 'Export 2',
+        problems: 'Problems 2',
+        context: 'Context 2',
+        phase: 1,
+        createdAt: new Date().toISOString(),
+        phases: {}
+      };
+
+      await storage.saveProject(project1);
+      await storage.saveProject(project2);
+
+      const exported = await storage.exportAll();
+      expect(exported.projects.length).toBeGreaterThanOrEqual(2);
+      expect(exported.projectCount).toBeGreaterThanOrEqual(2);
+      expect(exported.exportDate).toBeDefined();
+      expect(exported.version).toBeDefined();
+    });
+
+    test('should export empty backup when no projects', async () => {
+      // Clear all projects first
+      const projects = await storage.getAllProjects();
+      for (const p of projects) {
+        await storage.deleteProject(p.id);
+      }
+
+      const exported = await storage.exportAll();
+      expect(exported.projects).toEqual([]);
+      expect(exported.projectCount).toBe(0);
+    });
+  });
+
+  describe('importAll', () => {
+    test('should import all projects from export data', async () => {
+      const project1 = {
+        id: crypto.randomUUID(),
+        title: 'Import 1',
+        problems: 'Problems 1',
+        context: 'Context 1',
+        phase: 1,
+        createdAt: new Date().toISOString(),
+        phases: {}
+      };
+      const project2 = {
+        id: crypto.randomUUID(),
+        title: 'Import 2',
+        problems: 'Problems 2',
+        context: 'Context 2',
+        phase: 1,
+        createdAt: new Date().toISOString(),
+        phases: {}
+      };
+
+      const importData = {
+        version: 1,
+        exportDate: new Date().toISOString(),
+        projectCount: 2,
+        projects: [project1, project2]
+      };
+
+      const count = await storage.importAll(importData);
+      expect(count).toBe(2);
+
+      const retrieved1 = await storage.getProject(project1.id);
+      const retrieved2 = await storage.getProject(project2.id);
+      expect(retrieved1).toBeTruthy();
+      expect(retrieved2).toBeTruthy();
+    });
+
+    test('should throw on invalid import data', async () => {
+      await expect(storage.importAll({})).rejects.toThrow('Invalid import data');
+      await expect(storage.importAll({ projects: 'not-array' })).rejects.toThrow('Invalid import data');
+    });
+  });
 });

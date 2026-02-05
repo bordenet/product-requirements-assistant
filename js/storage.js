@@ -191,6 +191,44 @@ class Storage {
     }
     return null;
   }
+
+  /**
+   * Export all projects as JSON backup
+   * @returns {Promise<Object>} Export data with projects array
+   */
+  async exportAll() {
+    const projects = await this.getAllProjects();
+    return {
+      version: DB_VERSION,
+      exportDate: new Date().toISOString(),
+      projectCount: projects.length,
+      projects: projects
+    };
+  }
+
+  /**
+   * Import projects from JSON backup
+   * @param {Object} data - Import data with projects array
+   * @returns {Promise<number>} Number of projects imported
+   */
+  async importAll(data) {
+    if (!data.projects || !Array.isArray(data.projects)) {
+      throw new Error('Invalid import data');
+    }
+
+    const tx = this.db.transaction('projects', 'readwrite');
+    const store = tx.objectStore('projects');
+
+    for (const project of data.projects) {
+      await new Promise((resolve, reject) => {
+        const request = store.put(project);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    return data.projects.length;
+  }
 }
 
 export default new Storage();
