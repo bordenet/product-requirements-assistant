@@ -7,7 +7,7 @@
 
 import { getProject, updatePhase, updateProject, deleteProject } from './projects.js';
 import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFilename, Workflow, detectPromptPaste } from './workflow.js';
-import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, showDocumentPreviewModal, showPromptModal, createActionMenu } from './ui.js';
+import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, confirmWithRemember, showDocumentPreviewModal, showPromptModal, createActionMenu } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
 import { validatePRD, getScoreColor, getScoreLabel } from './validator-inline.js';
@@ -280,7 +280,7 @@ function renderPhaseContent(project, phase) {
                         <li>Click <strong>"Preview & Copy"</strong> to see your formatted document</li>
                         <li>Click <strong>"Copy Formatted Text"</strong> in the preview</li>
                         <li>Open <strong>Microsoft Word</strong> or <strong>Google Docs</strong> and paste</li>
-                        <li>Use <strong><a href="https://bordenet.github.io/product-requirements-assistant/validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">Full Validation</a></strong> for detailed AI-powered feedback</li>
+                        <li>Use <strong><a href="../validator/" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">Full Validation</a></strong> for detailed AI-powered feedback</li>
                     </ol>
                 </div>
             </details>
@@ -513,7 +513,7 @@ function attachPhaseEventListeners(project, phase) {
         await copyToClipboard(markdown);
         showToast('Document copied! Opening validator...', 'success');
         setTimeout(() => {
-          window.open('https://bordenet.github.io/product-requirements-assistant/validator/', '_blank', 'noopener,noreferrer');
+          window.open('../validator/', '_blank', 'noopener,noreferrer');
         }, 500);
       } catch {
         showToast('Failed to copy. Please try again.', 'error');
@@ -548,7 +548,32 @@ function attachPhaseEventListeners(project, phase) {
 
   // CRITICAL: Safari transient activation fix - call copyToClipboardAsync synchronously
   if (copyPromptBtn) {
-    copyPromptBtn.addEventListener('click', () => {
+    copyPromptBtn.addEventListener('click', async () => {
+      // Check if warning was previously acknowledged
+      const warningAcknowledged = localStorage.getItem('external-ai-warning-acknowledged');
+
+      if (!warningAcknowledged) {
+        const result = await confirmWithRemember(
+          'You are about to copy a prompt that may contain proprietary data.\n\n' +
+                  '• This prompt will be pasted into an external AI service (Claude/Gemini)\n' +
+                  '• Data sent to these services is processed on third-party servers\n' +
+                  '• For sensitive documents, use an internal tool like LibreGPT instead\n\n' +
+                  'Do you want to continue?',
+          'External AI Warning',
+          { confirmText: 'Copy Prompt', cancelText: 'Cancel' }
+        );
+
+        if (!result.confirmed) {
+          showToast('Copy cancelled', 'info');
+          return;
+        }
+
+        // Remember the choice permanently if checkbox was checked
+        if (result.remember) {
+          localStorage.setItem('external-ai-warning-acknowledged', 'true');
+        }
+      }
+
       let generatedPrompt = null;
       const promptPromise = (async () => {
         const prompt = await generatePromptForPhase(project, phase);
@@ -712,7 +737,7 @@ function attachPhaseEventListeners(project, phase) {
               await copyToClipboard(markdown);
               showToast('Document copied! Opening validator...', 'success');
               setTimeout(() => {
-                window.open('https://bordenet.github.io/product-requirements-assistant/validator/', '_blank', 'noopener,noreferrer');
+                window.open('../validator/', '_blank', 'noopener,noreferrer');
               }, 500);
             } catch {
               showToast('Failed to copy. Please try again.', 'error');

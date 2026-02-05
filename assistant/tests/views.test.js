@@ -30,7 +30,7 @@ describe('Views Module', () => {
     });
 
     test('should render projects list when projects exist', async () => {
-      await createProject('Test PRD', 'Test Problems', 'Test Context');
+      await createProject({ title: 'Test PRD', problems: 'Test Problems', context: 'Test Context' });
 
       await renderProjectsList();
 
@@ -50,7 +50,7 @@ describe('Views Module', () => {
     });
 
     test('should render project cards with phase information', async () => {
-      await createProject('Test PRD', 'Test Problems', 'Test Context');
+      await createProject({ title: 'Test PRD', problems: 'Test Problems', context: 'Test Context' });
 
       await renderProjectsList();
 
@@ -60,7 +60,7 @@ describe('Views Module', () => {
     });
 
     test('should render delete buttons for each project', async () => {
-      await createProject('Test PRD', 'Test Problems', 'Test Context');
+      await createProject({ title: 'Test PRD', problems: 'Test Problems', context: 'Test Context' });
 
       await renderProjectsList();
 
@@ -70,7 +70,7 @@ describe('Views Module', () => {
     });
 
     test('should render project cards with data attributes', async () => {
-      const project = await createProject('Test PRD', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test PRD', problems: 'Test Problems', context: 'Test Context' });
 
       await renderProjectsList();
 
@@ -118,7 +118,7 @@ describe('Views Module', () => {
 
   describe('renderEditProjectForm', () => {
     test('should render edit form with project data', async () => {
-      const project = await createProject('Edit Test PRD', 'Edit Problems', 'Edit Context');
+      const project = await createProject({ title: 'Edit Test PRD', problems: 'Edit Problems', context: 'Edit Context' });
 
       await renderEditProjectForm(project.id);
 
@@ -129,7 +129,7 @@ describe('Views Module', () => {
     });
 
     test('should render delete button in edit form', async () => {
-      const project = await createProject('Test PRD', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Test PRD', problems: 'Test Problems', context: 'Test Context' });
 
       await renderEditProjectForm(project.id);
 

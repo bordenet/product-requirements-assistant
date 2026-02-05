@@ -51,13 +51,15 @@ function extractTitleFromMarkdown(markdown) {
 
 /**
  * Create a new project
+ * @param {Object} formData - Form data object with project fields
+ * @returns {Promise<Object>} Created project object
  */
-export async function createProject(title, problems, context) {
+export async function createProject(formData) {
   const project = {
     id: crypto.randomUUID(),
-    title: title.trim(),
-    problems: problems.trim(),
-    context: context.trim(),
+    title: (formData.title || '').trim(),
+    problems: (formData.problems || '').trim(),
+    context: (formData.context || '').trim(),
     phase: 1,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

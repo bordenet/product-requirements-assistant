@@ -13,7 +13,7 @@ describe('Projects Module', () => {
       const problems = 'Problem statement';
       const context = 'Context information';
 
-      const project = await createProject(title, problems, context);
+      const project = await createProject({ title, problems, context });
 
       expect(project).toBeTruthy();
       expect(project.id).toBeTruthy();
@@ -30,7 +30,7 @@ describe('Projects Module', () => {
     });
 
     test('should trim whitespace from inputs', async () => {
-      const project = await createProject('  Title  ', '  Problems  ', '  Context  ');
+      const project = await createProject({ title: '  Title  ', problems: '  Problems  ', context: '  Context  ' });
 
       expect(project.title).toBe('Title');
       expect(project.problems).toBe('Problems');
@@ -38,7 +38,7 @@ describe('Projects Module', () => {
     });
 
     test('should initialize all phases as incomplete', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problems: 'Problems', context: 'Context' });
 
       expect(project.phases[1].completed).toBe(false);
       expect(project.phases[2].completed).toBe(false);
@@ -46,7 +46,7 @@ describe('Projects Module', () => {
     });
 
     test('should save project to storage', async () => {
-      const project = await createProject('Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test', problems: 'Problems', context: 'Context' });
       const retrieved = await storage.getProject(project.id);
 
       expect(retrieved).toBeTruthy();
@@ -56,8 +56,8 @@ describe('Projects Module', () => {
 
   describe('getAllProjects', () => {
     test('should return all projects', async () => {
-      await createProject('PRD 1', 'Problems 1', 'Context 1');
-      await createProject('PRD 2', 'Problems 2', 'Context 2');
+      await createProject({ title: 'PRD 1', problems: 'Problems 1', context: 'Context 1' });
+      await createProject({ title: 'PRD 2', problems: 'Problems 2', context: 'Context 2' });
 
       const projects = await getAllProjects();
 
@@ -68,7 +68,7 @@ describe('Projects Module', () => {
 
   describe('getProject', () => {
     test('should retrieve a specific project', async () => {
-      const created = await createProject('Test PRD', 'Problems', 'Context');
+      const created = await createProject({ title: 'Test PRD', problems: 'Problems', context: 'Context' });
       const retrieved = await getProject(created.id);
 
       expect(retrieved).toBeTruthy();
@@ -84,7 +84,7 @@ describe('Projects Module', () => {
 
   describe('updatePhase', () => {
     test('should update phase data', async () => {
-      const project = await createProject('Test PRD', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test PRD', problems: 'Problems', context: 'Context' });
       const prompt = 'Test prompt';
       const response = 'Test response';
 
@@ -103,7 +103,7 @@ describe('Projects Module', () => {
 
   describe('updatePhase with completion', () => {
     test('should mark phase as completed when response is provided', async () => {
-      const project = await createProject('Test PRD', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test PRD', problems: 'Problems', context: 'Context' });
       await updatePhase(project.id, 1, 'prompt', 'response');
 
       const updated = await getProject(project.id);
@@ -113,7 +113,7 @@ describe('Projects Module', () => {
     });
 
     test('should advance to next phase when response is provided', async () => {
-      const project = await createProject('Test PRD', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test PRD', problems: 'Problems', context: 'Context' });
       await updatePhase(project.id, 1, 'prompt', 'response');
 
       const updated = await getProject(project.id);
@@ -122,7 +122,7 @@ describe('Projects Module', () => {
     });
 
     test('should not advance beyond phase 3', async () => {
-      const project = await createProject('Test PRD', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test PRD', problems: 'Problems', context: 'Context' });
 
       // Complete phase 1 and 2 to get to phase 3
       await updatePhase(project.id, 1, 'prompt1', 'response1');
@@ -139,7 +139,7 @@ describe('Projects Module', () => {
 
   describe('deleteProject', () => {
     test('should delete a project', async () => {
-      const project = await createProject('Test PRD', 'Problems', 'Context');
+      const project = await createProject({ title: 'Test PRD', problems: 'Problems', context: 'Context' });
       await deleteProject(project.id);
       const retrieved = await getProject(project.id);
 
@@ -149,7 +149,7 @@ describe('Projects Module', () => {
 
   describe('importProjects', () => {
     test('should import project from JSON file', async () => {
-      const original = await createProject('Test PRD', 'Problems', 'Context');
+      const original = await createProject({ title: 'Test PRD', problems: 'Problems', context: 'Context' });
 
       // Create a mock File object
       const jsonContent = JSON.stringify(original);
@@ -174,8 +174,8 @@ describe('Projects Module', () => {
         version: '1.0',
         exportedAt: new Date().toISOString(),
         projects: [
-          await createProject('Project 1', 'Problems 1', 'Context 1'),
-          await createProject('Project 2', 'Problems 2', 'Context 2')
+          await createProject({ title: 'Project 1', problems: 'Problems 1', context: 'Context 1' }),
+          await createProject({ title: 'Project 2', problems: 'Problems 2', context: 'Context 2' })
         ]
       };
 
@@ -220,7 +220,7 @@ describe('Projects Module', () => {
 
   describe('updateProject', () => {
     test('should update project fields', async () => {
-      const project = await createProject('Original Title', 'Problems', 'Context');
+      const project = await createProject({ title: 'Original Title', problems: 'Problems', context: 'Context' });
 
       const updated = await updateProject(project.id, {
         title: 'Updated Title',
@@ -257,7 +257,7 @@ describe('Projects Module', () => {
     });
 
     test('should export single project as JSON', async () => {
-      const project = await createProject('Export Test', 'Problems', 'Context');
+      const project = await createProject({ title: 'Export Test', problems: 'Problems', context: 'Context' });
 
       await exportProject(project.id);
 
@@ -266,7 +266,7 @@ describe('Projects Module', () => {
     });
 
     test('should include correct project data in blob', async () => {
-      const project = await createProject('Blob Test', 'Test Problems', 'Test Context');
+      const project = await createProject({ title: 'Blob Test', problems: 'Test Problems', context: 'Test Context' });
 
       await exportProject(project.id);
 
@@ -312,8 +312,8 @@ describe('Projects Module', () => {
     });
 
     test('should export all projects as backup JSON', async () => {
-      await createProject('Project 1', 'Problems 1', 'Context 1');
-      await createProject('Project 2', 'Problems 2', 'Context 2');
+      await createProject({ title: 'Project 1', problems: 'Problems 1', context: 'Context 1' });
+      await createProject({ title: 'Project 2', problems: 'Problems 2', context: 'Context 2' });
 
       await exportAllProjects();
 
@@ -328,8 +328,8 @@ describe('Projects Module', () => {
         await deleteProject(p.id);
       }
 
-      await createProject('Test Project 1', 'Problems 1', 'Context 1');
-      await createProject('Test Project 2', 'Problems 2', 'Context 2');
+      await createProject({ title: 'Test Project 1', problems: 'Problems 1', context: 'Context 1' });
+      await createProject({ title: 'Test Project 2', problems: 'Problems 2', context: 'Context 2' });
 
       await exportAllProjects();
 
@@ -364,7 +364,7 @@ describe('Projects Module', () => {
         return originalCreateElement(tag);
       });
 
-      await createProject('Test', 'Problems', 'Context');
+      await createProject({ title: 'Test', problems: 'Problems', context: 'Context' });
       await exportAllProjects();
 
       expect(capturedDownloadName).toMatch(/^prd-assistant-backup-\d{4}-\d{2}-\d{2}\.json$/);
