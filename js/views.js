@@ -9,7 +9,6 @@ import { getAllProjects, createProject, deleteProject, getProject, updateProject
 import { formatDate, escapeHtml, confirm, showToast, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 import { getFinalMarkdown, getExportFilename } from './workflow.js';
-import { getAllTemplates, getTemplate } from '../assistant/js/prd-templates.js';
 
 // PRD documentation URL
 const PRD_DOC_URL = 'https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/Project_Planning_Mechanisms%3A_Documents.md#prd-the-what-and-why';
@@ -177,24 +176,6 @@ export function renderNewProjectForm() {
                     Create New <a href="${PRD_DOC_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-700 dark:hover:text-blue-300">PRD</a>
                 </h2>
 
-                <!-- Template Selector -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                        Choose a Template
-                    </label>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="template-selector">
-                        ${getAllTemplates().map(t => `
-                            <button type="button"
-                                class="template-btn p-3 border-2 rounded-lg text-center transition-all hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 ${t.id === 'blank' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600'}"
-                                data-template-id="${t.id}">
-                                <span class="text-2xl block mb-1">${t.icon}</span>
-                                <span class="text-sm font-medium text-gray-900 dark:text-white block">${t.name}</span>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">${t.description}</span>
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-
                 <form id="new-project-form" class="space-y-6">
                     <div>
                         <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -218,8 +199,8 @@ export function renderNewProjectForm() {
                             id="problems"
                             name="problems"
                             required
-                            rows="8"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
+                            rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             placeholder="Describe the problems this project will address..."
                         ></textarea>
                     </div>
@@ -231,8 +212,8 @@ export function renderNewProjectForm() {
                         <textarea
                             id="context"
                             name="context"
-                            rows="10"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
+                            rows="6"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             placeholder="Any simplifications, considerations, constraints, or other context..."
                         ></textarea>
                     </div>
@@ -254,28 +235,6 @@ export function renderNewProjectForm() {
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
   document.getElementById('cancel-btn').addEventListener('click', () => navigateTo('home'));
-
-  // Template selector event handlers
-  document.querySelectorAll('.template-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const templateId = btn.dataset.templateId;
-      const template = getTemplate(templateId);
-
-      if (template) {
-        // Update selection UI
-        document.querySelectorAll('.template-btn').forEach(b => {
-          b.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
-          b.classList.add('border-gray-200', 'dark:border-gray-600');
-        });
-        btn.classList.remove('border-gray-200', 'dark:border-gray-600');
-        btn.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
-
-        // Populate form fields with template content
-        document.getElementById('problems').value = template.problems;
-        document.getElementById('context').value = template.context;
-      }
-    });
-  });
 
   document.getElementById('new-project-form').addEventListener('submit', async (e) => {
     e.preventDefault();
