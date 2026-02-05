@@ -4,23 +4,23 @@
  * Tests the inline PRD validation and scoring functionality.
  */
 
-import { validatePRD, getScoreColor, getScoreLabel } from '../js/validator-inline.js';
+import { validateDocument, getScoreColor, getScoreLabel } from '../js/validator-inline.js';
 
-describe('validatePRD', () => {
+describe('validateDocument', () => {
   test('should return zero scores for empty content', () => {
-    const result = validatePRD('');
+    const result = validateDocument('');
     expect(result.totalScore).toBe(0);
     expect(result.structure.score).toBe(0);
     expect(result.clarity.score).toBe(0);
   });
 
   test('should return zero scores for null content', () => {
-    const result = validatePRD(null);
+    const result = validateDocument(null);
     expect(result.totalScore).toBe(0);
   });
 
   test('should return zero scores for short content', () => {
-    const result = validatePRD('Too short');
+    const result = validateDocument('Too short');
     expect(result.totalScore).toBe(0);
     expect(result.structure.issues).toContain('No content to validate');
   });
@@ -36,7 +36,7 @@ This document defines the requirements.
 ## Success Metrics
 - Metric 1
 `;
-    const result = validatePRD(content);
+    const result = validateDocument(content);
     expect(result.structure.score).toBeGreaterThan(0);
   });
 
@@ -47,7 +47,7 @@ This document defines the requirements.
 As a user, I want to log in so that I can access my account.
 As a admin, I want to manage users so that I can control access.
 `.repeat(3);
-    const result = validatePRD(content);
+    const result = validateDocument(content);
     expect(result.clarity.score).toBeGreaterThan(0);
   });
 
@@ -59,7 +59,7 @@ The product should be easy to use and user-friendly.
 It needs to be fast and have good performance.
 The interface should be intuitive and seamless.
 `.repeat(3);
-    const result = validatePRD(vagueContent);
+    const result = validateDocument(vagueContent);
     expect(result.clarity.issues.length).toBeGreaterThan(0);
   });
 
@@ -72,13 +72,13 @@ The system should handle 1000 requests per second.
 Target 99.9% uptime availability.
 User satisfaction should exceed 80%.
 `.repeat(2);
-    const result = validatePRD(content);
+    const result = validateDocument(content);
     expect(result.clarity.score).toBeGreaterThan(0);
   });
 
   test('should return all scoring categories', () => {
     const content = '# Test PRD\n' + 'Content here. '.repeat(20);
-    const result = validatePRD(content);
+    const result = validateDocument(content);
     expect(result.structure).toBeDefined();
     expect(result.clarity).toBeDefined();
     expect(result.userFocus).toBeDefined();

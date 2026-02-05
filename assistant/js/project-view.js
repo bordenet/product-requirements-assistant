@@ -10,7 +10,7 @@ import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFi
 import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, confirmWithRemember, showDocumentPreviewModal, showPromptModal, createActionMenu } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
-import { validatePRD, getScoreColor, getScoreLabel } from './validator-inline.js';
+import { validateDocument, getScoreColor, getScoreLabel } from './validator-inline.js';
 import { computeWordDiff, renderDiffHtml, getDiffStats } from './diff-view.js';
 
 /**
@@ -195,7 +195,7 @@ function renderPhaseContent(project, phase) {
   if (phase === 3 && phaseData.completed) {
     // Run inline validation on the PRD content
     const prdContent = phaseData.response || '';
-    const validationResult = validatePRD(prdContent);
+    const validationResult = validateDocument(prdContent);
     const scoreColor = getScoreColor(validationResult.totalScore);
     const scoreLabel = getScoreLabel(validationResult.totalScore);
 
@@ -224,7 +224,7 @@ function renderPhaseContent(project, phase) {
             <div class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-3">
                     <h5 class="font-semibold text-gray-900 dark:text-white flex items-center">
-                        📊 PRD Quality Score
+                        📊 Document Quality Rating
                     </h5>
                     <div class="flex items-center gap-2">
                         <span class="text-3xl font-bold text-${scoreColor}-600 dark:text-${scoreColor}-400">${validationResult.totalScore}</span>

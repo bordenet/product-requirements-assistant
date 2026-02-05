@@ -130,20 +130,10 @@ describe('Smoke Test - App Initialization', () => {
   });
 
   describe('Export Consistency - validator-inline.js exports match project-view.js imports', () => {
-    // Note: Each project has a project-specific validate function:
-    // hello-world/acceptance-criteria: validateProposal
-    // architecture-decision-record: validateADR
-    // one-pager: validateOnePager
-    // power-statement: validatePowerStatement
-    // pr-faq: validatePRFAQ
-    // product-requirements: validatePRD
-    // strategic-proposal: validateStrategicProposal
-    //
-    // PROJECT CUSTOMIZATION: Replace validateProposal with your project's validator function name
-    test('validator-inline.js exports project-specific validate function', async () => {
+    // All projects must use validateDocument (generic name for shared library)
+    test('validator-inline.js exports validateDocument', async () => {
       const validator = await import('../js/validator-inline.js');
-      // Use your project's function: validateProposal, validateOnePager, validateADR, etc.
-      expect(typeof validator.validatePRD).toBe('function');
+      expect(typeof validator.validateDocument).toBe('function');
     });
 
     test('validator-inline.js exports getScoreColor', async () => {
