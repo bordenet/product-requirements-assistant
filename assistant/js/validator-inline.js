@@ -6,6 +6,11 @@
  * It enables inline PRD scoring directly in the assistant after Phase 3 completion.
  */
 
+import { getSlopPenalty, calculateSlopScore } from './slop-detection.js';
+
+// Re-export for direct access
+export { calculateSlopScore };
+
 // Required sections detection patterns - supports numbered headers (e.g., "1.1 Purpose")
 const REQUIRED_SECTIONS = [
   { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(purpose|introduction|overview|objective|executive\s+summary)/im, name: 'Purpose/Introduction', weight: 2 },
@@ -231,14 +236,33 @@ export function validateDocument(text) {
   const userFocus = scoreUserFocus(text);
   const technical = scoreTechnicalQuality(text);
 
-  const totalScore = structure.score + clarity.score + userFocus.score + technical.score;
+  // AI slop detection
+  const slopPenalty = getSlopPenalty(text);
+  let slopDeduction = 0;
+  const slopIssues = [];
+
+  if (slopPenalty.penalty > 0) {
+    slopDeduction = Math.min(5, Math.floor(slopPenalty.penalty * 0.6));
+    if (slopPenalty.issues.length > 0) {
+      slopIssues.push(...slopPenalty.issues.slice(0, 2));
+    }
+  }
+
+  const totalScore = Math.max(0,
+    structure.score + clarity.score + userFocus.score + technical.score - slopDeduction
+  );
 
   return {
     totalScore,
     structure,
     clarity,
     userFocus,
-    technical
+    technical,
+    slopDetection: {
+      ...slopPenalty,
+      deduction: slopDeduction,
+      issues: slopIssues
+    }
   };
 }
 
