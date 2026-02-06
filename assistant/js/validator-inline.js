@@ -970,8 +970,17 @@ export function validatePRD(text) {
     }
   }
 
+  // Include slop deduction in technical category so categories sum to total
+  const adjustedTechnical = {
+    ...technical,
+    score: Math.max(0, technical.score - slopDeduction),
+    issues: slopDeduction > 0
+      ? [...technical.issues, `AI patterns detected (-${slopDeduction})`]
+      : technical.issues
+  };
+
   const totalScore = Math.max(0,
-    structure.score + clarity.score + userFocus.score + technical.score - slopDeduction
+    structure.score + clarity.score + userFocus.score + adjustedTechnical.score
   );
 
   return {
@@ -979,7 +988,7 @@ export function validatePRD(text) {
     structure,
     clarity,
     userFocus,
-    technical,
+    technical: adjustedTechnical,
     vagueQualifiers: clarity.vagueQualifiers,
     slopDetection: {
       ...slopPenalty,
