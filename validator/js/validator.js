@@ -958,7 +958,21 @@ export function validatePRD(text) {
   const userFocus = scoreUserFocus(text);
   const technical = scoreTechnicalQuality(text);
 
-  const totalScore = structure.score + clarity.score + userFocus.score + technical.score;
+  // AI slop detection (aligned with inline validator)
+  const slopPenalty = getSlopPenalty(text);
+  let slopDeduction = 0;
+  const slopIssues = [];
+
+  if (slopPenalty.penalty > 0) {
+    slopDeduction = Math.min(5, Math.floor(slopPenalty.penalty * 0.6));
+    if (slopPenalty.issues.length > 0) {
+      slopIssues.push(...slopPenalty.issues.slice(0, 2));
+    }
+  }
+
+  const totalScore = Math.max(0,
+    structure.score + clarity.score + userFocus.score + technical.score - slopDeduction
+  );
 
   return {
     totalScore,
@@ -967,7 +981,11 @@ export function validatePRD(text) {
     userFocus,
     technical,
     vagueQualifiers: clarity.vagueQualifiers,
-    slopDetection: clarity.slopDetection
+    slopDetection: {
+      ...slopPenalty,
+      deduction: slopDeduction,
+      issues: slopIssues
+    }
   };
 }
 
