@@ -139,3 +139,96 @@ describe('getScoreLabel', () => {
     expect(getScoreLabel(29)).toBe('Incomplete');
   });
 });
+
+describe('validateDocument branch coverage', () => {
+  test('should score document with H1 only (no H2)', () => {
+    const content = `
+# Main Title
+This is a document with only H1 heading and enough content to pass minimum length.
+This needs to be long enough to trigger validation.
+`.repeat(5);
+    const result = validateDocument(content);
+    expect(result.structure.score).toBeGreaterThan(0);
+  });
+
+  test('should score document with tables', () => {
+    const content = `
+# PRD Document
+## Requirements Table
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Login   | P1       | Done   |
+| Signup  | P2       | WIP    |
+This document has tables for formatting points.
+`.repeat(3);
+    const result = validateDocument(content);
+    expect(result.structure.score).toBeGreaterThan(0);
+  });
+
+  test('should score document with scope boundaries', () => {
+    const content = `
+# Product Requirements
+## Scope
+### In Scope
+- Feature A
+- Feature B
+### Out of Scope
+- Feature C will not be included
+- Feature D is excluded
+`.repeat(3);
+    const result = validateDocument(content);
+    expect(result.structure.score).toBeGreaterThan(0);
+  });
+
+  test('should score document with measurable requirements', () => {
+    const content = `
+# PRD
+## Requirements
+The system must handle 100 requests per second.
+Response time should be less than 200ms.
+The feature must support at least 50 concurrent users.
+Uptime requirement is 99.9% availability.
+Storage capacity must be 500GB minimum.
+`.repeat(3);
+    const result = validateDocument(content);
+    expect(result.clarity.score).toBeGreaterThan(0);
+  });
+
+  test('should score document with MoSCoW prioritization', () => {
+    const content = `
+# PRD
+## Requirements
+Must have: User authentication
+Should have: Password reset
+Could have: Social login
+Won't have: Biometric authentication
+`.repeat(3);
+    const result = validateDocument(content);
+    expect(result.clarity.score).toBeGreaterThan(0);
+  });
+
+  test('should score document with persona section and pain points', () => {
+    const content = `
+# PRD
+## User Personas
+### Primary User
+A developer who struggles with context switching between tools.
+Their main pain point is cognitive overhead from multiple interfaces.
+The frustration of managing separate systems is significant.
+`.repeat(3);
+    const result = validateDocument(content);
+    expect(result.userFocus.score).toBeGreaterThan(0);
+  });
+
+  test('should score document with problem section only', () => {
+    const content = `
+# PRD
+## Problem Statement
+The current state requires manual processes.
+## Goals
+Improve efficiency and reduce errors.
+`.repeat(5);
+    const result = validateDocument(content);
+    expect(result.userFocus.score).toBeGreaterThan(0);
+  });
+});

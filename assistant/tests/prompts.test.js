@@ -95,4 +95,42 @@ describe('prompt generation', () => {
   test('generatePhase3Prompt should reject when fetch unavailable', async () => {
     await expect(generatePhase3Prompt('phase 1', 'phase 2')).rejects.toThrow();
   });
+
+  describe('with mocked fetch', () => {
+    let originalFetch;
+
+    beforeEach(() => {
+      originalFetch = global.fetch;
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    test('should handle failed fetch response (non-ok)', async () => {
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found'
+        })
+      );
+
+      const formData = { title: 'Test', problems: 'Test problem', context: 'Test context' };
+      await expect(generatePhase1Prompt(formData)).rejects.toThrow('Failed to load');
+    });
+
+    test('preloadPromptTemplates should preload all templates', async () => {
+      const mockTemplate = '{{TITLE}} - {{PROBLEMS}}';
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(mockTemplate)
+        })
+      );
+
+      await expect(preloadPromptTemplates()).resolves.not.toThrow();
+      expect(global.fetch).toHaveBeenCalledTimes(3);
+    });
+  });
 });

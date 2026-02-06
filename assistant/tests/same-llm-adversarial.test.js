@@ -607,4 +607,7 @@ Evaluate the document on:
             expect(result.pattern).toBeNull();
         });
     });
+
+    // Note: executeWorkflow tests removed - SameLLMAdversarialSystem constructor
+    // doesn't accept mock parameters (it creates its own managers internally)
 });

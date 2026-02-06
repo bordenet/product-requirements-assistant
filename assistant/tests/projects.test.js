@@ -1,4 +1,4 @@
-import { createProject, getAllProjects, getProject, updatePhase, updateProject, deleteProject, importProjects, exportProject, exportAllProjects } from '../js/projects.js';
+import { createProject, getAllProjects, getProject, updatePhase, updateProject, deleteProject, importProjects, exportProject, exportAllProjects, extractTitleFromMarkdown } from '../js/projects.js';
 import storage from '../js/storage.js';
 
 describe('Projects Module', () => {
@@ -380,6 +380,49 @@ describe('Projects Module', () => {
       await exportAllProjects();
 
       expect(global.URL.createObjectURL).toHaveBeenCalled();
+    });
+  });
+
+  // =================================================================
+  // extractTitleFromMarkdown Tests
+  // =================================================================
+  describe('extractTitleFromMarkdown', () => {
+    test('should return empty string for null input', () => {
+      expect(extractTitleFromMarkdown(null)).toBe('');
+    });
+
+    test('should return empty string for empty input', () => {
+      expect(extractTitleFromMarkdown('')).toBe('');
+    });
+
+    test('should extract H1 header', () => {
+      const md = '# My Document Title\n\nSome content here.';
+      expect(extractTitleFromMarkdown(md)).toBe('My Document Title');
+    });
+
+    test('should skip PRESS RELEASE header', () => {
+      const md = '# PRESS RELEASE\n\n**Exciting Headline Here**\n\nContent...';
+      expect(extractTitleFromMarkdown(md)).toBe('Exciting Headline Here');
+    });
+
+    test('should extract bold headline after PRESS RELEASE', () => {
+      const md = '# PRESS RELEASE\n**Company Announces New Feature**\n\nDetails follow.';
+      expect(extractTitleFromMarkdown(md)).toBe('Company Announces New Feature');
+    });
+
+    test('should extract first bold line as fallback', () => {
+      const md = 'Some text\n**This Is A Good Headline Title**\n\nMore content.';
+      expect(extractTitleFromMarkdown(md)).toBe('This Is A Good Headline Title');
+    });
+
+    test('should reject too-short bold text', () => {
+      const md = '**Short**\n\nMore content.';
+      expect(extractTitleFromMarkdown(md)).toBe('');
+    });
+
+    test('should reject bold text ending with period (sentences)', () => {
+      const md = '**This is a sentence ending with period.**\n\nMore content.';
+      expect(extractTitleFromMarkdown(md)).toBe('');
     });
   });
 });

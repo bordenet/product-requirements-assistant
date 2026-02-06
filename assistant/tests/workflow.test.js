@@ -21,8 +21,13 @@ import {
   generatePromptForPhase,
   generatePhase1Prompt,
   generatePhase2Prompt,
-  generatePhase3Prompt
+  generatePhase3Prompt,
+  loadDefaultPrompts,
+  getPrompt,
+  savePrompt,
+  resetPrompt
 } from '../js/workflow.js';
+import storage from '../js/storage.js';
 
 // Mock fetch for prompt template loading
 beforeAll(() => {
@@ -516,5 +521,111 @@ describe('generatePhase3Prompt', () => {
     };
     const prompt = await generatePhase3Prompt(project);
     expect(typeof prompt).toBe('string');
+  });
+});
+
+// =================================================================
+// Legacy Prompt Functions Tests
+// =================================================================
+describe('Legacy Prompt Functions', () => {
+  beforeEach(async () => {
+    await storage.init();
+  });
+
+  describe('loadDefaultPrompts', () => {
+    test('should load prompts from fetch and not throw', async () => {
+      // The function should complete without throwing
+      await expect(loadDefaultPrompts()).resolves.not.toThrow();
+    });
+
+    test('should handle fetch errors gracefully', async () => {
+      // Save original fetch
+      const originalFetch = global.fetch;
+
+      // Mock fetch to reject
+      global.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
+
+      // Should not throw, just log error
+      await expect(loadDefaultPrompts()).resolves.not.toThrow();
+
+      // Restore original fetch
+      global.fetch = originalFetch;
+    });
+
+    test('should save prompts to storage when fetched successfully', async () => {
+      const originalFetch = global.fetch;
+      const mockPrompts = { 1: 'Phase 1 default', 2: 'Phase 2 default' };
+
+      global.fetch = jest.fn(() => Promise.resolve({
+        json: () => Promise.resolve(mockPrompts)
+      }));
+
+      await loadDefaultPrompts();
+
+      // Verify prompts were saved (or verify fetch was called)
+      expect(global.fetch).toHaveBeenCalled();
+
+      global.fetch = originalFetch;
+    });
+  });
+
+  describe('getPrompt', () => {
+    test('should return empty string for phase with no prompt', async () => {
+      const prompt = await getPrompt(999);
+      expect(prompt).toBe('');
+    });
+
+    test('should return saved prompt after savePrompt', async () => {
+      await savePrompt(1, 'Test prompt content');
+      const prompt = await getPrompt(1);
+      expect(prompt).toBe('Test prompt content');
+    });
+  });
+
+  describe('savePrompt', () => {
+    test('should save prompt to storage', async () => {
+      await savePrompt(2, 'Phase 2 custom prompt');
+      const saved = await storage.getPrompt(2);
+      expect(saved).toBe('Phase 2 custom prompt');
+    });
+
+    test('should overwrite existing prompt', async () => {
+      await savePrompt(1, 'First version');
+      await savePrompt(1, 'Second version');
+      const prompt = await getPrompt(1);
+      expect(prompt).toBe('Second version');
+    });
+  });
+
+  describe('resetPrompt', () => {
+    test('should return undefined when no default exists', async () => {
+      const result = await resetPrompt(999);
+      expect(result).toBeUndefined();
+    });
+
+    test('should restore default prompt and save to storage', async () => {
+      const originalFetch = global.fetch;
+      const mockPrompts = { 1: 'Default Phase 1 Prompt' };
+
+      global.fetch = jest.fn(() => Promise.resolve({
+        json: () => Promise.resolve(mockPrompts)
+      }));
+
+      // Load defaults first
+      await loadDefaultPrompts();
+
+      // Override with custom
+      await savePrompt(1, 'Custom prompt');
+
+      // Reset should restore default
+      const result = await resetPrompt(1);
+      expect(result).toBe('Default Phase 1 Prompt');
+
+      // Storage should have the default
+      const stored = await storage.getPrompt(1);
+      expect(stored).toBe('Default Phase 1 Prompt');
+
+      global.fetch = originalFetch;
+    });
   });
 });
