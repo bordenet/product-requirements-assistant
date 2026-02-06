@@ -25,7 +25,12 @@ export function extractTitleFromMarkdown(markdown) {
   // Look for first H1 heading (# Title)
   const match = markdown.match(/^#\s+(.+?)$/m);
   if (match && match[1]) {
-    return match[1].trim();
+    const title = match[1].trim();
+    // Filter out template placeholders (e.g., {Document Title})
+    if (title.includes('{') || title.includes('}')) {
+      return null;
+    }
+    return title;
   }
   return null;
 }
