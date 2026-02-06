@@ -11,7 +11,7 @@ import storage from './storage.js';
  * @param {string} markdown - Document markdown content
  * @returns {string} Extracted title or empty string
  */
-function extractTitleFromMarkdown(markdown) {
+export function extractTitleFromMarkdown(markdown) {
   if (!markdown) return '';
 
   // First try: H1 header (# Title)
