@@ -9,7 +9,7 @@ import { getAllProjects, createProject, deleteProject, getProject, updateProject
 import { formatDate, escapeHtml, confirm, showToast, showDocumentPreviewModal } from './ui.js';
 import { navigateTo } from './router.js';
 import { getFinalMarkdown, getExportFilename } from './workflow.js';
-import { getAllTemplates, getTemplate } from './prd-templates.js';
+import { getAllTemplates, getTemplate } from './document-specific-templates.js';
 
 // PRD documentation URL
 const PRD_DOC_URL = 'https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/Project_Planning_Mechanisms%3A_Documents.md#prd-the-what-and-why';

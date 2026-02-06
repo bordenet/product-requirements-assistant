@@ -1,13 +1,22 @@
 /**
- * PRD Templates - Pre-filled content for common PRD types
- * @module prd-templates
+ * Document-Specific Templates - Pre-filled content for common document types
+ * @module document-specific-templates
+ *
+ * This file follows the genesis template pattern for document-specific templates.
+ * Each project has its own version of this file with templates tailored to
+ * the document type (PRD, One-Pager, ADR, etc.).
+ *
+ * Required exports:
+ * - DOCUMENT_TEMPLATES: Object containing template definitions
+ * - getTemplate(templateId): Returns a template by ID or null
+ * - getAllTemplates(): Returns array of all templates
  */
 
 /**
- * Available PRD templates
- * Each template provides structured prompts for the Problems and Context fields
+ * Available document templates
+ * Each template provides structured prompts for the document's input fields
  */
-export const PRD_TEMPLATES = {
+export const DOCUMENT_TEMPLATES = {
   blank: {
     id: 'blank',
     name: 'Blank PRD',
@@ -161,7 +170,7 @@ SLA targets:
  * @returns {Object|null} Template object or null if not found
  */
 export function getTemplate(templateId) {
-  return PRD_TEMPLATES[templateId] || null;
+  return DOCUMENT_TEMPLATES[templateId] || null;
 }
 
 /**
@@ -169,5 +178,5 @@ export function getTemplate(templateId) {
  * @returns {Array} Array of template objects
  */
 export function getAllTemplates() {
-  return Object.values(PRD_TEMPLATES);
+  return Object.values(DOCUMENT_TEMPLATES);
 }
