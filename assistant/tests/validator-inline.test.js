@@ -84,10 +84,13 @@ User satisfaction should exceed 80%.
     expect(result.clarity).toBeDefined();
     expect(result.userFocus).toBeDefined();
     expect(result.technical).toBeDefined();
-    expect(result.structure.maxScore).toBe(25);
-    expect(result.clarity.maxScore).toBe(30);
-    expect(result.userFocus.maxScore).toBe(25);
-    expect(result.technical.maxScore).toBe(20);
+    expect(result.strategicViability).toBeDefined();
+    // 5-dimension scoring: Structure 20, Clarity 25, User Focus 20, Technical 15, Strategic Viability 20 = 100
+    expect(result.structure.maxScore).toBe(20);
+    expect(result.clarity.maxScore).toBe(25);
+    expect(result.userFocus.maxScore).toBe(20);
+    expect(result.technical.maxScore).toBe(15);
+    expect(result.strategicViability.maxScore).toBe(20);
   });
 });
 
