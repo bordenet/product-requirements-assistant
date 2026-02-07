@@ -68,9 +68,8 @@ This PRD is a **decision-making tool**, not documentation theater. Engineers wil
 
 ### Document Structure
 
-Create a well-structured PRD with the following sections:
+Create a well-structured PRD with the following sections (detailed guidance for each below):
 
-```markdown
 # {Document Title}
 
 ## 1. Executive Summary
@@ -298,7 +297,8 @@ Document the top 2 unresolved debates between stakeholders:
 | {Debate topic} | {Stakeholder A's view} | {Stakeholder B's view} | {Current decision or "TBD"} | {Why this position was chosen} |
 
 **Note:** This section prevents "false consensus." Engineers need to know where trade-offs were made.
-```
+
+---
 
 ## Guidelines
 
@@ -358,20 +358,34 @@ Work with the user iteratively until you have a complete, clear PRD.
 
 ## Output Format
 
-**⚠️ CRITICAL: Copy-Paste Ready Output**
+<output_rules>
+CRITICAL - Your PRD must be COPY-PASTE READY:
+- Start IMMEDIATELY with "# {Document Title}" (no preamble like "Here's your PRD...")
+- End after the Dissenting Opinions section (no sign-off like "Let me know if...")
+- NO markdown code fences (```markdown) wrapping the output
+- NO explanations of what you did or why
+- The user will paste your ENTIRE response directly into the tool
+</output_rules>
 
-Your response must be EXACTLY the PRD document, ready to copy-paste directly into a document editor.
+### Required 14 Sections (in order)
 
-**DO NOT include:**
-- ❌ Any preamble (e.g., "Here's your PRD..." or "I've created a comprehensive...")
-- ❌ Any sign-off (e.g., "Let me know if you need changes...")
-- ❌ Code fences around the entire document (e.g., ```markdown)
-- ❌ Meta-commentary about the document
-
-**DO include:**
-- ✅ The PRD starting with the title heading
-- ✅ All required sections with proper numbering
-- ✅ Clean, professional markdown formatting
+| Section | Content | Format |
+|---------|---------|--------|
+| # {Document Title} | Title from user input | H1 header |
+| ## 1. Executive Summary | 2-3 sentences: problem, solution, impact | Paragraph |
+| ## 2. Problem Statement | Current state + impact with quantification | H2 + subsections |
+| ## 3. Value Proposition | Customer AND company benefits, quantified | H2 + subsections |
+| ## 4. Goals and Objectives | Business/user goals, metrics with baselines/targets, kill switch | H2 + subsections |
+| ## 5. Customer FAQ | External FAQ + "Aha!" moment quote | H2 + subsections |
+| ## 6. Proposed Solution | Core functionality, alternatives considered, workflows | H2 + subsections |
+| ## 7. Scope | In scope, out of scope, future considerations | H2 + subsections |
+| ## 8. Requirements | FR/NFR with door type, success AND failure ACs | H2 + tables |
+| ## 9. Stakeholders | Role, impact, needs, success criteria | H2 + subsections |
+| ## 10. Timeline | High-level phases | H2 + table or list |
+| ## 11. Risks and Mitigation | Risk, probability, impact, mitigation, contingency | H2 + table |
+| ## 12. Traceability Summary | Problem → Requirements → Metrics mapping | H2 + table |
+| ## 13. Open Questions | Unresolved items | H2 + list |
+| ## 14. Known Unknowns & Dissenting Opinions | Unresolved debates, dissenting views | H2 + subsections |
 
 ---
 

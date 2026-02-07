@@ -1171,6 +1171,12 @@ export function validatePRD(text) {
     userFocus,
     technical: adjustedTechnical,
     strategicViability,
+    // Dimension mappings for app.js compatibility
+    dimension1: structure,
+    dimension2: clarity,
+    dimension3: userFocus,
+    dimension4: adjustedTechnical,
+    dimension5: strategicViability,
     vagueQualifiers: clarity.vagueQualifiers,
     slopDetection: {
       ...slopPenalty,

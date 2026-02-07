@@ -119,39 +119,37 @@ Before finalizing, verify:
 
 ## Output Format
 
-**⚠️ CRITICAL: Copy-Paste Ready Output**
+<output_rules>
+CRITICAL - Your final PRD must be COPY-PASTE READY:
+- Start IMMEDIATELY with "# {Document Title}" (no preamble like "Here's the synthesized PRD...")
+- End after the citation (no sign-off like "Let me know if...")
+- NO markdown code fences (```markdown) wrapping the output
+- NO explanations of what you did or why
+- The user will paste your ENTIRE response directly into the tool
+</output_rules>
 
-Your response must be EXACTLY the PRD document, ready to copy-paste directly into a document editor.
+### Required 14 Sections (in order)
 
-**DO NOT include:**
-- ❌ Any preamble (e.g., "Here's the synthesized PRD..." or "I've combined the best elements...")
-- ❌ Any sign-off (e.g., "Let me know if you need changes...")
-- ❌ Code fences around the entire document (e.g., ```markdown)
-- ❌ Meta-commentary about your synthesis decisions
+| Section | Content | Format |
+|---------|---------|--------|
+| # {Document Title} | Title | H1 header |
+| ## 1. Executive Summary | Problem, solution, impact | Paragraph |
+| ## 2. Problem Statement | Current state + impact | H2 + subsections |
+| ## 3. Value Proposition | Customer AND company benefits | H2 + subsections |
+| ## 4. Goals and Objectives | Metrics with baselines/targets, kill switch | H2 + subsections |
+| ## 5. Customer FAQ | External FAQ + "Aha!" moment | H2 + subsections |
+| ## 6. Proposed Solution | Core functionality, alternatives | H2 + subsections |
+| ## 7. Scope | In/out of scope | H2 + subsections |
+| ## 8. Requirements | FR/NFR with door type, ACs | H2 + tables |
+| ## 9. Stakeholders | Role, impact, needs | H2 + subsections |
+| ## 10. Timeline | Phases | H2 + table or list |
+| ## 11. Risks and Mitigation | Risk table | H2 + table |
+| ## 12. Traceability Summary | Problem → Requirements → Metrics | H2 + table |
+| ## 13. Open Questions | Unresolved items | H2 + list |
+| ## 14. Known Unknowns & Dissenting Opinions | Debates, dissenting views | H2 + subsections |
+| Citation | Tool attribution | Horizontal rule + italic text |
 
-**DO include:**
-- ✅ The PRD starting with the title heading
-- ✅ All required sections with proper numbering (1-14)
-- ✅ Clean, professional markdown formatting
-- ✅ The citation at the end
-
-The final PRD MUST include these 14 sections:
-1. Executive Summary
-2. Problem Statement
-3. Value Proposition
-4. Goals and Objectives (with Success Metrics, Leading/Lagging Indicators, Kill Switch)
-5. Customer FAQ (Working Backwards)
-6. Proposed Solution (with Alternatives Considered)
-7. Scope
-8. Requirements (with One-Way/Two-Way Door tagging, Success AND Failure ACs)
-9. Stakeholders
-10. Timeline and Milestones
-11. Risks and Mitigation
-12. Traceability Summary
-13. Open Questions
-14. Known Unknowns & Dissenting Opinions
-
-End with:
+**End with:**
 ---
 *This PRD was generated using the Product Requirements Assistant tool. Learn more at: https://github.com/bordenet/product-requirements-assistant*
 

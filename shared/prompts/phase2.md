@@ -150,28 +150,25 @@ Evaluate:
 
 ## Output Format
 
-When ready, provide your improved version in this format:
+<output_rules>
+CRITICAL - Your review AND improved PRD must be COPY-PASTE READY:
+- Start IMMEDIATELY with "## Initial Assessment Scores" (no preamble like "Here's my review...")
+- After scores and analysis, provide improved PRD starting with "# {Document Title}"
+- End after section 14 (no sign-off like "Let me know if...")
+- NO markdown code fences (```markdown) wrapping the output
+- NO explanations of what you did or why outside designated sections
+- The user will paste your ENTIRE response directly into the tool
+</output_rules>
 
-```markdown
-# {Document Title}
+### Required Output Structure
 
-## 1. Executive Summary
-{Your improved version}
-
-## 2. Problem Statement
-{Your improved version}
-
-### 2.1 Current State
-{Your improved version}
-
-### 2.2 Impact
-{Your improved version}
-
-## 3. Goals and Objectives
-{Your improved version}
-
-{... continue with all sections ...}
-```
+| Section | Content | Format |
+|---------|---------|--------|
+| ## Initial Assessment Scores | 10 criteria scores (1-10 each) | Table or list |
+| ## Key Issues Identified | Vague terms, missing info, weak areas | Numbered list |
+| ## Suggested Improvements | Specific changes with examples | Numbered list |
+| # {Document Title} | Improved PRD starting here | H1 header |
+| (All 14 PRD sections) | Improved versions of each section | Standard PRD format |
 
 ---
 
