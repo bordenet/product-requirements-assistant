@@ -4,7 +4,21 @@
  * Tests the inline PRD validation and scoring functionality.
  */
 
-import { validateDocument, getScoreColor, getScoreLabel } from '../../shared/js/validator-inline.js';
+import {
+  validateDocument,
+  getScoreColor,
+  getScoreLabel,
+  detectSections,
+  detectVagueQualifiers,
+  detectVagueLanguage,
+  detectPrioritization,
+  detectCustomerEvidence,
+  detectScopeBoundaries,
+  detectValueProposition,
+  detectUserPersonas,
+  detectProblemStatement,
+  detectNonFunctionalRequirements
+} from '../../shared/js/validator-inline.js';
 
 describe('validateDocument', () => {
   test('should return zero scores for empty content', () => {
@@ -519,5 +533,202 @@ Then they see the dashboard
     const resultHappyOnly = validateDocument(contentHappyPathOnly);
     // Content with failure cases should score higher in technical
     expect(resultWithFailure.technical.score).toBeGreaterThanOrEqual(resultHappyOnly.technical.score);
+  });
+});
+
+// ============================================================================
+// Detection Functions Tests
+// ============================================================================
+
+describe('Detection Functions', () => {
+  describe('detectSections', () => {
+    test('should detect all required sections when present', () => {
+      const content = `
+# PRD
+## Problem Statement
+The problem is...
+## Goals
+The goal is...
+## Non-Goals
+This is not...
+## User Stories
+As a user...
+## Acceptance Criteria
+Given...When...Then...
+## Success Metrics
+We will measure...
+`;
+      const result = detectSections(content);
+      expect(result.found.length).toBeGreaterThan(0);
+    });
+
+    test('should report missing sections', () => {
+      const content = '# PRD\nMinimal content only.';
+      const result = detectSections(content);
+      expect(result.missing.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('detectVagueQualifiers', () => {
+    test('should detect vague qualifiers in text', () => {
+      const content = 'We need to make this very fast and highly scalable.';
+      const result = detectVagueQualifiers(content);
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    test('should return empty for specific language', () => {
+      const content = 'Response time must be under 200ms for 95th percentile.';
+      const result = detectVagueQualifiers(content);
+      expect(result.length).toBe(0);
+    });
+  });
+
+  describe('detectVagueLanguage', () => {
+    test('should categorize different types of vague language', () => {
+      const content = 'We need to make this somewhat fast, hopefully soon, and many users say it is good.';
+      const result = detectVagueLanguage(content);
+      expect(result).toHaveProperty('qualifiers');
+      expect(result).toHaveProperty('quantifiers');
+      expect(result).toHaveProperty('temporal');
+    });
+
+    test('should detect quantifier vagueness', () => {
+      const content = 'Many users need this feature and some customers requested it.';
+      const result = detectVagueLanguage(content);
+      expect(result.quantifiers.length + result.weaselWords.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('detectPrioritization', () => {
+    test('should detect MoSCoW prioritization', () => {
+      const content = 'Must have: Login functionality. Should have: Profile page.';
+      const result = detectPrioritization(content);
+      expect(result.hasMoscow).toBe(true);
+      expect(result.moscowCount).toBeGreaterThan(0);
+    });
+
+    test('should detect P-level prioritization', () => {
+      const content = 'P0: Critical bug fix. P1: Feature enhancement.';
+      const result = detectPrioritization(content);
+      expect(result.hasPLevel).toBe(true);
+      expect(result.pLevelCount).toBeGreaterThan(0);
+    });
+
+    test('should return zero signals for unprioritized content', () => {
+      const content = 'Here is a list of features without priority.';
+      const result = detectPrioritization(content);
+      expect(result.totalSignals).toBe(0);
+    });
+  });
+
+  describe('detectCustomerEvidence', () => {
+    test('should detect customer research references', () => {
+      const content = 'Based on user research, we found that 80% of customers need this feature.';
+      const result = detectCustomerEvidence(content);
+      expect(result.hasResearch).toBe(true);
+    });
+
+    test('should detect customer quotes', () => {
+      const content = 'Customer said "I really need this feature to do my job."';
+      const result = detectCustomerEvidence(content);
+      expect(result.hasQuotes).toBe(true);
+    });
+
+    test('should return zero evidence types for content without evidence', () => {
+      const content = 'This feature will be great for users.';
+      const result = detectCustomerEvidence(content);
+      expect(result.evidenceTypes).toBe(0);
+    });
+  });
+
+  describe('detectScopeBoundaries', () => {
+    test('should detect in-scope items', () => {
+      const content = '## Scope\n### In Scope\n- User authentication\n- Password reset';
+      const result = detectScopeBoundaries(content);
+      expect(result.hasInScope).toBe(true);
+    });
+
+    test('should detect out-of-scope items', () => {
+      const content = '## Out of Scope\n- Third-party integrations\n- Mobile app';
+      const result = detectScopeBoundaries(content);
+      expect(result.hasOutOfScope).toBe(true);
+    });
+
+    test('should detect both in and out of scope', () => {
+      const content = '## In Scope\n- Login\n## Out of Scope\n- SSO';
+      const result = detectScopeBoundaries(content);
+      expect(result.hasInScope).toBe(true);
+      expect(result.hasOutOfScope).toBe(true);
+    });
+  });
+
+  describe('detectValueProposition', () => {
+    test('should detect value proposition section', () => {
+      const content = '## Value Proposition\nThis feature will save users 2 hours per week.';
+      const result = detectValueProposition(content);
+      expect(result.hasSection).toBe(true);
+    });
+
+    test('should detect quantified benefits', () => {
+      const content = 'Users will save $500 per month and 2 hours saved per week.';
+      const result = detectValueProposition(content);
+      expect(result.hasQuantification).toBe(true);
+    });
+  });
+
+  describe('detectUserPersonas', () => {
+    test('should detect persona section', () => {
+      const content = '## User Personas\n### Primary User: Marketing Manager\nNeeds quick reporting tools.';
+      const result = detectUserPersonas(content);
+      expect(result.hasPersonaSection).toBe(true);
+    });
+
+    test('should detect user types', () => {
+      const content = 'The developer needs to generate reports quickly, and the admin can configure settings.';
+      const result = detectUserPersonas(content);
+      expect(result.userTypes.length).toBeGreaterThan(0);
+    });
+
+    test('should detect pain points', () => {
+      const content = 'Users struggle with this problem and face challenges in daily workflows.';
+      const result = detectUserPersonas(content);
+      expect(result.hasPainPoints).toBe(true);
+      expect(result.indicators).toContain('Pain points addressed');
+    });
+  });
+
+  describe('detectProblemStatement', () => {
+    test('should detect problem section', () => {
+      const content = '## Problem Statement\nUsers cannot easily find their documents.';
+      const result = detectProblemStatement(content);
+      expect(result.hasProblemSection).toBe(true);
+    });
+
+    test('should detect problem framing language', () => {
+      const content = 'The current challenge is that users face pain points with slow search.';
+      const result = detectProblemStatement(content);
+      expect(result.hasProblemLanguage).toBe(true);
+      expect(result.indicators.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('detectNonFunctionalRequirements', () => {
+    test('should detect performance requirements', () => {
+      const content = 'The system must have response time under 200ms.';
+      const result = detectNonFunctionalRequirements(content);
+      expect(result.categories).toContain('performance');
+    });
+
+    test('should detect security requirements', () => {
+      const content = 'All data must use encryption and authentication for access control.';
+      const result = detectNonFunctionalRequirements(content);
+      expect(result.categories).toContain('security');
+    });
+
+    test('should detect scalability requirements', () => {
+      const content = 'The system must handle 100,000 concurrent users.';
+      const result = detectNonFunctionalRequirements(content);
+      expect(result.categories).toContain('scalability');
+    });
   });
 });
