@@ -8,7 +8,6 @@ import { initRouter, updateStorageInfo } from './router.js';
 import { loadDefaultPrompts } from './workflow.js';
 import { exportAllProjects, importProjects } from './projects.js';
 import { showToast, showLoading, hideLoading } from './ui.js';
-import { initMockMode, setMockMode } from './ai-mock.js';
 
 /**
  * Initialize the application
@@ -36,10 +35,6 @@ async function init() {
 
     // Update storage info
     await updateStorageInfo();
-
-    // Initialize mock mode (localhost only)
-    initMockMode();
-    console.log('✓ Mock mode initialized');
 
     hideLoading();
     console.log('✓ App ready');
@@ -133,13 +128,6 @@ function setupGlobalEventListeners() {
     showAboutModal();
   });
 
-  // Mock mode checkbox
-  const mockCheckbox = document.getElementById('mockModeCheckbox');
-  if (mockCheckbox) {
-    mockCheckbox.addEventListener('change', (e) => {
-      setMockMode(e.target.checked);
-    });
-  }
 }
 
 /**
