@@ -115,7 +115,7 @@ describe('scoreDocumentStructure', () => {
     expect(result).toHaveProperty('maxScore');
     expect(result).toHaveProperty('issues');
     expect(result).toHaveProperty('strengths');
-    expect(result.maxScore).toBe(25);
+    expect(result.maxScore).toBe(20);
   });
 });
 
@@ -144,7 +144,7 @@ describe('scoreRequirementsClarity', () => {
     expect(result).toHaveProperty('maxScore');
     expect(result).toHaveProperty('vagueQualifiers');
     expect(result).toHaveProperty('userStoryCount');
-    expect(result.maxScore).toBe(30);
+    expect(result.maxScore).toBe(25);
   });
 });
 

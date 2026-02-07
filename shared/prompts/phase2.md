@@ -1,4 +1,4 @@
-# Phase 2: PRD Review and Refinement (Gemini 2.5 Pro)
+# Phase 2: PRD Review and Refinement (Gemini 3)
 
 **INSTRUCTIONS FOR GEMINI:**
 
@@ -90,6 +90,34 @@ Evaluate the document on these dimensions:
 - Do requirements support the proposed solution?
 - Does the timeline account for all requirements?
 - Are stakeholder roles aligned with responsibilities?
+
+### 9. Strategic Viability (1-10) ⭐ NEW
+
+**This dimension catches "Document Theater" - impressive-looking PRDs that don't actually help engineers build the right thing.**
+
+Evaluate:
+- **Metric Validity (1-3):** Are success metrics actually leading indicators? Do they include counter-metrics to prevent perverse incentives? Is there a defined Source of Truth?
+- **Scope Realism (1-3):** Is the scope achievable within the stated timeline? Or is this a "Kitchen Sink" PRD?
+- **Risk & Mitigation Quality (1-2):** Are risks specific (e.g., "third-party API latency") or generic ("we might run late")? Are mitigations actionable?
+- **Traceability (1-2):** Does every requirement trace back to a stated problem? Does every problem have at least one metric?
+
+**Red Flags:**
+- ❌ "Increase user engagement" without defining engagement or measurement method
+- ❌ Scope lists 20 features for a 3-month timeline
+- ❌ All requirements marked "P0" (no prioritization logic)
+- ❌ Requirements that don't trace to any stated problem
+- ❌ Missing "Hypothesis Kill Switch" - what would prove this is a failure?
+
+### 10. Engineering Culture Alignment (1-10) ⭐ NEW
+
+**Would engineers actually use this PRD, or would it be filed away and ignored?**
+
+Evaluate:
+- **Alternatives Considered:** Does the PRD show rejected approaches with reasons?
+- **One-Way vs Two-Way Doors:** Are irreversible decisions flagged for deeper analysis?
+- **Dissenting Opinions:** Does the PRD document unresolved debates, or present false consensus?
+- **Customer FAQ:** Does the PRD work backwards from customer outcomes, or forward from features?
+- **Fail Fast:** Does the PRD define what would prove the hypothesis wrong?
 
 ## Your Process
 

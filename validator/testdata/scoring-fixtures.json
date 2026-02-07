@@ -4,7 +4,7 @@
       "name": "complete-structure",
       "input": "# Purpose\nThis product solves X\n\n## User Personas\nAs a developer, I want...\n\n## Features\nFeature 1\n\n## Success Metrics\n50% improvement\n\n## Scope\nIn scope: X\n\n## Timeline\nQ1 2026\n\n## Risks\nDependency on team X\n\n## Constraints\nBudget limited",
       "expected": {
-        "minScore": 20,
+        "minScore": 16,
         "sectionsFound": 8
       }
     },

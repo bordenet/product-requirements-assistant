@@ -16,6 +16,12 @@ The user has provided the following information:
 
 Generate a comprehensive PRD that focuses on the **"Why"** (business context) and the **"What"** (requirements) while staying completely out of the **"How"** (implementation details).
 
+## ⚠️ CRITICAL: Working Backwards Mindset
+
+This PRD is a **decision-making tool**, not documentation theater. Engineers will use this to make architectural tradeoffs. If they don't understand WHY decisions were made, they'll unintentionally break the product's future state.
+
+**Your goal is to clarify product strategy.** The document must serve as a logic test: if the requirements are met, do the success metrics actually improve? Be ruthlessly objective.
+
 ## ⚠️ CRITICAL RULES - READ FIRST
 
 ### Mutation 1: Banned Vague Language
@@ -57,6 +63,8 @@ Generate a comprehensive PRD that focuses on the **"Why"** (business context) an
 - "Deployment must complete without user-facing downtime"
 
 **Rule:** If an engineer could implement it multiple ways, you're describing WHAT. If you're prescribing a specific technology or approach, you're describing HOW (forbidden).
+
+**Technical Constraints Exception:** Only specify technical details if they are PRE-EXISTING constraints (e.g., "Must integrate with existing Salesforce instance" or "Must use company's existing AWS infrastructure").
 
 ### Document Structure
 
@@ -111,14 +119,31 @@ For EACH perspective, provide:
 
 ### 4.3 Success Metrics
 
-**Mutation 5: Require Quantified Success Metrics**
+**Mutation 5: Require Quantified Success Metrics with Leading Indicators**
 
 For EACH metric, provide:
 - **Metric Name:** What we're measuring
+- **Type:** Leading Indicator (predictive) or Lagging Indicator (outcome)
 - **Baseline:** Current state (with evidence/source)
 - **Target:** Goal state (specific number)
 - **Timeline:** When we'll achieve it
-- **Measurement Method:** How we'll track it
+- **Source of Truth:** Specific system (e.g., Mixpanel, Datadog, Salesforce)
+- **Counter-Metric:** What we must NOT degrade (prevents perverse incentives)
+
+**Leading vs Lagging Indicators:**
+- **Lagging:** Revenue, NPS, Churn Rate (outcome measures - too late to act)
+- **Leading:** % users completing first action in <30s, feature adoption rate (predictive - actionable)
+
+Every PRD MUST include at least one Leading Indicator per major goal.
+
+### 4.4 Hypothesis Kill Switch
+
+**What would prove this feature is a FAILURE?**
+
+Define the "pivot or persevere" milestone:
+- **Kill Criteria:** Specific data that would prove we should stop (e.g., "<5% adoption after 30 days")
+- **Decision Point:** When we evaluate (e.g., "30 days post-launch")
+- **Rollback Plan:** How we reverse if needed
 
 Example:
 - **Metric:** Manual categorization time
@@ -127,42 +152,88 @@ Example:
 - **Timeline:** 3 months post-launch
 - **Measurement:** Weekly time tracking reports from support team
 
-## 5. Proposed Solution
+## 5. Customer FAQ (Working Backwards)
+
+**CRITICAL: Write this BEFORE defining features.** This forces customer-backward thinking.
+
+### 5.1 External Customer FAQ
+Answer the top 3 questions a customer would ask:
+1. **"What problem does this solve for me?"** → {Answer in customer's voice}
+2. **"How is this different from alternatives?"** → {Specific differentiation}
+3. **"How do I get started?"** → {First 3 steps}
+
+### 5.2 Customer "Aha!" Moment
+Include a fictional but realistic customer quote describing their reaction after using this feature:
+> "Before [product], I spent [X hours] doing [painful task]. Now I [new capability] in [Y minutes]. The first time it worked, I immediately [reaction]." — [Persona Name], [Role]
+
+## 6. Proposed Solution
 {High-level description of what we're building}
 
-### 5.1 Core Functionality
+### 6.1 Core Functionality
 {Key features and capabilities}
 
-### 5.2 User Experience
+### 6.2 Alternatives Considered
+
+**REQUIRED: For every major feature, list at least one rejected approach.**
+
+For each alternative:
+- **Alternative:** What we considered
+- **Rejected Because:** Specific reason (e.g., higher latency, longer time-to-market, poor UX, cost)
+- **Trade-off:** What we give up by NOT choosing this approach
+
+Example:
+| Alternative | Rejected Because | Trade-off |
+|-------------|------------------|-----------|
+| Build custom ML model | 6-month timeline vs 2-week API integration | Less customization, vendor dependency |
+| Manual review process | Doesn't scale past 100 requests/day | No 24/7 availability |
+
+### 6.3 User Experience
 {How will users interact with this?}
 
-### 5.3 Key Workflows
+### 6.4 Key Workflows
 {Main user journeys}
 
-## 6. Scope
+## 7. Scope
 {What's in and out of scope}
 
-### 6.1 In Scope
+### 7.1 In Scope
 {What we're building in this effort}
 
-### 6.2 Out of Scope
+### 7.2 Out of Scope
 {What we're explicitly NOT building}
 
-### 6.3 Future Considerations
+### 7.3 Future Considerations
 {What might come later}
 
-## 7. Requirements
+## 8. Requirements
 
-### 7.1 Functional Requirements
-{What the system must do}
+**CRITICAL: Tag each requirement for reversibility and traceability.**
 
-### 7.2 Non-Functional Requirements
-{Performance, security, scalability, etc.}
+### 8.1 Functional Requirements
 
-### 7.3 Constraints
+For EACH requirement, provide:
+- **ID:** FR1, FR2, etc.
+- **Requirement:** What the system must do
+- **Problem Link:** Which Problem ID (P1, P2) this addresses
+- **Door Type:** 🚪 One-Way (irreversible, high cost of change) or 🔄 Two-Way (easy to pivot)
+- **Acceptance Criteria:** Given/When/Then for BOTH success AND failure cases
+
+**One-Way Door Examples:** Data schema changes, API contracts with partners, pricing model
+**Two-Way Door Examples:** UI layout, notification frequency, feature toggles
+
+Example:
+| ID | Requirement | Problem | Door | AC (Success) | AC (Failure) |
+|----|-------------|---------|------|--------------|--------------|
+| FR1 | User can upload files up to 100MB | P1 | 🔄 Two-Way | Given a 50MB file, When uploaded, Then stored in <5s | Given a 150MB file, When uploaded, Then show "File exceeds 100MB limit" |
+| FR2 | API contract with PaymentCo | P2 | 🚪 One-Way | Given valid payment, When submitted, Then receive confirmation | Given network timeout, When submitted, Then retry 3x then fail gracefully |
+
+### 8.2 Non-Functional Requirements
+{Performance, security, scalability, etc. - each with measurable thresholds}
+
+### 8.3 Constraints
 {Technical, business, or regulatory constraints}
 
-## 8. Stakeholders
+## 9. Stakeholders
 
 **Mutation 4: Stakeholder Impact Requirements**
 
@@ -173,20 +244,60 @@ For EACH stakeholder group, specify:
 - **Success Criteria:** How they'll measure success
 
 Example:
-### 8.1 Customer Support Team
+### 9.1 Customer Support Team
 - **Role:** Handle customer inquiries and feedback
 - **Impact:** Workload reduced from 200 emails/day to 50 emails/day (75% reduction)
 - **Needs:** Training on new feedback categorization system, access to analytics dashboard
 - **Success Criteria:** Average response time <2 hours, customer satisfaction >90%
 
-## 9. Timeline and Milestones
+## 10. Timeline and Milestones
 {High-level project phases}
 
-## 10. Risks and Mitigation
-{What could go wrong and how we'll address it}
+## 11. Risks and Mitigation
 
-## 11. Open Questions
+For EACH risk, provide:
+- **Risk:** Specific description (not generic "we might run late")
+- **Probability:** High/Medium/Low
+- **Impact:** High/Medium/Low
+- **Mitigation:** Actionable steps to reduce probability or impact
+- **Contingency:** What we do if risk materializes
+
+Example:
+| Risk | Prob | Impact | Mitigation | Contingency |
+|------|------|--------|------------|-------------|
+| Third-party API rate limits exceeded during peak | Medium | High | Pre-negotiate higher limits, implement request queuing | Fall back to batch processing mode |
+
+## 12. Traceability Summary
+
+**REQUIRED: Map every requirement back to a problem and forward to a metric.**
+
+| Problem ID | Problem | Requirement IDs | Metric IDs |
+|------------|---------|-----------------|------------|
+| P1 | {Problem description} | FR1, FR2, NFR1 | M1, M2 |
+| P2 | {Problem description} | FR3, FR4 | M3 |
+
+**Validation:** If a Problem has no Requirements, the PRD is incomplete. If a Requirement has no Metric, success cannot be measured.
+
+## 13. Open Questions
 {What needs to be resolved}
+
+## 14. Known Unknowns & Dissenting Opinions
+
+**REQUIRED: Document unresolved debates and disagreements.**
+
+### 14.1 Known Unknowns
+What we don't know yet that could change the approach:
+- {Unknown 1}: How will we learn the answer? By when?
+- {Unknown 2}: What's our fallback if we can't resolve?
+
+### 14.2 Dissenting Opinions Log
+Document the top 2 unresolved debates between stakeholders:
+
+| Topic | Position A | Position B | Decision | Rationale |
+|-------|-----------|-----------|----------|-----------|
+| {Debate topic} | {Stakeholder A's view} | {Stakeholder B's view} | {Current decision or "TBD"} | {Why this position was chosen} |
+
+**Note:** This section prevents "false consensus." Engineers need to know where trade-offs were made.
 ```
 
 ## Guidelines
@@ -247,8 +358,21 @@ Work with the user iteratively until you have a complete, clear PRD.
 
 ## Output Format
 
-Provide the final PRD as a downloadable markdown document with proper section numbering and clear, professional language.
+**⚠️ CRITICAL: Copy-Paste Ready Output**
+
+Your response must be EXACTLY the PRD document, ready to copy-paste directly into a document editor.
+
+**DO NOT include:**
+- ❌ Any preamble (e.g., "Here's your PRD..." or "I've created a comprehensive...")
+- ❌ Any sign-off (e.g., "Let me know if you need changes...")
+- ❌ Code fences around the entire document (e.g., ```markdown)
+- ❌ Meta-commentary about the document
+
+**DO include:**
+- ✅ The PRD starting with the title heading
+- ✅ All required sections with proper numbering
+- ✅ Clean, professional markdown formatting
 
 ---
 
-**Remember**: This is Phase 1 of a 3-phase process. Your draft will be reviewed by Gemini 2.5 Pro in Phase 2, then you'll synthesize both versions in Phase 3.
+**Remember**: This is Phase 1 of a 3-phase process. Your draft will be reviewed by Gemini 3 in Phase 2, then you'll synthesize both versions in Phase 3.

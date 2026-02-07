@@ -14,28 +14,34 @@ Score this PRD using the following rubric (0-100 points total):
 
 ## SCORING RUBRIC
 
-### 1. Document Structure (25 points)
-- **Core Sections (12 pts)**: Purpose/Introduction, User Personas, Features/Requirements, Success Metrics, Scope, Timeline, Risks/Dependencies, Constraints
-- **Organization (7 pts)**: Logical flow, heading hierarchy, related content grouped
-- **Formatting (4 pts)**: Consistent bullets, tables for structured data
+### 1. Document Structure (20 points)
+- **Core Sections (10 pts)**: All 14 required sections present (Executive Summary through Dissenting Opinions)
+- **Organization (5 pts)**: Logical flow, heading hierarchy, Customer FAQ BEFORE Proposed Solution
+- **Formatting (3 pts)**: Consistent bullets, tables for structured data
 - **Scope Boundaries (2 pts)**: Explicit "In Scope" AND "Out of Scope" definitions
 
-### 2. Requirements Clarity (30 points)
-- **Precision (8 pts)**: No vague qualifiers, weasel words, or marketing fluff
-- **Completeness (8 pts)**: User stories with "As a..., I want..., So that..." format
-- **Measurability (8 pts)**: Specific numbers, percentages, timeframes, or counts
-- **Prioritization (6 pts)**: MoSCoW (Must/Should/Could/Won't), P0/P1/P2, or explicit priority ranking
+### 2. Requirements Clarity (25 points)
+- **Precision (7 pts)**: No vague qualifiers, weasel words, or marketing fluff
+- **Completeness (7 pts)**: User stories with "As a..., I want..., So that..." format
+- **Measurability (6 pts)**: Specific numbers, percentages, timeframes, or counts
+- **Prioritization (5 pts)**: MoSCoW (Must/Should/Could/Won't), P0/P1/P2, or explicit priority ranking
 
-### 3. User Focus (25 points)
-- **User Personas (7 pts)**: Detailed descriptions of who uses the product, their roles, needs
-- **Problem Statement (7 pts)**: Clear problem definition, value proposition, "why" behind the product
-- **Alignment (6 pts)**: Requirements trace back to user needs, features serve identified personas
-- **Customer Evidence (5 pts)**: User research, interview quotes, analytics data, or feedback cited
+### 3. User Focus (20 points)
+- **User Personas (5 pts)**: Detailed descriptions of who uses the product, their roles, needs
+- **Problem Statement (5 pts)**: Clear problem definition, value proposition, "why" behind the product
+- **Alignment (5 pts)**: Requirements trace back to user needs, features serve identified personas
+- **Customer Evidence (5 pts)**: User research, interview quotes, Customer FAQ, "Aha!" moment quote
 
-### 4. Technical Quality (20 points)
-- **Non-Functional Requirements (7 pts)**: Performance, security, reliability, scalability, compliance
-- **Acceptance Criteria (7 pts)**: Testable conditions in Given/When/Then format
-- **Dependencies/Constraints (6 pts)**: Risks, assumptions, blockers documented
+### 4. Technical Quality (15 points)
+- **Non-Functional Requirements (5 pts)**: Performance, security, reliability, scalability, compliance
+- **Acceptance Criteria (5 pts)**: Given/When/Then for BOTH success AND failure/edge cases
+- **Dependencies/Constraints (5 pts)**: Risks, assumptions, blockers documented
+
+### 5. Strategic Viability (20 points) ⭐ NEW
+- **Metric Validity (6 pts)**: Leading indicators present, counter-metrics defined, Source of Truth specified
+- **Scope Realism (5 pts)**: Scope is achievable within stated timeline (not a "Kitchen Sink" PRD)
+- **Risk & Mitigation Quality (5 pts)**: Risks are specific (not generic "we might run late"), mitigations are actionable
+- **Traceability (4 pts)**: Every requirement traces to a Problem ID, every problem has a Metric ID
 
 ## CALIBRATION GUIDANCE
 - Be HARSH. Most PRDs score 40-60. Only exceptional PRDs score 80+.
@@ -44,9 +50,16 @@ Score this PRD using the following rubric (0-100 points total):
 - Deduct points for weasel words ("should be able to", "might", "could potentially").
 - Deduct points for marketing fluff ("best-in-class", "cutting-edge", "world-class").
 - Reward explicit prioritization (MoSCoW preferred).
-- Reward customer quotes and research citations.
+- Reward customer quotes and Customer FAQ (Working Backwards).
 - Deduct points for features without clear user benefit.
 - Deduct points for missing required sections.
+- Deduct points for missing Traceability Summary.
+- Deduct points for all requirements tagged "P0" (no real prioritization).
+- Deduct points for metrics without Source of Truth.
+- Reward One-Way/Two-Way Door tagging.
+- Reward Hypothesis Kill Switch definition.
+- Reward Alternatives Considered with reasons.
+- Reward Dissenting Opinions log.
 
 ## PRD TO EVALUATE
 
@@ -60,16 +73,19 @@ Provide your evaluation in this exact format:
 
 **TOTAL SCORE: [X]/100**
 
-### Document Structure: [X]/25
+### Document Structure: [X]/20
 [2-3 sentence justification]
 
-### Requirements Clarity: [X]/30
+### Requirements Clarity: [X]/25
 [2-3 sentence justification]
 
-### User Focus: [X]/25
+### User Focus: [X]/20
 [2-3 sentence justification]
 
-### Technical Quality: [X]/20
+### Technical Quality: [X]/15
+[2-3 sentence justification]
+
+### Strategic Viability: [X]/20
 [2-3 sentence justification]
 
 ### Top 3 Issues
@@ -94,17 +110,19 @@ export function generateCritiquePrompt(prdContent, currentResult) {
     ...(currentResult.structure?.issues || []),
     ...(currentResult.clarity?.issues || []),
     ...(currentResult.userFocus?.issues || []),
-    ...(currentResult.technical?.issues || [])
+    ...(currentResult.technical?.issues || []),
+    ...(currentResult.strategicViability?.issues || [])
   ].slice(0, 5).map(i => `- ${i}`).join('\n');
 
   return `You are a senior Product Manager providing detailed feedback on a PRD.
 
 ## CURRENT VALIDATION RESULTS
 Total Score: ${currentResult.totalScore}/100
-- Document Structure: ${currentResult.structure?.score || 0}/25
-- Requirements Clarity: ${currentResult.clarity?.score || 0}/30
-- User Focus: ${currentResult.userFocus?.score || 0}/25
-- Technical Quality: ${currentResult.technical?.score || 0}/20
+- Document Structure: ${currentResult.structure?.score || 0}/20
+- Requirements Clarity: ${currentResult.clarity?.score || 0}/25
+- User Focus: ${currentResult.userFocus?.score || 0}/20
+- Technical Quality: ${currentResult.technical?.score || 0}/15
+- Strategic Viability: ${currentResult.strategicViability?.score || 0}/20
 
 Key issues detected:
 ${issuesList || '- None detected by automated scan'}

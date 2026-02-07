@@ -4,7 +4,7 @@ You are an expert Product Manager tasked with synthesizing the best elements fro
 
 ## Context
 
-You previously created an initial PRD draft (Phase 1). Then Gemini 2.5 Pro reviewed it and created an improved version (Phase 2). Now you need to compare both versions and create the final, polished PRD.
+You previously created an initial PRD draft (Phase 1). Then Gemini 3 reviewed it and created an improved version (Phase 2). Now you need to compare both versions and create the final, polished PRD.
 
 ## Your Task
 
@@ -41,15 +41,38 @@ Compare the two versions below and create a final PRD that:
 
 ### Step 5: Quality Gate
 Before finalizing, verify:
+
+**Structure & Completeness (20 pts)**
+- ✅ All 14 required sections present (Executive Summary through Dissenting Opinions)
+- ✅ Customer FAQ section appears BEFORE Proposed Solution (Working Backwards)
+- ✅ Traceability Summary table links Problems → Requirements → Metrics
+
+**Requirements Quality (25 pts)**
 - ✅ All functional requirements are testable with clear acceptance criteria
-- ✅ All success metrics include baseline values and specific targets
+- ✅ Every requirement tagged as One-Way Door 🚪 or Two-Way Door 🔄
+- ✅ Acceptance criteria include BOTH success AND failure/edge cases
+- ✅ All requirements numbered (FR1, FR2, NFR1, etc.) for traceability
+
+**Strategic Viability (20 pts)**
+- ✅ Success metrics include Leading Indicators (not just Lagging)
+- ✅ Every metric has Counter-Metric to prevent perverse incentives
+- ✅ Every metric has defined Source of Truth (Mixpanel, Datadog, etc.)
+- ✅ Hypothesis Kill Switch defined (what would prove this is a failure?)
+- ✅ Scope is realistic for stated timeline
+
+**User Focus (20 pts)**
+- ✅ Value Proposition includes both customer/partner AND company perspectives
+- ✅ All value claims are quantified with specific metrics (not "improved" or "enhanced")
+- ✅ Customer "Aha!" moment quote included
+
+**Technical Quality (15 pts)**
 - ✅ All formulas and scoring mechanisms are explicitly defined
 - ✅ All integrations specify exact APIs, protocols, or third-party services
 - ✅ All compliance requirements are identified (HIPAA, SOC 2, PCI-DSS, GDPR, etc.)
-- ✅ Value Proposition includes both customer/partner AND company perspectives
-- ✅ All value claims are quantified with specific metrics (not "improved" or "enhanced")
 - ✅ No vague terms remain ("fast", "scalable", "near-real-time" replaced with specific thresholds)
 - ✅ All non-functional requirements include measurable thresholds
+- ✅ Alternatives Considered section shows rejected approaches with reasons
+- ✅ Dissenting Opinions log documents unresolved debates
 
 ### Step 6: Validate
 - Confirm with the user that the synthesis captures their intent
@@ -96,22 +119,41 @@ Before finalizing, verify:
 
 ## Output Format
 
-Provide the final synthesized PRD in this format:
+**⚠️ CRITICAL: Copy-Paste Ready Output**
 
-```markdown
-# {Document Title}
+Your response must be EXACTLY the PRD document, ready to copy-paste directly into a document editor.
 
-## 1. Executive Summary
-{Synthesized version combining best of both}
+**DO NOT include:**
+- ❌ Any preamble (e.g., "Here's the synthesized PRD..." or "I've combined the best elements...")
+- ❌ Any sign-off (e.g., "Let me know if you need changes...")
+- ❌ Code fences around the entire document (e.g., ```markdown)
+- ❌ Meta-commentary about your synthesis decisions
 
-## 2. Problem Statement
-{Synthesized version combining best of both}
+**DO include:**
+- ✅ The PRD starting with the title heading
+- ✅ All required sections with proper numbering (1-14)
+- ✅ Clean, professional markdown formatting
+- ✅ The citation at the end
 
-{... continue with all sections ...}
+The final PRD MUST include these 14 sections:
+1. Executive Summary
+2. Problem Statement
+3. Value Proposition
+4. Goals and Objectives (with Success Metrics, Leading/Lagging Indicators, Kill Switch)
+5. Customer FAQ (Working Backwards)
+6. Proposed Solution (with Alternatives Considered)
+7. Scope
+8. Requirements (with One-Way/Two-Way Door tagging, Success AND Failure ACs)
+9. Stakeholders
+10. Timeline and Milestones
+11. Risks and Mitigation
+12. Traceability Summary
+13. Open Questions
+14. Known Unknowns & Dissenting Opinions
 
+End with:
 ---
 *This PRD was generated using the Product Requirements Assistant tool. Learn more at: https://github.com/bordenet/product-requirements-assistant*
-```
 
 ---
 
