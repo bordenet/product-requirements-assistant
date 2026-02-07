@@ -1,5 +1,5 @@
-import { createProject, getAllProjects, getProject, updatePhase, updateProject, deleteProject, importProjects, exportProject, exportAllProjects, extractTitleFromMarkdown } from '../js/projects.js';
-import storage from '../js/storage.js';
+import { createProject, getAllProjects, getProject, updatePhase, updateProject, deleteProject, importProjects, exportProject, exportAllProjects, extractTitleFromMarkdown } from '../../shared/js/projects.js';
+import storage from '../../shared/js/storage.js';
 
 describe('Projects Module', () => {
   beforeEach(async () => {

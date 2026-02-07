@@ -10,7 +10,7 @@ import {
   EXPORT_FORMATS,
   convertToFormat,
   getFormat
-} from '../js/exporters.js';
+} from '../../shared/js/exporters.js';
 
 describe('toConfluenceWiki', () => {
   test('should convert markdown headers to Confluence format', () => {

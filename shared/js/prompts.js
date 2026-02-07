@@ -37,6 +37,20 @@ export const WORKFLOW_CONFIG = {
 const promptCache = {};
 
 /**
+ * Detect base path for shared assets based on current location
+ * Works from both root (/) and assistant/ subdirectory
+ */
+function getSharedBasePath() {
+  const path = window.location.pathname;
+  // If we're in /assistant/, go up one level to reach /shared/
+  if (path.includes('/assistant/') || path.endsWith('/assistant')) {
+    return '../shared/';
+  }
+  // If we're at root, shared/ is a direct child
+  return 'shared/';
+}
+
+/**
  * Load prompt template from markdown file
  * @param {number} phaseNumber - Phase number (1, 2, or 3)
  * @returns {Promise<string>} Prompt template
@@ -47,7 +61,8 @@ async function loadPromptTemplate(phaseNumber) {
   }
 
   try {
-    const response = await fetch(`prompts/phase${phaseNumber}.md`);
+    const basePath = getSharedBasePath();
+    const response = await fetch(`${basePath}prompts/phase${phaseNumber}.md`);
     if (!response.ok) {
       throw new Error(`Failed to load prompt template for phase ${phaseNumber}`);
     }

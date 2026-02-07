@@ -5,7 +5,7 @@
  * This test file follows the genesis pattern for document-specific templates.
  */
 
-import { DOCUMENT_TEMPLATES, getTemplate, getAllTemplates } from '../js/document-specific-templates.js';
+import { DOCUMENT_TEMPLATES, getTemplate, getAllTemplates } from '../../shared/js/document-specific-templates.js';
 
 describe('DOCUMENT_TEMPLATES', () => {
   test('should have 5 templates defined', () => {

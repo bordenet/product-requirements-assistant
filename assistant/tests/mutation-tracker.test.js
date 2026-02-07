@@ -11,7 +11,7 @@ import {
   renderMutationBadge,
   renderMutationList,
   getMutationSummary
-} from '../js/mutation-tracker.js';
+} from '../../shared/js/mutation-tracker.js';
 
 describe('KNOWN_MUTATIONS', () => {
   test('should have 5 known mutations', () => {

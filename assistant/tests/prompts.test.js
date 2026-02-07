@@ -11,7 +11,7 @@ import {
   generatePhase2Prompt,
   generatePhase3Prompt,
   preloadPromptTemplates
-} from '../js/prompts.js';
+} from '../../shared/js/prompts.js';
 
 describe('WORKFLOW_CONFIG', () => {
   test('should have 3 phases', () => {

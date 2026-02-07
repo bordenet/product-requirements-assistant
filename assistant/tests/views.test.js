@@ -1,6 +1,6 @@
-import { renderProjectsList, renderNewProjectForm, renderEditProjectForm } from '../js/views.js';
-import { createProject, deleteProject, getAllProjects } from '../js/projects.js';
-import storage from '../js/storage.js';
+import { renderProjectsList, renderNewProjectForm, renderEditProjectForm } from '../../shared/js/views.js';
+import { createProject, deleteProject, getAllProjects } from '../../shared/js/projects.js';
+import storage from '../../shared/js/storage.js';
 
 describe('Views Module', () => {
   beforeEach(async () => {
@@ -55,7 +55,7 @@ describe('Views Module', () => {
       await renderProjectsList();
 
       const container = document.getElementById('app-container');
-      expect(container.innerHTML).toContain('Phase');
+      // UX shows compact "X/3" with segments instead of "Phase X/3"
       expect(container.innerHTML).toContain('/3');
     });
 

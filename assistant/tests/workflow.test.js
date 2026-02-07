@@ -26,8 +26,8 @@ import {
   getPrompt,
   savePrompt,
   resetPrompt
-} from '../js/workflow.js';
-import storage from '../js/storage.js';
+} from '../../shared/js/workflow.js';
+import storage from '../../shared/js/storage.js';
 
 // Mock fetch for prompt template loading
 beforeAll(() => {
