@@ -11,6 +11,7 @@ import { navigateTo } from './router.js';
 import { getFinalMarkdown, getExportFilename } from './workflow.js';
 import { getAllTemplates, getTemplate } from './document-specific-templates.js';
 import { validateDocument, getScoreColor, getScoreLabel } from './validator-inline.js';
+import { showImportModal } from './import-prd.js';
 
 // PRD documentation URL
 const PRD_DOC_URL = 'https://github.com/bordenet/Engineering_Culture/blob/main/SDLC/Project_Planning_Mechanisms%3A_Documents.md#prd-the-what-and-why';
@@ -207,7 +208,7 @@ export function renderNewProjectForm() {
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                         Choose a Template
                     </label>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="template-selector">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" id="template-selector">
                         ${getAllTemplates().map(t => `
                             <button type="button"
                                 class="template-btn p-3 border-2 rounded-lg text-center transition-all hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 ${t.id === 'blank' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600'}"
@@ -217,6 +218,14 @@ export function renderNewProjectForm() {
                                 <span class="text-xs text-gray-500 dark:text-gray-400">${t.description}</span>
                             </button>
                         `).join('')}
+                        <!-- Import Existing PRD tile -->
+                        <button type="button"
+                            id="import-prd-btn"
+                            class="p-3 border-2 border-dashed rounded-lg text-center transition-all hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 border-gray-300 dark:border-gray-600">
+                            <span class="text-2xl block mb-1">📥</span>
+                            <span class="text-sm font-medium text-gray-900 dark:text-white block">Import PRD</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Paste from Word/Docs</span>
+                        </button>
                     </div>
                 </div>
 
@@ -279,6 +288,11 @@ export function renderNewProjectForm() {
   // Event listeners
   document.getElementById('back-btn').addEventListener('click', () => navigateTo('home'));
   document.getElementById('cancel-btn').addEventListener('click', () => navigateTo('home'));
+
+  // Import PRD button handler
+  document.getElementById('import-prd-btn').addEventListener('click', () => {
+    showImportModal();
+  });
 
   // Template selector event handlers
   document.querySelectorAll('.template-btn').forEach(btn => {
