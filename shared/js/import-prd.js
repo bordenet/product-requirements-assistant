@@ -13,7 +13,7 @@ import { showToast } from './ui.js';
 const MINIMUM_VIABLE_SCORE = 30;
 
 // LLM prompt template for cleanup
-const LLM_CLEANUP_PROMPT = `You are a documentation assistant. Convert this pasted PRD content into clean, well-structured Markdown.
+const LLM_CLEANUP_PROMPT = `You are a documentation assistant. Convert this pasted Product Requirements Document content into clean, well-structured Markdown.
 
 **Rules:**
 - Preserve ALL substantive content
@@ -23,7 +23,7 @@ const LLM_CLEANUP_PROMPT = `You are a documentation assistant. Convert this past
 - Remove formatting artifacts (font names, colors, etc.)
 - Do NOT add commentary - output ONLY the cleaned Markdown
 
-**Suggested PRD Structure:**
+**Suggested Product Requirements Document Structure:**
 # Product Requirements Document: [Product Name]
 ## Overview
 ## Problem Statement
