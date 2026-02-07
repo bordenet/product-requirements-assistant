@@ -251,6 +251,13 @@ export function showImportModal() {
       context: '(Imported from existing PRD)'
     });
 
+    // Defensive check - ensure project has valid ID
+    if (!project || !project.id) {
+      showToast('Failed to create project', 'error');
+      console.error('createProject returned invalid project:', project);
+      return;
+    }
+
     // Store the imported markdown as Phase 1 response
     // This will be picked up by the workflow
     const phaseUpdate = {
@@ -266,7 +273,7 @@ export function showImportModal() {
       importedContent: markdown
     };
 
-    // Save the updated project
+    // Save the updated project using imported updateProject
     const { updateProject } = await import('./projects.js');
     await updateProject(project.id, phaseUpdate);
 
