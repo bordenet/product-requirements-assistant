@@ -231,55 +231,67 @@ export function showImportModal() {
   });
 
   // Save handler - create project and go to Phase 1
+  let isSaving = false;
   saveBtn.addEventListener('click', async () => {
-    const markdown = previewArea.value;
-    if (!markdown.trim()) {
-      showToast('No content to save', 'error');
-      return;
+    // Prevent double-clicks / multiple submissions
+    if (isSaving) return;
+    isSaving = true;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    try {
+      const markdown = previewArea.value;
+      if (!markdown.trim()) {
+        showToast('No content to save', 'error');
+        return;
+      }
+
+      // Extract title from first heading or use default
+      const titleMatch = markdown.match(/^#\s+(.+?)(?:\n|$)/m);
+      const title = titleMatch
+        ? titleMatch[1].replace(/^Product Requirements Document:\s*/i, '').trim()
+        : 'Imported PRD';
+
+      // Create project with imported content pre-filled into Phase 1
+      const project = await createProject({
+        title: title,
+        problems: '(Imported from existing PRD)',
+        context: '(Imported from existing PRD)'
+      });
+
+      // Defensive check - ensure project has valid ID
+      if (!project || !project.id) {
+        showToast('Failed to create project', 'error');
+        console.error('createProject returned invalid project:', project);
+        return;
+      }
+
+      // Store the imported markdown as Phase 1 response
+      const phaseUpdate = {
+        phases: {
+          ...project.phases,
+          1: {
+            ...project.phases[1],
+            response: markdown,
+            completed: false,
+            startedAt: new Date().toISOString()
+          }
+        },
+        importedContent: markdown
+      };
+
+      // Save the updated project using imported updateProject
+      const { updateProject } = await import('./projects.js');
+      await updateProject(project.id, phaseUpdate);
+
+      closeModal();
+      showToast('PRD imported! Review and refine in Phase 1.', 'success');
+      navigateTo('project', project.id);
+    } finally {
+      isSaving = false;
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save & Continue to Phase 1';
     }
-
-    // Extract title from first heading or use default
-    const titleMatch = markdown.match(/^#\s+(.+?)(?:\n|$)/m);
-    const title = titleMatch
-      ? titleMatch[1].replace(/^Product Requirements Document:\s*/i, '').trim()
-      : 'Imported PRD';
-
-    // Create project with imported content pre-filled into Phase 1
-    const project = await createProject({
-      title: title,
-      problems: '(Imported from existing PRD)',
-      context: '(Imported from existing PRD)'
-    });
-
-    // Defensive check - ensure project has valid ID
-    if (!project || !project.id) {
-      showToast('Failed to create project', 'error');
-      console.error('createProject returned invalid project:', project);
-      return;
-    }
-
-    // Store the imported markdown as Phase 1 response
-    // This will be picked up by the workflow
-    const phaseUpdate = {
-      phases: {
-        ...project.phases,
-        1: {
-          ...project.phases[1],
-          response: markdown,
-          completed: false,
-          startedAt: new Date().toISOString()
-        }
-      },
-      importedContent: markdown
-    };
-
-    // Save the updated project using imported updateProject
-    const { updateProject } = await import('./projects.js');
-    await updateProject(project.id, phaseUpdate);
-
-    closeModal();
-    showToast('PRD imported! Review and refine in Phase 1.', 'success');
-    navigateTo('project', project.id);
   });
 
   // Focus paste area
