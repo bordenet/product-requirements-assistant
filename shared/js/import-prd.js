@@ -253,17 +253,22 @@ export function showImportModal() {
 
     // Store the imported markdown as Phase 1 response
     // This will be picked up by the workflow
-    project.phases = project.phases || {};
-    project.phases[1] = {
-      response: markdown,
-      completed: false,
-      startedAt: new Date().toISOString()
+    const phaseUpdate = {
+      phases: {
+        ...project.phases,
+        1: {
+          ...project.phases[1],
+          response: markdown,
+          completed: false,
+          startedAt: new Date().toISOString()
+        }
+      },
+      importedContent: markdown
     };
-    project.importedContent = markdown;
 
     // Save the updated project
     const { updateProject } = await import('./projects.js');
-    await updateProject(project);
+    await updateProject(project.id, phaseUpdate);
 
     closeModal();
     showToast('PRD imported! Review and refine in Phase 1.', 'success');
