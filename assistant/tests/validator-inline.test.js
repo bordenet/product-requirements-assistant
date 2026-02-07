@@ -236,3 +236,288 @@ Improve efficiency and reduce errors.
     expect(result.userFocus.score).toBeGreaterThan(0);
   });
 });
+
+// ============================================================================
+// Strategic Viability Scoring Tests (NEW - 20 pts dimension)
+// ============================================================================
+
+describe('scoreStrategicViability', () => {
+  describe('Metric Validity (6 pts)', () => {
+    test('should detect leading indicators', () => {
+      const content = `
+# PRD
+## Success Metrics
+Leading indicator: Daily active users clicking the feature
+Event tracking via Segment for early signal detection.
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability).toBeDefined();
+      expect(result.strategicViability.metricValidity.hasLeading).toBe(true);
+    });
+
+    test('should detect lagging indicators', () => {
+      const content = `
+# PRD
+## Success Metrics
+Lagging indicator: Monthly revenue from subscriptions
+Conversion rate as outcome metric.
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.metricValidity.hasLagging).toBe(true);
+    });
+
+    test('should detect counter-metrics', () => {
+      const content = `
+# PRD
+## Success Metrics
+Primary: Increase sign-ups by 20%
+Counter-metric: Ensure churn rate doesn't increase (guardrail)
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.metricValidity.hasCounterMetric).toBe(true);
+    });
+
+    test('should detect source of truth', () => {
+      const content = `
+# PRD
+## Success Metrics
+All metrics tracked in Mixpanel as source of truth.
+Dashboard in Looker for visualization.
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.metricValidity.hasSourceOfTruth).toBe(true);
+    });
+
+    test('should score higher with both leading and lagging indicators', () => {
+      const contentBoth = `
+# PRD
+## Success Metrics
+Leading indicator: Feature adoption rate (predictive)
+Lagging indicator: Revenue impact (outcome)
+Counter-metric: Support ticket volume (guardrail)
+Source of truth: Amplitude
+`.repeat(3);
+      const contentLaggingOnly = `
+# PRD
+## Success Metrics
+Revenue growth as outcome metric.
+Retention rate measurement.
+`.repeat(3);
+      const resultBoth = validateDocument(contentBoth);
+      const resultLagging = validateDocument(contentLaggingOnly);
+      expect(resultBoth.strategicViability.score).toBeGreaterThan(resultLagging.strategicViability.score);
+    });
+  });
+
+  describe('Scope Realism (5 pts)', () => {
+    test('should detect kill switch / pivot criteria', () => {
+      const content = `
+# PRD
+## Hypothesis Kill Switch
+If adoption rate < 5% after 30 days, pivot to alternative approach.
+Failure threshold: Less than 100 daily users.
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.scopeRealism.hasKillSwitch).toBe(true);
+    });
+
+    test('should detect one-way/two-way door tagging', () => {
+      const content = `
+# PRD
+## Requirements
+REQ-1: API contract with partner (one-way door 🚪)
+REQ-2: UI color scheme (two-way door 🔄 - reversible)
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.scopeRealism.hasDoorType).toBe(true);
+    });
+
+    test('should detect alternatives considered', () => {
+      const content = `
+# PRD
+## Alternatives Considered
+Option 1: Build in-house - rejected due to timeline
+Option 2: Buy vendor solution - rejected approach due to cost
+Why not use existing system: Doesn't scale
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.scopeRealism.hasAlternatives).toBe(true);
+    });
+  });
+
+  describe('Risk & Mitigation Quality (5 pts)', () => {
+    test('should detect dissenting opinions', () => {
+      const content = `
+# PRD
+## Known Unknowns
+Dissenting opinion from Security team: Concerned about data exposure.
+Devil's advocate view: What if users don't adopt?
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.riskQuality.hasDissent).toBe(true);
+    });
+
+    test('should detect risk section with mitigations', () => {
+      const content = `
+# PRD
+## Risks and Mitigations
+Risk: Third-party API may have downtime
+Mitigation: Implement circuit breaker pattern
+Contingency plan: Fallback to cached data
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.riskQuality.hasRiskSection).toBe(true);
+    });
+  });
+
+  describe('Traceability (4 pts)', () => {
+    test('should detect traceability references', () => {
+      const content = `
+# PRD
+## Requirements
+REQ-001 traces to PROB-001
+Requirement ID: REQ-002 linked to Metric ID: MET-001
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.traceability.hasTraceability).toBe(true);
+    });
+
+    test('should detect traceability matrix', () => {
+      const content = `
+# PRD
+## Traceability Matrix
+| Problem ID | Requirement ID | Metric ID |
+|------------|----------------|-----------|
+| PROB-001   | REQ-001        | MET-001   |
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.traceability.hasTraceabilityMatrix).toBe(true);
+    });
+
+    test('should detect ID references', () => {
+      const content = `
+# PRD
+## Requirements
+REQ-1: User authentication
+REQ-2: Password reset (traces to PROB-1)
+`.repeat(3);
+      const result = validateDocument(content);
+      expect(result.strategicViability.traceability.hasIdReferences).toBe(true);
+    });
+  });
+
+  describe('Full Strategic Viability scoring', () => {
+    test('should score 0 for empty strategic content', () => {
+      const content = `
+# PRD
+## Features
+- Feature 1
+- Feature 2
+`.repeat(5);
+      const result = validateDocument(content);
+      expect(result.strategicViability.score).toBeLessThan(5);
+    });
+
+    test('should score high for comprehensive strategic content', () => {
+      const content = `
+# PRD
+## Success Metrics
+Leading indicator: Daily feature clicks (predictive, early signal)
+Lagging indicator: Monthly revenue (outcome)
+Counter-metric: Churn rate as guardrail
+Source of truth: Amplitude
+
+## Hypothesis Kill Switch
+If adoption < 5% after 30 days, abort criteria met.
+
+## Requirements
+REQ-1: Core feature (one-way door 🚪 - irreversible)
+REQ-2: UI polish (two-way door 🔄)
+
+## Alternatives Considered
+Option A: Build vs Buy - rejected approach due to cost
+
+## Risks
+Risk: API downtime - Mitigation: Circuit breaker
+Dissenting opinion: Security team concerned about exposure
+
+## Traceability Matrix
+| Problem ID | Requirement ID | Metric ID |
+|------------|----------------|-----------|
+| PROB-001   | REQ-001        | MET-001   |
+`;
+      const result = validateDocument(content);
+      expect(result.strategicViability.score).toBeGreaterThanOrEqual(15);
+    });
+  });
+});
+
+// ============================================================================
+// Updated Scoring Dimension Tests
+// ============================================================================
+
+describe('Updated scoring dimensions alignment', () => {
+  test('should have correct maxScore values (20/25/20/15/20)', () => {
+    const content = '# Test\n' + 'Content. '.repeat(50);
+    const result = validateDocument(content);
+    expect(result.structure.maxScore).toBe(20);
+    expect(result.clarity.maxScore).toBe(25);
+    expect(result.userFocus.maxScore).toBe(20);
+    expect(result.technical.maxScore).toBe(15);
+    expect(result.strategicViability.maxScore).toBe(20);
+    // Total should be 100
+    const totalMax = result.structure.maxScore + result.clarity.maxScore +
+      result.userFocus.maxScore + result.technical.maxScore +
+      result.strategicViability.maxScore;
+    expect(totalMax).toBe(100);
+  });
+
+  test('should detect Customer FAQ before Solution (Working Backwards)', () => {
+    const contentCorrectOrder = `
+# PRD
+## Customer FAQ
+Q: Why would I use this?
+A: To save time on manual tasks.
+
+## Proposed Solution
+Build an automated workflow system.
+`.repeat(3);
+    const contentWrongOrder = `
+# PRD
+## Proposed Solution
+Build an automated workflow system.
+
+## Customer FAQ
+Q: Why would I use this?
+`.repeat(3);
+    const resultCorrect = validateDocument(contentCorrectOrder);
+    const resultWrong = validateDocument(contentWrongOrder);
+    // Correct order should score higher in structure or userFocus
+    expect(resultCorrect.userFocus.hasCustomerFAQ).toBe(true);
+  });
+
+  test('should detect failure/edge cases in acceptance criteria', () => {
+    const contentWithFailure = `
+# PRD
+## Acceptance Criteria
+Given a user with invalid credentials
+When they attempt to login
+Then they should see an error message
+
+Given a timeout occurs
+When the API fails to respond
+Then the system should show a fallback
+`.repeat(2);
+    const contentHappyPathOnly = `
+# PRD
+## Acceptance Criteria
+Given a valid user
+When they login
+Then they see the dashboard
+`.repeat(3);
+    const resultWithFailure = validateDocument(contentWithFailure);
+    const resultHappyOnly = validateDocument(contentHappyPathOnly);
+    // Content with failure cases should score higher in technical
+    expect(resultWithFailure.technical.score).toBeGreaterThanOrEqual(resultHappyOnly.technical.score);
+  });
+});
