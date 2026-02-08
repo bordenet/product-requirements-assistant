@@ -117,6 +117,128 @@ killSwitch: /kill switch|pivot or persevere|failure criteria|rollback plan|abort
 | AC without Given/When/Then | Acceptance criteria pattern strict |
 | "We considered alternatives" | Requires specific rejected approaches |
 
+## LLM Scoring
+
+The validator uses a **dual-scoring architecture**: JavaScript pattern matching provides fast, deterministic scoring, while LLM evaluation adds semantic understanding. Both systems use aligned rubrics but may diverge on edge cases.
+
+### Three LLM Prompts
+
+| Prompt | Purpose | When Used |
+|--------|---------|-----------|
+| **Scoring Prompt** | Evaluate PRD against rubric, return dimension scores | Initial validation |
+| **Critique Prompt** | Generate clarifying questions to improve weak areas | After scoring |
+| **Rewrite Prompt** | Produce improved PRD targeting 85+ score | User-requested rewrite |
+
+### LLM Scoring Rubric
+
+The LLM receives this rubric (aligned with JS scoring):
+
+**1. Document Structure (20 pts)**
+- Core Sections (10 pts): All 14 required sections present
+- Organization (5 pts): Logical flow, heading hierarchy, Customer FAQ BEFORE Proposed Solution
+- Formatting (3 pts): Consistent bullets, tables for structured data
+- Scope Boundaries (2 pts): Explicit "In Scope" AND "Out of Scope" definitions
+
+**2. Requirements Clarity (25 pts)**
+- Precision (7 pts): No vague qualifiers, weasel words, or marketing fluff
+- Completeness (7 pts): FR format with ID, Problem Link, Door Type, and AC
+- Measurability (6 pts): Specific numbers, percentages, timeframes
+- Prioritization (5 pts): MoSCoW or P0/P1/P2 labels
+
+**3. User Focus (20 pts)**
+- User Personas (5 pts): Detailed descriptions of who uses the product
+- Problem Statement (5 pts): Clear problem definition, value proposition
+- Alignment (5 pts): Requirements trace back to user needs
+- Customer Evidence (5 pts): User research, quotes, Customer FAQ, "Aha!" moment
+
+**4. Technical Quality (15 pts)**
+- Non-Functional Requirements (5 pts): Performance, security, reliability, scalability
+- Acceptance Criteria (5 pts): Given/When/Then for success AND failure cases
+- Dependencies/Constraints (5 pts): Risks, assumptions, blockers documented
+
+**5. Strategic Viability (20 pts)**
+- Metric Validity (6 pts): Leading indicators, counter-metrics, Source of Truth
+- Scope Realism (5 pts): Kill switch defined, door types tagged, alternatives considered
+- Risk & Mitigation Quality (5 pts): Specific risks with actionable mitigations
+- Traceability (4 pts): Problem → Requirement → Metric mapping
+
+### LLM Calibration Guidance
+
+The LLM prompt includes explicit calibration instructions:
+
+```
+Be HARSH. Most PRDs score 40-60. Only exceptional PRDs score 80+.
+A score of 70+ means ready for development handoff.
+```
+
+**Reward signals:**
+- Explicit prioritization (MoSCoW preferred)
+- Customer quotes and Customer FAQ (Working Backwards)
+- One-Way/Two-Way Door tagging
+- Hypothesis Kill Switch definition
+- Alternatives Considered with reasons
+- Dissenting Opinions log
+
+**Penalty signals:**
+- EVERY vague qualifier without metrics
+- Weasel words ("should be able to", "might", "could potentially")
+- Marketing fluff ("best-in-class", "cutting-edge", "world-class")
+- Features without clear user benefit
+- Missing required sections
+- Missing Traceability Summary
+- All requirements tagged "P0" (no real prioritization)
+- Metrics without Source of Truth
+
+### LLM Critique Prompt
+
+When generating improvement questions, the LLM:
+1. Receives current JS validation scores and detected issues
+2. Identifies gaps: missing sections, vague metrics, missing AC, missing evidence
+3. Generates 3-5 specific, actionable questions
+4. Prioritizes by score impact
+5. Suggests "Quick Wins" that don't require user input
+
+**Output format:**
+- Score Summary with dimension breakdown
+- Top 3 Issues
+- Questions with "Why this matters" explanations
+- Quick Wins list
+
+### LLM Rewrite Prompt
+
+When rewriting a PRD, the LLM targets 85+ score by ensuring:
+- All 14 required sections present
+- Explicit "In Scope" AND "Out of Scope" definitions
+- FR format: `FR1: [Requirement] | Problem Link: P1 | Door Type: 🚪/🔄 | AC: [success AND failure]`
+- MoSCoW prioritization or P0/P1/P2 labels
+- Metrics with Leading/Lagging type, Baseline, Target, Source of Truth, Counter-Metric
+- Customer evidence and quotes
+- Hypothesis Kill Switch
+- Traceability Summary
+
+### JS vs LLM Score Divergence
+
+Scores may differ because:
+
+| Scenario | JS Score | LLM Score | Why |
+|----------|----------|-----------|-----|
+| Semantic quality | Pattern match | Context-aware | LLM understands meaning, not just keywords |
+| Novel phrasing | May miss | Catches | LLM recognizes intent beyond regex |
+| Sophisticated gaming | May pass | Catches | LLM detects hollow compliance |
+| Edge case formatting | Strict | Flexible | LLM tolerates minor format variations |
+
+**Resolution:** When scores diverge significantly (>10 pts), the LLM score is typically more accurate for semantic quality, while JS score is more reliable for structural compliance.
+
+### LLM-Specific Adversarial Notes
+
+| Gaming Attempt | Why LLM Catches It |
+|----------------|-------------------|
+| Boilerplate sections with no substance | LLM evaluates content quality, not just presence |
+| Metrics that don't connect to goals | LLM checks logical coherence |
+| Customer quotes that sound fabricated | LLM flags generic or implausible quotes |
+| Traceability matrix with random mappings | LLM verifies logical connections |
+| Kill switch with unrealistic thresholds | LLM assesses reasonableness |
+
 ## Calibration Notes
 
 ### Customer Evidence Is Required
