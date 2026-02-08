@@ -126,20 +126,21 @@ describe('Smoke Test - App Initialization', () => {
     });
   });
 
-  describe('Export Consistency - validator-inline.js exports match project-view.js imports', () => {
+  describe('Export Consistency - validator.js exports match project-view.js imports', () => {
     // All projects must use validateDocument (generic name for shared library)
-    test('validator-inline.js exports validateDocument', async () => {
-      const validator = await import('../../shared/js/validator-inline.js');
+    // NOTE: Now using canonical validator.js (single source of truth)
+    test('validator.js exports validateDocument', async () => {
+      const validator = await import('../../validator/js/validator.js');
       expect(typeof validator.validateDocument).toBe('function');
     });
 
-    test('validator-inline.js exports getScoreColor', async () => {
-      const validator = await import('../../shared/js/validator-inline.js');
+    test('validator.js exports getScoreColor', async () => {
+      const validator = await import('../../validator/js/validator.js');
       expect(typeof validator.getScoreColor).toBe('function');
     });
 
-    test('validator-inline.js exports getScoreLabel', async () => {
-      const validator = await import('../../shared/js/validator-inline.js');
+    test('validator.js exports getScoreLabel', async () => {
+      const validator = await import('../../validator/js/validator.js');
       expect(typeof validator.getScoreLabel).toBe('function');
     });
   });
@@ -228,6 +229,51 @@ describe('Smoke Test - App Initialization', () => {
 
     test('about-link exists', () => {
       expect(document.getElementById('about-link')).not.toBeNull();
+    });
+  });
+
+  // ==========================================================================
+  // SINGLE SOURCE OF TRUTH - Prevent duplicate validator files
+  // ==========================================================================
+  // HISTORY: In February 2026, validator-inline.js and validator.js diverged,
+  // causing a 17-point scoring difference (62 vs 79). This test ensures there
+  // is only ONE validator implementation (validator/js/validator.js).
+  // ==========================================================================
+  describe('Single Source of Truth - No Duplicate Validator', () => {
+    test('validator-inline.js should NOT exist in shared/js', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const { fileURLToPath } = await import('url');
+
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const duplicatePath = path.join(__dirname, '../../shared/js/validator-inline.js');
+
+      expect(fs.existsSync(duplicatePath)).toBe(false);
+    });
+
+    test('all validator imports should point to validator/js/validator.js', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const { fileURLToPath } = await import('url');
+
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+
+      // Check that shared JS files import from validator/js/validator.js
+      const filesToCheck = [
+        '../../shared/js/project-view.js',
+        '../../shared/js/views.js',
+        '../../shared/js/import-prd.js'
+      ];
+
+      for (const file of filesToCheck) {
+        const fullPath = path.join(__dirname, file);
+        if (fs.existsSync(fullPath)) {
+          const content = fs.readFileSync(fullPath, 'utf-8');
+          expect(content).not.toContain('validator-inline.js');
+        }
+      }
     });
   });
 });

@@ -1283,3 +1283,23 @@ export function validatePRD(text) {
 
 // Re-export slop detection for direct access
 export { calculateSlopScore } from './slop-detection.js';
+
+// Alias for backward compatibility with assistant UI
+export function validateDocument(text) {
+  return validatePRD(text);
+}
+
+export function getScoreColor(score) {
+  if (score >= 70) return 'green';
+  if (score >= 50) return 'yellow';
+  if (score >= 30) return 'orange';
+  return 'red';
+}
+
+export function getScoreLabel(score) {
+  if (score >= 80) return 'Excellent';
+  if (score >= 70) return 'Ready';
+  if (score >= 50) return 'Needs Work';
+  if (score >= 30) return 'Draft';
+  return 'Incomplete';
+}

@@ -10,7 +10,7 @@ import { formatDate, escapeHtml, confirm, showToast, showDocumentPreviewModal } 
 import { navigateTo } from './router.js';
 import { getFinalMarkdown, getExportFilename } from './workflow.js';
 import { getAllTemplates, getTemplate } from './document-specific-templates.js';
-import { validateDocument, getScoreColor, getScoreLabel } from './validator-inline.js';
+import { validateDocument, getScoreColor, getScoreLabel } from '../../validator/js/validator.js';
 import { showImportModal } from './import-prd.js';
 
 // PRD documentation URL

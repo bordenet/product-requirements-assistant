@@ -10,7 +10,7 @@ import { getPhaseMetadata, generatePromptForPhase, getFinalMarkdown, getExportFi
 import { escapeHtml, showToast, copyToClipboardAsync, copyToClipboard, confirm, confirmWithRemember, showDocumentPreviewModal, showPromptModal, createActionMenu } from './ui.js';
 import { navigateTo } from './router.js';
 import { preloadPromptTemplates } from './prompts.js';
-import { validateDocument, getScoreColor, getScoreLabel } from './validator-inline.js';
+import { validateDocument, getScoreColor, getScoreLabel } from '../../validator/js/validator.js';
 import { computeWordDiff, renderDiffHtml, getDiffStats } from './diff-view.js';
 
 /**
