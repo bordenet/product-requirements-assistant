@@ -40,66 +40,17 @@ Write PRDs with AI. Three phases: draft, review, refine.
 
 ## Scoring Methodology
 
-The validator scores PRDs on a 100-point scale across five dimensions. This scoring system addresses the "Kitchen Sink PRD" anti-pattern—documents that include everything but commit to nothing. The weights prioritize requirements clarity and strategic viability over structural completeness.
+The validator scores PRDs on a **100-point scale** across five dimensions:
 
-### Scoring Taxonomy
+| Dimension | Points |
+|-----------|--------|
+| Document Structure | 20 |
+| Requirements Clarity | 25 |
+| User Focus | 20 |
+| Technical Quality | 15 |
+| Strategic Viability | 20 |
 
-| Category | Weight | Rationale |
-|----------|--------|-----------|
-| **Document Structure** | 20 pts | Validates 14 required sections with proper organization |
-| **Requirements Clarity** | 25 pts | Ensures precision, completeness, and prioritization |
-| **User Focus** | 20 pts | Validates personas, problem statements, and customer evidence |
-| **Technical Quality** | 15 pts | Checks NFRs, acceptance criteria, and dependencies |
-| **Strategic Viability** | 20 pts | Validates metric validity, scope realism, and traceability |
-
-### Why These Weights?
-
-**Document Structure (20 pts)** ensures baseline PRD completeness:
-- **Core sections** (10 pts): All 14 required sections present (Executive Summary through Dissenting Opinions)
-- **Organization** (5 pts): Logical flow, heading hierarchy, Customer FAQ BEFORE Proposed Solution
-- **Formatting** (3 pts): Consistent bullets, tables for structured data
-- **Scope boundaries** (2 pts): Explicit "In Scope" AND "Out of Scope" definitions
-
-**Requirements Clarity (25 pts)** is the highest-weighted category because unclear requirements are the root cause of project failure:
-- **Precision** (7 pts): No vague qualifiers, weasel words, or marketing fluff
-- **Completeness** (7 pts): Functional Requirements with ID (FR1, FR2), Problem Link, Door Type, Acceptance Criteria
-- **Measurability** (6 pts): Specific numbers, percentages, timeframes, or counts
-- **Prioritization** (5 pts): MoSCoW (Must/Should/Could/Won't), P0/P1/P2, or explicit priority ranking
-
-**User Focus (20 pts)** prevents solution-first thinking:
-- **User personas** (5 pts): Detailed descriptions of who uses the product, roles, needs
-- **Problem statement** (5 pts): Clear problem definition, value proposition, "why" behind the product
-- **Alignment** (5 pts): Requirements trace back to user needs, features serve identified personas
-- **Customer evidence** (5 pts): User research, interview quotes, Customer FAQ, "Aha!" moment quote
-
-**Technical Quality (15 pts)** addresses implementation readiness:
-- **Non-functional requirements** (5 pts): Performance, security, reliability, scalability, compliance
-- **Acceptance criteria** (5 pts): Given/When/Then for BOTH success AND failure/edge cases
-- **Dependencies/constraints** (5 pts): Risks, assumptions, blockers documented
-
-**Strategic Viability (20 pts)** catches PRDs that look complete but are actually unachievable:
-- **Metric validity** (6 pts): Leading indicators present, counter-metrics defined, Source of Truth specified
-- **Scope realism** (5 pts): Scope is achievable within stated timeline
-- **Risk & mitigation quality** (5 pts): Risks are specific (not "we might run late"), mitigations actionable
-- **Traceability** (4 pts): Every requirement traces to a Problem ID, every problem has a Metric ID
-
-### Adversarial Robustness
-
-The scoring system addresses common PRD failures:
-
-| Gaming Attempt | Why It Fails |
-|----------------|--------------|
-| Adding all 14 sections with thin content | Requirements Clarity scores content quality, not just presence |
-| Vague requirements like "fast performance" | Measurability requires specific numbers with units |
-| Omitting priorities | Prioritization is explicitly scored; no MoSCoW = point loss |
-| Generic risk statements | Risk quality requires specific risks with actionable mitigations |
-| Missing failure acceptance criteria | AC must cover success AND failure/edge cases |
-
-### Calibration Notes
-
-The **traceability requirement** (4 pts) implements requirement-to-problem linking. Every FR must reference a Problem ID; every problem must reference a Metric ID. This creates an audit trail that prevents orphan requirements ("FR7 exists, but why?").
-
-The **Functional Requirements format** (FR1, FR2 with Problem Link, Door Type, AC) is mandatory. "Door Type" refers to one-way vs. two-way door decisions—a concept from Amazon's decision-making framework. One-way doors (irreversible) require more scrutiny than two-way doors (easily reversed).
+This system addresses the "Kitchen Sink PRD" anti-pattern—documents that include everything but commit to nothing. For complete methodology details including detection patterns, adversarial robustness, and calibration notes, see **[docs/Scoring_Methods.md](./docs/Scoring_Methods.md)**.
 
 ---
 
