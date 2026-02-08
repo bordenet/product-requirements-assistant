@@ -575,13 +575,16 @@ We will measure...
     test('should detect vague qualifiers in text', () => {
       const content = 'We need to make this very fast and highly scalable.';
       const result = detectVagueQualifiers(content);
-      expect(result.length).toBeGreaterThan(0);
+      expect(result.found).toBe(true);
+      expect(result.count).toBeGreaterThan(0);
+      expect(result.qualifiers.length).toBeGreaterThan(0);
     });
 
     test('should return empty for specific language', () => {
       const content = 'Response time must be under 200ms for 95th percentile.';
       const result = detectVagueQualifiers(content);
-      expect(result.length).toBe(0);
+      expect(result.found).toBe(false);
+      expect(result.count).toBe(0);
     });
   });
 

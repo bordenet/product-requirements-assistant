@@ -292,16 +292,20 @@ export function scoreDocumentStructure(text) {
  * @returns {string[]} List of vague qualifiers found
  */
 export function detectVagueQualifiers(text) {
-  const found = [];
+  const qualifiers = [];
   const lowerText = text.toLowerCase();
 
   for (const qualifier of VAGUE_QUALIFIERS) {
     if (lowerText.includes(qualifier)) {
-      found.push(qualifier);
+      qualifiers.push(qualifier);
     }
   }
 
-  return found;
+  return {
+    found: qualifiers.length > 0,
+    count: qualifiers.length,
+    qualifiers
+  };
 }
 
 /**
@@ -378,6 +382,9 @@ export function detectVagueLanguage(text) {
     result.weaselWords.length +
     result.marketingFluff.length +
     result.unquantifiedComparatives.length;
+
+  result.found = result.totalCount > 0;
+  result.count = result.totalCount;
 
   return result;
 }
@@ -1287,6 +1294,19 @@ export { calculateSlopScore } from './slop-detection.js';
 // Alias for backward compatibility with assistant UI
 export function validateDocument(text) {
   return validatePRD(text);
+}
+
+/**
+ * Get letter grade from numeric score
+ * @param {number} score - Numeric score 0-100
+ * @returns {string} Letter grade
+ */
+export function getGrade(score) {
+  if (score >= 90) return 'A';
+  if (score >= 80) return 'B';
+  if (score >= 70) return 'C';
+  if (score >= 60) return 'D';
+  return 'F';
 }
 
 export function getScoreColor(score) {

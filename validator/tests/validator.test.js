@@ -39,21 +39,24 @@ const fixtures = JSON.parse(
 describe('detectVagueQualifiers', () => {
   test('detects vague qualifiers in text', () => {
     const input = 'The system should be fast and easy to use.';
-    const qualifiers = detectVagueQualifiers(input);
-    expect(qualifiers).toContain('fast');
-    expect(qualifiers).toContain('easy to use');
+    const result = detectVagueQualifiers(input);
+    expect(result.found).toBe(true);
+    expect(result.qualifiers).toContain('fast');
+    expect(result.qualifiers).toContain('easy to use');
   });
 
   test('detects multiple vague qualifiers', () => {
     const input = 'The system should be scalable, intuitive, and responsive.';
-    const qualifiers = detectVagueQualifiers(input);
-    expect(qualifiers.length).toBeGreaterThanOrEqual(3);
+    const result = detectVagueQualifiers(input);
+    expect(result.found).toBe(true);
+    expect(result.count).toBeGreaterThanOrEqual(3);
   });
 
-  test('returns empty array when no vague qualifiers', () => {
+  test('returns empty for specific language', () => {
     const input = 'Response time must be under 200ms with 99.9% uptime.';
-    const qualifiers = detectVagueQualifiers(input);
-    expect(qualifiers).toHaveLength(0);
+    const result = detectVagueQualifiers(input);
+    expect(result.found).toBe(false);
+    expect(result.count).toBe(0);
   });
 });
 
