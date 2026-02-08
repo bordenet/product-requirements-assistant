@@ -58,6 +58,12 @@ This system addresses the "Kitchen Sink PRD" anti-pattern—documents that inclu
 
 Once you've completed your PRD, run it through the **[PRD Validator](https://bordenet.github.io/product-requirements-assistant/validator/)** for instant scoring and AI-powered improvement suggestions. The validator checks document structure, requirements clarity, user focus, and technical quality—giving you a 0-100 score with actionable feedback.
 
+**What you get:**
+- **Score Summary:** X/100 with breakdown by dimension
+- **Top 3 Issues:** Most critical gaps to address
+- **Questions to Improve Your PRD:** Specific questions with "Why this matters" explanations
+- **Quick Wins:** Fixes you can make immediately without additional input
+
 → **[Try the Validator](https://bordenet.github.io/product-requirements-assistant/validator/)**
 
 ## Usage

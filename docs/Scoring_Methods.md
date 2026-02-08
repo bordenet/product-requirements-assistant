@@ -138,6 +138,35 @@ Mature PRDs define failure criteria: "If adoption < 10% after 30 days, we pivot 
 | 20-39 | D | Weak - major gaps in structure |
 | 0-19 | F | Not a PRD - restart with template |
 
+## Critique Output Format
+
+When you validate a PRD, the critique provides actionable feedback:
+
+**Score Summary:** X/100 with dimension breakdown
+
+**Top 3 Issues:** Most critical gaps identified by the validator
+
+**Questions to Improve Your PRD:**
+- Specific questions about missing/weak areas
+- Each question includes "Why this matters" explaining score impact
+- Answering these questions provides content to improve the PRD
+
+**Quick Wins:** Fixes that don't require additional user input
+
+> **Note:** The critique does NOT output a rewritten PRD. It asks questions to help you gather the missing information needed to improve your score.
+
+## Content Policies
+
+### Customer Quotes
+- **Real quotes only** - Do not fabricate customer quotes
+- If no quotes available, mark section as "TBD - pending customer research"
+- Format: `"[Quote]" — [Name/Role], [Context: Interview/Survey, Date]`
+
+### Timeline and Milestones
+- **Use relative timeframes** - "Week 1-2", "Month 1", "T+30 days"
+- Avoid specific calendar dates unless user provides them
+- Example: "Month 1-2: Discovery", "Week 3-6: Development"
+
 ## Related Files
 
 - `validator/js/validator.js` - Implementation of scoring functions
