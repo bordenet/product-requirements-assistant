@@ -66,6 +66,15 @@ Once you've completed your PRD, run it through the **[PRD Validator](https://bor
 
 → **[Try the Validator](https://bordenet.github.io/product-requirements-assistant/validator/)**
 
+### Sample PRD
+
+Want to see what a high-scoring PRD looks like? Check out the **[Sample PRD: AI Slop Detection](./docs/sample-prd-ai-slop-detection.md)** (scores 79/100).
+
+Use it to:
+- **Kick the tires** — Paste it into the validator to see scoring in action
+- **Learn the format** — See how sections, requirements, and metrics should be structured
+- **Compare your work** — Benchmark your PRDs against a real example
+
 ## Usage
 
 1. Open the app
