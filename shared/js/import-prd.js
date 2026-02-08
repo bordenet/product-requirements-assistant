@@ -9,8 +9,56 @@ import { createProject } from './projects.js';
 import { navigateTo } from './router.js';
 import { showToast } from './ui.js';
 
+// Document type configuration
+const DOC_TYPE = 'Product Requirements Document';
+const DOC_TYPE_SHORT = 'PRD';
+
 // Score threshold - below this, we suggest LLM cleanup
 const MINIMUM_VIABLE_SCORE = 30;
+
+/**
+ * Extract title from markdown using multiple strategies
+ * Tries: H1 header, H2 header, first bold text, first non-empty line
+ * @param {string} markdown - Markdown content
+ * @returns {string|null} Extracted title or null
+ */
+function extractTitleFromMarkdown(markdown) {
+  if (!markdown) return null;
+
+  // Strategy 1: H1 header (# Title)
+  const h1Match = markdown.match(/^#\s+(.+?)(?:\n|$)/m);
+  if (h1Match) {
+    // Remove "Document Type:" prefix if present (e.g., "Product Requirements Document: My Project")
+    const title = h1Match[1].replace(new RegExp(`^${DOC_TYPE}:\\s*`, 'i'), '').trim();
+    if (title) return title;
+  }
+
+  // Strategy 2: H2 header (## Title) - some docs use H2 for title
+  const h2Match = markdown.match(/^##\s+(.+?)(?:\n|$)/m);
+  if (h2Match) {
+    const title = h2Match[1].replace(new RegExp(`^${DOC_TYPE}:\\s*`, 'i'), '').trim();
+    if (title) return title;
+  }
+
+  // Strategy 3: First bold text (**Title** or __Title__)
+  const boldMatch = markdown.match(/\*\*([^*]+)\*\*|__([^_]+)__/);
+  if (boldMatch) {
+    const title = (boldMatch[1] || boldMatch[2]).trim();
+    if (title && title.length < 100) return title;  // Sanity check on length
+  }
+
+  // Strategy 4: First non-empty line (fallback)
+  const lines = markdown.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#')) {
+      // Take first 80 chars max
+      return trimmed.substring(0, 80) + (trimmed.length > 80 ? '...' : '');
+    }
+  }
+
+  return null;
+}
 
 // LLM prompt template for cleanup
 const LLM_CLEANUP_PROMPT = `You are a documentation assistant. Convert this pasted Product Requirements Document content into clean, well-structured Markdown.
@@ -241,52 +289,24 @@ export function showImportModal() {
 
     try {
       const markdown = previewArea.value;
-      if (!markdown.trim()) {
-        showToast('No content to save', 'error');
-        return;
-      }
+      if (!markdown.trim()) { showToast('No content to save', 'error'); return; }
 
-      // Extract title from first heading or use default
-      const titleMatch = markdown.match(/^#\s+(.+?)(?:\n|$)/m);
-      const title = titleMatch
-        ? titleMatch[1].replace(/^Product Requirements Document:\s*/i, '').trim()
-        : 'Imported PRD';
+      // Extract title using multiple strategies (H1, H2, bold text, first line)
+      const title = extractTitleFromMarkdown(markdown) || `Imported ${DOC_TYPE_SHORT}`;
 
-      // Create project with imported content pre-filled into Phase 1
-      const project = await createProject({
-        title: title,
-        problems: '(Imported from existing PRD)',
-        context: '(Imported from existing PRD)'
+      const project = await createProject({ title, problems: `(Imported from existing ${DOC_TYPE_SHORT})`, context: `(Imported from existing ${DOC_TYPE_SHORT})` });
+      if (!project || !project.id) { showToast('Failed to create project', 'error'); return; }
+
+      const { updateProject } = await import('./projects.js');
+      await updateProject(project.id, {
+        phases: { ...project.phases, 1: { ...project.phases[1], response: markdown, completed: false, startedAt: new Date().toISOString() } },
+        importedContent: markdown,
+        isImported: true  // Flag to skip edit-form redirect
       });
 
-      // Defensive check - ensure project has valid ID
-      if (!project || !project.id) {
-        showToast('Failed to create project', 'error');
-        console.error('createProject returned invalid project:', project);
-        return;
-      }
-
-      // Store the imported markdown as Phase 1 response
-      const phaseUpdate = {
-        phases: {
-          ...project.phases,
-          1: {
-            ...project.phases[1],
-            response: markdown,
-            completed: false,
-            startedAt: new Date().toISOString()
-          }
-        },
-        importedContent: markdown
-      };
-
-      // Save the updated project using imported updateProject
-      const { updateProject } = await import('./projects.js');
-      await updateProject(project.id, phaseUpdate);
-
       closeModal();
-      showToast('PRD imported! Review and refine in Phase 1.', 'success');
-      navigateTo('project', project.id);
+      showToast(`${DOC_TYPE_SHORT} imported! Review and refine in Phase 1.`, 'success');
+      navigateTo('project/' + project.id);
     } finally {
       isSaving = false;
       saveBtn.disabled = false;
