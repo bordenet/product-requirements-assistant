@@ -166,16 +166,18 @@ ${prdContent}
 ## REWRITE REQUIREMENTS
 
 Create a complete, polished PRD that:
-1. Has all required sections (Purpose, User Personas, Features, Success Metrics, Scope, Timeline, Risks, Constraints)
+1. Has all required sections (Executive Summary, Problem Statement, Value Proposition, Goals, Customer FAQ, Proposed Solution, Scope, Requirements, Stakeholders, Timeline, Risks, Traceability, Open Questions, Dissenting Opinions)
 2. Includes explicit "In Scope" AND "Out of Scope" definitions
-3. Uses user story format: "As a [user], I want [feature] so that [benefit]"
+3. Uses FR format: "FR1: [Requirement] | Problem Link: P1 | Door Type: 🚪/🔄 | AC: [success AND failure cases]"
 4. Uses MoSCoW prioritization (Must have, Should have, Could have, Won't have) or P0/P1/P2 labels
-5. Includes measurable acceptance criteria in Given/When/Then format
-6. Has specific metrics (numbers, percentages, timeframes)
-7. Cites customer evidence (user research, interview quotes, analytics data, or feedback)
-8. Addresses non-functional requirements (performance, security, reliability)
-9. Documents dependencies, assumptions, and constraints
+5. Includes measurable acceptance criteria for BOTH success AND failure/edge cases
+6. Has specific metrics with Leading/Lagging type, Baseline, Target, Source of Truth, and Counter-Metric
+7. Cites customer evidence (user research, interview quotes, Customer FAQ, "Aha!" moment quote)
+8. Addresses non-functional requirements (performance, security, reliability, scalability)
+9. Documents dependencies, assumptions, risks with specific mitigations
 10. Avoids vague qualifiers, weasel words, and marketing fluff
+11. Includes Hypothesis Kill Switch (what data would prove this feature is a failure?)
+12. Includes Traceability Summary (Problem → Requirements → Metrics mapping)
 
 Output ONLY the rewritten PRD in markdown format. No commentary.`;
 }
