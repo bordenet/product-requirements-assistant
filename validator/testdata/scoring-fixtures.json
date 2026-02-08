@@ -2,10 +2,10 @@
   "documentStructure": [
     {
       "name": "complete-structure",
-      "input": "# Purpose\nThis product solves X\n\n## User Personas\nAs a developer, I want...\n\n## Features\nFeature 1\n\n## Success Metrics\n50% improvement\n\n## Scope\nIn scope: X\n\n## Timeline\nQ1 2026\n\n## Risks\nDependency on team X\n\n## Constraints\nBudget limited",
+      "input": "# Executive Summary\nThis product solves X\n\n## Problem Statement\nUsers face Y\n\n## Value Proposition\nWe deliver Z\n\n## Goals and Objectives\n50% improvement\n\n## Customer FAQ\nQ: What does this do?\n\n## Proposed Solution\nWe will build...\n\n## Requirements\nFR1: The system shall...\n\n## Scope\nIn scope: X\n\n## Stakeholders\nProduct team\n\n## Timeline\nQ1 2026\n\n## Risks and Mitigation\nDependency on team X\n\n## Traceability Summary\nFR1 -> Problem 1\n\n## Open Questions\nTBD\n\n## Known Unknowns & Dissenting Opinions\nTeam disagrees on approach",
       "expected": {
         "minScore": 16,
-        "sectionsFound": 8
+        "sectionsFound": 14
       }
     },
     {

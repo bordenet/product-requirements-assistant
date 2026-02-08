@@ -15,17 +15,29 @@ import { getSlopPenalty, calculateSlopScore } from './slop-detection.js';
 // Constants
 // ============================================================================
 
-// Section patterns support both direct headers and numbered headers (e.g., "1.1 Purpose", "## Purpose")
+// Section patterns aligned with Phase1.md's 14 required sections
+// Total weight: 20 (10 pts from section coverage scaled)
 const REQUIRED_SECTIONS = [
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(purpose|introduction|overview|objective|executive\s+summary)/im, name: 'Purpose/Introduction', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(user\s*persona|personas?|audience|target\s+user|customer\s+profile)/im, name: 'User Personas', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(feature|requirement|user\s+stor|functional)/im, name: 'Features/Requirements', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(success|metric|kpi|measure)/im, name: 'Success Metrics', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(scope|out.of.scope|boundary|boundaries)/im, name: 'Scope Definition', weight: 1 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(timeline|milestone|schedule|roadmap|phase)/im, name: 'Timeline/Milestones', weight: 1 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(risk|dependency|dependencies|assumption)/im, name: 'Risks/Dependencies', weight: 1 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(constraint|limitation)/im, name: 'Constraints', weight: 1 }
+  // High-weight sections (2 pts each)
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(executive\s+summary|purpose|introduction|overview)/im, name: 'Executive Summary', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(problem\s+statement|current\s+state)/im, name: 'Problem Statement', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(value\s+proposition)/im, name: 'Value Proposition', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(goal|objective|success\s+metric|kpi)/im, name: 'Goals and Objectives', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(customer\s+faq|external\s+faq|working\s+backwards)/im, name: 'Customer FAQ', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(proposed\s+solution|solution|core\s+functionality)/im, name: 'Proposed Solution', weight: 2 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(requirement|functional\s+requirement|non.?functional)/im, name: 'Requirements', weight: 2 },
+  // Medium-weight sections (1.5 pts each)
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(scope|in.scope|out.of.scope)/im, name: 'Scope', weight: 1.5 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(stakeholder)/im, name: 'Stakeholders', weight: 1.5 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(timeline|milestone|schedule|roadmap)/im, name: 'Timeline', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(risk|mitigation)/im, name: 'Risks and Mitigation', weight: 1 },
+  // Lower-weight sections (1 pt each)
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(traceability|requirement\s+mapping)/im, name: 'Traceability Summary', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(open\s+question)/im, name: 'Open Questions', weight: 1 },
+  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(known\s+unknown|dissenting\s+opinion|unresolved)/im, name: 'Known Unknowns & Dissenting Opinions', weight: 1 }
 ];
+
+// Total section weight: 20 pts (matching Document Structure max)
 
 const VAGUE_QUALIFIERS = [
   'easy to use', 'user-friendly', 'fast', 'quick', 'responsive',
@@ -172,17 +184,24 @@ export function scoreDocumentStructure(text) {
   let score = 0;
   const maxScore = 20;
 
-  // Core structural elements (0-10 pts, scaled from 12)
+  // Core structural elements (0-10 pts, scaled from total weight ~20)
   const sections = detectSections(text);
-  const sectionScore = Math.round(sections.found.reduce((sum, s) => sum + s.weight, 0) * 10 / 12);
+  const totalWeight = sections.found.reduce((sum, s) => sum + s.weight, 0);
+  const sectionScore = Math.min(10, Math.round(totalWeight * 10 / 20));
   score += sectionScore;
 
-  if (sections.found.length >= 6) {
-    strengths.push(`${sections.found.length} core sections present`);
+  if (sections.found.length >= 10) {
+    strengths.push(`${sections.found.length}/14 required sections present`);
+  } else if (sections.found.length >= 6) {
+    strengths.push(`${sections.found.length}/14 sections present`);
   }
-  sections.missing.forEach(s => {
+  // Only show top 3 missing sections to avoid overwhelming
+  sections.missing.slice(0, 3).forEach(s => {
     issues.push(`Missing section: ${s.name}`);
   });
+  if (sections.missing.length > 3) {
+    issues.push(`...and ${sections.missing.length - 3} more missing sections`);
+  }
 
   // Document organization (0-5 pts) - check heading hierarchy
   const headings = text.match(/^#+\s+.+$/gm) || [];
@@ -913,15 +932,23 @@ export function scoreTechnicalQuality(text) {
     issues.push('Missing non-functional requirements - define quality attributes');
   }
 
-  // Acceptance criteria (0-5 pts)
+  // Acceptance criteria (0-5 pts) - must include BOTH success AND failure/edge cases
   const acceptanceCriteriaCount = countAcceptanceCriteria(text);
+  // Detect failure/edge case ACs (per Phase1.md requirement)
+  const hasFailureCases = /\b(fail|error|invalid|edge\s+case|exception|timeout|reject|deny|empty|offline|ac\s*\(failure\)|failure\))\b/i.test(text);
+  const hasSuccessAndFailure = acceptanceCriteriaCount >= 2 && hasFailureCases;
 
-  if (acceptanceCriteriaCount >= 3) {
+  if (acceptanceCriteriaCount >= 3 && hasSuccessAndFailure) {
     score += 5;
+    strengths.push(`${acceptanceCriteriaCount} acceptance criteria with success AND failure cases`);
+  } else if (acceptanceCriteriaCount >= 3) {
+    score += 4;
     strengths.push(`${acceptanceCriteriaCount} acceptance criteria in Given/When/Then format`);
+    issues.push('Add failure/edge case acceptance criteria (not just happy path)');
   } else if (acceptanceCriteriaCount >= 1) {
-    score += 3;
+    score += 2;
     strengths.push(`${acceptanceCriteriaCount} acceptance criteria found`);
+    issues.push('Add more acceptance criteria including failure/edge cases');
   } else {
     // Check for alternative acceptance criteria formats
     const hasCheckboxes = /\[[ x]\]/i.test(text);
