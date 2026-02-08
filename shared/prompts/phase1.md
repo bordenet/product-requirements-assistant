@@ -162,8 +162,14 @@ Answer the top 3 questions a customer would ask:
 3. **"How do I get started?"** → {First 3 steps}
 
 ### 5.2 Customer "Aha!" Moment
-Include a fictional but realistic customer quote describing their reaction after using this feature:
-> "Before [product], I spent [X hours] doing [painful task]. Now I [new capability] in [Y minutes]. The first time it worked, I immediately [reaction]." — [Persona Name], [Role]
+If the user provided customer quotes or interview data, include a real quote here. Otherwise, ask the user:
+
+> **ASK THE USER:** "Do you have any customer quotes or interview feedback about this problem? If not, I'll skip this section and you can add quotes later."
+
+If the user provides a quote, format it as:
+> "[Actual customer quote about the problem or desired outcome]" — [Customer Name/Role], [Context: Interview/Survey/Support Ticket, Date]
+
+⚠️ **DO NOT fabricate customer quotes.** Only include quotes the user provides or mark this section as "TBD - pending customer research."
 
 ## 6. Proposed Solution
 {High-level description of what we're building}
@@ -250,7 +256,26 @@ Example:
 - **Success Criteria:** Average response time <2 hours, customer satisfaction >90%
 
 ## 10. Timeline and Milestones
-{High-level project phases}
+
+⚠️ **Use relative timeframes, NOT specific calendar dates.**
+
+Unless the user provides specific dates, use relative phases:
+- "Week 1-2", "Month 1", "Phase 1"
+- "T+30 days", "T+60 days" (from kickoff)
+- "Sprint 1-3", "Q1 post-kickoff"
+
+❌ **AVOID:** "December 2025", "Q2 2026", "March 15, 2026"
+✅ **USE:** "Month 1-2: Discovery", "Week 3-6: Development", "Month 3: Pilot"
+
+If the user needs specific dates, ask:
+> **ASK THE USER:** "What is your target start date and any hard deadlines I should know about?"
+
+| Phase | Duration | Activities | Exit Criteria |
+|-------|----------|------------|---------------|
+| Discovery | Week 1-2 | {activities} | {criteria} |
+| Design | Week 3-4 | {activities} | {criteria} |
+| Build | Week 5-10 | {activities} | {criteria} |
+| Pilot | Week 11-12 | {activities} | {criteria} |
 
 ## 11. Risks and Mitigation
 

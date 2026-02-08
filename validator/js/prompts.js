@@ -114,7 +114,7 @@ export function generateCritiquePrompt(prdContent, currentResult) {
     ...(currentResult.strategicViability?.issues || [])
   ].slice(0, 5).map(i => `- ${i}`).join('\n');
 
-  return `You are a senior Product Manager providing detailed feedback on a PRD.
+  return `You are a senior Product Manager helping improve a PRD.
 
 ## CURRENT VALIDATION RESULTS
 Total Score: ${currentResult.totalScore}/100
@@ -127,7 +127,7 @@ Total Score: ${currentResult.totalScore}/100
 Key issues detected:
 ${issuesList || '- None detected by automated scan'}
 
-## PRD TO CRITIQUE
+## PRD TO IMPROVE
 
 \`\`\`
 ${prdContent}
@@ -135,15 +135,50 @@ ${prdContent}
 
 ## YOUR TASK
 
-Provide:
-1. **Executive Summary** (2-3 sentences on overall PRD quality)
-2. **Detailed Critique** by section:
-   - What works well
-   - What needs improvement
-   - Specific suggestions with examples
-3. **Revised PRD** - A complete rewrite addressing all issues
+Help the author improve this PRD by asking clarifying questions. Your goal is to gather the missing information needed to raise the score.
 
-Be specific. Show exact rewrites. Make the document ready for development handoff.`;
+### Step 1: Identify Gaps
+Review the PRD and identify what's missing or unclear. Focus on:
+- Missing sections (check all 14 required sections)
+- Vague metrics without baselines or targets
+- Requirements without acceptance criteria
+- Missing customer evidence or quotes
+- Unclear scope boundaries
+- Missing risk mitigations
+
+### Step 2: Ask Clarifying Questions
+Generate 3-5 specific questions that, when answered, will provide the information needed to improve the PRD. Questions should be:
+- Specific (not "tell me more about users")
+- Actionable (the answer can be directly inserted into the PRD)
+- Prioritized (most impactful questions first)
+
+## REQUIRED OUTPUT FORMAT
+
+**Score Summary:** ${currentResult.totalScore}/100
+
+**Top 3 Issues:**
+1. [Most critical gap]
+2. [Second gap]
+3. [Third gap]
+
+**Questions to Improve Your PRD:**
+
+1. **[Question about missing/weak area]**
+   _Why this matters:_ [How answering this improves the score]
+
+2. **[Question about missing/weak area]**
+   _Why this matters:_ [How answering this improves the score]
+
+3. **[Question about missing/weak area]**
+   _Why this matters:_ [How answering this improves the score]
+
+[Add 1-2 more questions if needed]
+
+**Quick Wins (fix these now):**
+- [Specific fix that doesn't require user input, e.g., "Add 'Out of Scope' section"]
+- [Another quick fix]
+
+Do NOT include a rewritten PRD. Only provide questions and quick wins.`;
 }
 
 /**

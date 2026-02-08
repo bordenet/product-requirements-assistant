@@ -63,7 +63,7 @@ Before finalizing, verify:
 **User Focus (20 pts)**
 - ✅ Value Proposition includes both customer/partner AND company perspectives
 - ✅ All value claims are quantified with specific metrics (not "improved" or "enhanced")
-- ✅ Customer "Aha!" moment quote included
+- ✅ Customer quotes included (real quotes only, or marked "TBD - pending research")
 
 **Technical Quality (15 pts)**
 - ✅ All formulas and scoring mechanisms are explicitly defined

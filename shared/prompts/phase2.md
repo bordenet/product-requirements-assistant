@@ -86,7 +86,7 @@ Evaluate the **14 required sections** (per Phase1.md):
 - Are user journeys/workflows documented?
 - Is there a Customer FAQ section with real customer questions?
 - Does the PRD work backwards from customer outcomes?
-- Are customer quotes or "Aha moments" captured?
+- Are customer quotes captured? (Real quotes only - no fabricated quotes)
 
 ### 4. Technical Quality (15 pts max)
 
