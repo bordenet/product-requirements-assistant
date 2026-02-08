@@ -384,10 +384,11 @@ function showAbout() {
       </p>
       <p class="text-gray-600 dark:text-gray-300 mb-4">
         <strong>Scoring Dimensions:</strong><br>
-        • Document Structure (25 pts)<br>
-        • Requirements Clarity (30 pts)<br>
-        • User Focus (25 pts)<br>
-        • Technical Quality (20 pts)
+        • Document Structure (20 pts)<br>
+        • Requirements Clarity (25 pts)<br>
+        • User Focus (20 pts)<br>
+        • Technical Quality (15 pts)<br>
+        • Strategic Viability (20 pts)
       </p>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
         100% client-side. Your content never leaves your browser.
