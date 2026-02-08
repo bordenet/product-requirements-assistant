@@ -115,6 +115,12 @@ const VALUE_PROPOSITION_PATTERNS = {
 };
 
 const USER_STORY_PATTERN = /as\s+a[n]?\s+[\w\s]+,?\s+i\s+want/gi;
+// Functional Requirements pattern: FR1, FR2, etc. with structured format
+const FUNCTIONAL_REQ_PATTERN = /\bFR\d+\b/gi;
+// Door Type indicators (One-Way/Two-Way decision tagging)
+const DOOR_TYPE_PATTERN = /(?:🚪|🔄|one[- ]?way|two[- ]?way)\s*(?:door)?/gi;
+// Problem Link pattern: references to P1, P2, etc.
+const PROBLEM_LINK_PATTERN = /\bP\d+\b/gi;
 // Accept both inline "given...when...then" and markdown bold "**Given**...When...Then"
 const ACCEPTANCE_CRITERIA_PATTERN = /(?:\*\*)?given(?:\*\*)?\s+.+?(?:\*\*)?when(?:\*\*)?\s+.+?(?:\*\*)?then(?:\*\*)?\s+/gi;
 // Also count structured acceptance criteria with bullet points using Given/When/Then keywords
@@ -508,6 +514,34 @@ export function countUserStories(text) {
 }
 
 /**
+ * Count functional requirements in text (FR1, FR2, etc.)
+ * @param {string} text - Text to analyze
+ * @returns {Object} Functional requirements detection results
+ */
+export function countFunctionalRequirements(text) {
+  const frMatches = text.match(FUNCTIONAL_REQ_PATTERN) || [];
+  const doorTypeMatches = text.match(DOOR_TYPE_PATTERN) || [];
+  const problemLinkMatches = text.match(PROBLEM_LINK_PATTERN) || [];
+
+  // Deduplicate FR IDs (FR1 might appear multiple times)
+  const uniqueFRs = [...new Set(frMatches.map(fr => fr.toUpperCase()))];
+
+  return {
+    count: uniqueFRs.length,
+    hasDoorTypes: doorTypeMatches.length > 0,
+    doorTypeCount: doorTypeMatches.length,
+    hasProblemLinks: problemLinkMatches.length > 0,
+    problemLinkCount: problemLinkMatches.length,
+    // Quality score: FRs with door types and problem links are higher quality
+    qualityScore: uniqueFRs.length > 0 ? (
+      (doorTypeMatches.length > 0 ? 2 : 0) +
+      (problemLinkMatches.length > 0 ? 2 : 0) +
+      Math.min(uniqueFRs.length, 3)
+    ) : 0
+  };
+}
+
+/**
  * Count acceptance criteria in text
  * Detects both inline "given...when...then" and markdown "**Given**" bullet format
  * @param {string} text - Text to analyze
@@ -563,23 +597,47 @@ export function scoreRequirementsClarity(text) {
     slopPenalty.issues.forEach(issue => issues.push(issue));
   }
 
-  // Completeness of details (0-7 pts) - user stories with context
+  // Completeness of details (0-7 pts) - Functional Requirements with structure
+  const frResults = countFunctionalRequirements(text);
   const userStoryCount = countUserStories(text);
 
-  if (userStoryCount >= 3) {
-    score += 7;
-    strengths.push(`${userStoryCount} user stories with proper format`);
+  // Prefer FR format (phase1.md standard), but also accept user stories
+  if (frResults.count >= 3) {
+    // Full points for well-structured FRs with door types and problem links
+    if (frResults.hasDoorTypes && frResults.hasProblemLinks) {
+      score += 7;
+      strengths.push(`${frResults.count} functional requirements with Door Types and Problem Links`);
+    } else if (frResults.hasDoorTypes || frResults.hasProblemLinks) {
+      score += 5;
+      strengths.push(`${frResults.count} functional requirements found`);
+      if (!frResults.hasDoorTypes) issues.push('Add Door Type (🚪 One-Way / 🔄 Two-Way) to requirements');
+      if (!frResults.hasProblemLinks) issues.push('Link requirements to Problem IDs (P1, P2)');
+    } else {
+      score += 4;
+      strengths.push(`${frResults.count} functional requirements found`);
+      issues.push('Enhance FRs with Door Types and Problem Links for traceability');
+    }
+  } else if (frResults.count >= 1) {
+    score += 3;
+    strengths.push(`${frResults.count} functional requirement found`);
+    issues.push('Add more functional requirements (FR1, FR2, FR3...)');
+  } else if (userStoryCount >= 3) {
+    // Fallback: accept user stories but suggest FR format
+    score += 5;
+    strengths.push(`${userStoryCount} user stories found`);
+    issues.push('Consider using FR format with ID, Problem Link, Door Type, and AC');
   } else if (userStoryCount >= 1) {
-    score += 4;
+    score += 3;
     strengths.push(`${userStoryCount} user story found`);
+    issues.push('Use FR format (FR1, FR2) with Problem Link and Door Type');
   } else {
     // Check for alternative requirement formats
     const requirementPatterns = text.match(/\b(shall|must|should|will)\b/gi) || [];
     if (requirementPatterns.length >= 5) {
       score += 2;
-      issues.push('Consider using user story format (As a..., I want..., So that...)');
+      issues.push('Use FR format: FR1, FR2 with Problem Link (P1), Door Type, and AC');
     } else {
-      issues.push('No user stories found - use format: "As a [user], I want [feature] so that [benefit]"');
+      issues.push('No functional requirements found - use format: FR1, FR2 with Problem Link, Door Type, AC');
     }
   }
 
@@ -625,6 +683,7 @@ export function scoreRequirementsClarity(text) {
     vagueQualifiers,
     vagueLanguage,
     slopDetection: slopPenalty,
+    functionalRequirements: frResults,
     userStoryCount,
     measurableCount,
     prioritization
@@ -792,15 +851,19 @@ export function scoreUserFocus(text) {
   }
 
   // Alignment between requirements and user needs (0-5 pts)
+  // Accept both FR format (preferred) and user stories
+  const frResults = countFunctionalRequirements(text);
   const userStoryCount = countUserStories(text);
+  const hasStructuredRequirements = frResults.count >= 3 || userStoryCount >= 3;
+  const hasSomeRequirements = frResults.count >= 1 || userStoryCount >= 1;
 
-  if (userStoryCount >= 3 && problem.hasWhyExplanation) {
+  if (hasStructuredRequirements && problem.hasWhyExplanation) {
     score += 5;
     strengths.push('Requirements clearly linked to user needs');
-  } else if (userStoryCount >= 1 || problem.hasWhyExplanation) {
+  } else if (hasSomeRequirements || problem.hasWhyExplanation) {
     score += 2;
-    if (userStoryCount === 0) {
-      issues.push('Use user stories to connect features to user needs');
+    if (!hasSomeRequirements) {
+      issues.push('Use FR format (FR1, FR2) to connect features to user needs');
     }
   } else {
     issues.push('Requirements should trace back to user needs');

@@ -22,7 +22,7 @@ Score this PRD using the following rubric (0-100 points total):
 
 ### 2. Requirements Clarity (25 points)
 - **Precision (7 pts)**: No vague qualifiers, weasel words, or marketing fluff
-- **Completeness (7 pts)**: User stories with "As a..., I want..., So that..." format
+- **Completeness (7 pts)**: Functional Requirements with ID (FR1, FR2), Problem Link, Door Type, and Acceptance Criteria
 - **Measurability (6 pts)**: Specific numbers, percentages, timeframes, or counts
 - **Prioritization (5 pts)**: MoSCoW (Must/Should/Could/Won't), P0/P1/P2, or explicit priority ranking
 
