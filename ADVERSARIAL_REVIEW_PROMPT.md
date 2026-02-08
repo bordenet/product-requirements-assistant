@@ -298,3 +298,123 @@ How could someone get a high score without a good PRD?
 ---
 
 **BE DEVASTATINGLY HARSH. This is the CROWN JEWEL - it must be PERFECT.**
+
+---
+
+# FOLLOW-UP REVIEW (Round 2)
+
+## ⚠️ CRITICAL: VERIFY YOUR CLAIMS AGAINST ACTUAL CODE
+
+Your previous review contained **false positives** - claims about missing features that already exist. Before claiming something is missing, you MUST verify by searching the actual code.
+
+### FALSE POSITIVES FROM ROUND 1 (Features Already Implemented)
+
+| Your Claim | Reality in validator.js |
+|------------|------------------------|
+| "validator.js lacks logic to distinguish success/failure ACs" | **ALREADY EXISTS** at lines 935-951: `hasFailureCases = /\b(fail\|error\|invalid\|edge\s+case\|exception\|...\b/i.test(text)` |
+| "do not check the index of matches" (ordering) | **ALREADY EXISTS** at lines 223-232: `customerFAQIndex < solutionIndex` check with +1 point reward |
+| "NO regex for Persona" | **ALREADY EXISTS** at lines 639-681: `detectUserPersonas()` function with 7 pattern types |
+
+### HOW TO VERIFY CLAIMS
+
+Before claiming a feature is missing, search for these patterns in the actual source files:
+
+```
+# For ordering logic:
+grep -n "customerFAQIndex\|solutionIndex\|faqIndex" validator.js
+
+# For failure case detection:
+grep -n "hasFailureCases\|failure\|edge.?case" validator.js
+
+# For persona detection:
+grep -n "persona\|user.?profile\|detectUserPersonas" validator.js
+```
+
+---
+
+## CONFIRMED REAL ISSUE: User Story vs Functional Requirements Mismatch
+
+This issue from Round 1 IS REAL and needs to be fixed:
+
+| Component | What It Says |
+|-----------|--------------|
+| **phase1.md** (lines 211-228) | Generates Functional Requirements: "FR1, FR2..." with table format |
+| **prompts.js** (line 25) | Expects: "User stories with 'As a..., I want..., So that...'" |
+| **validator.js** (line 117) | Rewards: `USER_STORY_PATTERN = /as\s+a[n]?\s+[\w\s]+,?\s+i\s+want/gi` |
+
+**Mismatch:** Claude generates FRs per phase1.md, but validator docks 7 points for missing user stories.
+
+---
+
+## YOUR ROUND 2 TASK
+
+### 1. VERIFY BEFORE CLAIMING
+
+For EACH issue you report, provide:
+- **File:** Exact filename
+- **Search:** What you searched for
+- **Result:** What you found (or didn't find)
+- **Line numbers:** Where the code exists (or should exist)
+
+### 2. FIND NEW ISSUES (Not Already Reported)
+
+Focus on issues NOT covered by:
+- ✅ Success/failure AC detection (already exists)
+- ✅ Customer FAQ ordering (already exists)
+- ✅ Persona detection (already exists)
+- ✅ User Story vs FR mismatch (already confirmed)
+
+### 3. GAMING VULNERABILITIES (Semantic Gaps)
+
+Focus on exploits that WORK despite existing detection:
+
+| Vulnerability | Why It Works |
+|---------------|--------------|
+| **Keyword stuffing** | "Leading Indicator: TBD" triggers pattern but provides no value |
+| **Emoji spam** | Pasting 🚪🔄 without categorizing requirements |
+| **Formula mirage** | "X = A + B" where A and B are undefined |
+| **Section headers only** | "## Customer FAQ" with empty content |
+
+### 4. ALIGNMENT DELTA ANALYSIS
+
+For each component pair, identify EXACTLY what one says that the other doesn't:
+
+| prompts.js Says | validator.js Checks | Gap? |
+|-----------------|---------------------|------|
+| "User stories with As a..." (7 pts) | `USER_STORY_PATTERN` regex | ✅ Aligned |
+| "MoSCoW prioritization" (5 pts) | `PRIORITIZATION_PATTERNS.moscow` | ✅ Aligned |
+| "Scope Realism" (5 pts) | ? | **CHECK THIS** |
+| "Risk Quality" (5 pts) | ? | **CHECK THIS** |
+
+---
+
+## DELIVERABLES (Round 2)
+
+### 1. VERIFIED ISSUES ONLY
+
+For each issue:
+```
+**Issue:** [Description]
+**Evidence:** [File:line - exact quote from code]
+**Verification:** [Command you used to verify]
+**Severity:** [X pts at risk]
+**Fix:** [Specific code change]
+```
+
+### 2. GAMING EXPLOIT PROOF-OF-CONCEPT
+
+For each gaming vulnerability, show a minimal PRD snippet that would:
+- Score highly on the validator
+- Be obviously low-quality to a human reader
+
+### 3. PRIORITIZED ACTION ITEMS
+
+| Priority | Issue | Points at Risk | Fix Complexity |
+|----------|-------|----------------|----------------|
+| P0 | User Story vs FR mismatch | 7 pts | Update prompts.js or phase1.md |
+| P1 | [Your finding] | X pts | [Fix] |
+| P2 | [Your finding] | X pts | [Fix] |
+
+---
+
+**DO NOT REPEAT FALSE POSITIVES. VERIFY EVERY CLAIM. EVIDENCE BEFORE ASSERTIONS.**
