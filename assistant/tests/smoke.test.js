@@ -263,6 +263,83 @@ describe('Smoke Test - App Initialization', () => {
       // Check that shared JS files import from validator/js/validator.js
       const filesToCheck = [
         '../../shared/js/project-view.js',
+      ];
+
+      for (const file of filesToCheck) {
+        const filePath = path.join(__dirname, file);
+        if (fs.existsSync(filePath)) {
+          const content = fs.readFileSync(filePath, 'utf-8');
+          const hasOldImport = content.includes("from './validator-inline.js'") ||
+                              content.includes('from "./validator-inline.js"');
+          expect(hasOldImport).toBe(false);
+        }
+      }
+    });
+  });
+
+  /**
+   * API Contract Tests - Verify validateDocument returns structure project-view.js expects
+   *
+   * This catches the bug where validator returns different property names than project-view.js expects.
+   * Result: "Cannot read properties of undefined (reading 'issues')" at runtime
+   */
+  describe('API Contract - validateDocument returns structure project-view.js expects', () => {
+    let result;
+
+    beforeAll(async () => {
+      const validator = await import('../../validator/js/validator.js');
+      result = validator.validateDocument('# PRD\n\n## Overview\nThis document describes requirements.');
+    });
+
+    test('returns totalScore property (number)', () => {
+      expect(result.totalScore).toBeDefined();
+      expect(typeof result.totalScore).toBe('number');
+    });
+
+    test('returns clarity category breakdown with issues array', () => {
+      expect(result.clarity).toBeDefined();
+      expect(result.clarity).toHaveProperty('score');
+      expect(result.clarity).toHaveProperty('maxScore');
+      expect(result.clarity).toHaveProperty('issues');
+      expect(Array.isArray(result.clarity.issues)).toBe(true);
+    });
+
+    test('returns structure category breakdown with issues array', () => {
+      expect(result.structure).toBeDefined();
+      expect(result.structure).toHaveProperty('score');
+      expect(result.structure).toHaveProperty('maxScore');
+      expect(result.structure).toHaveProperty('issues');
+      expect(Array.isArray(result.structure.issues)).toBe(true);
+    });
+
+    test('returns technical category breakdown with issues array', () => {
+      expect(result.technical).toBeDefined();
+      expect(result.technical).toHaveProperty('score');
+      expect(result.technical).toHaveProperty('maxScore');
+      expect(result.technical).toHaveProperty('issues');
+      expect(Array.isArray(result.technical.issues)).toBe(true);
+    });
+
+    test('returns userFocus category breakdown with issues array', () => {
+      expect(result.userFocus).toBeDefined();
+      expect(result.userFocus).toHaveProperty('score');
+      expect(result.userFocus).toHaveProperty('maxScore');
+      expect(result.userFocus).toHaveProperty('issues');
+      expect(Array.isArray(result.userFocus.issues)).toBe(true);
+    });
+  });
+
+  // This section below was already defined - keeping it for compatibility
+  describe('Additional validator import consistency', () => {
+    test('remaining files have correct imports', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const { fileURLToPath } = await import('url');
+
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+
+      const filesToCheck = [
         '../../shared/js/views.js',
         '../../shared/js/import-prd.js'
       ];
