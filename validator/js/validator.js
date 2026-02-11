@@ -17,24 +17,27 @@ import { getSlopPenalty, calculateSlopScore } from './slop-detection.js';
 
 // Section patterns aligned with Phase1.md's 14 required sections
 // Total weight: 20 (10 pts from section coverage scaled)
+// Section patterns aligned with Phase1.md's 14 required sections
+// Patterns use optional ^(#+\s*)? to match both markdown headings AND plain text headings
+// This allows detection of sections pasted from Word/Google Docs without # prefixes
 const REQUIRED_SECTIONS = [
   // High-weight sections (2 pts each)
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(executive\s+summary|purpose|introduction|overview)/im, name: 'Executive Summary', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(problem\s+statement|current\s+state)/im, name: 'Problem Statement', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(value\s+proposition)/im, name: 'Value Proposition', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(goal|objective|success\s+metric|kpi)/im, name: 'Goals and Objectives', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(customer\s+faq|external\s+faq|working\s+backwards)/im, name: 'Customer FAQ', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(proposed\s+solution|solution|core\s+functionality)/im, name: 'Proposed Solution', weight: 2 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(requirement|functional\s+requirement|non.?functional)/im, name: 'Requirements', weight: 2 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(executive\s+summary|purpose|introduction|overview)/im, name: 'Executive Summary', weight: 2 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(problem\s+statement|current\s+state)/im, name: 'Problem Statement', weight: 2 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(value\s+proposition)/im, name: 'Value Proposition', weight: 2 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(goal|objective|success\s+metric|kpi)/im, name: 'Goals and Objectives', weight: 2 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(customer\s+faq|external\s+faq|working\s+backwards)/im, name: 'Customer FAQ', weight: 2 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(proposed\s+solution|solution|core\s+functionality)/im, name: 'Proposed Solution', weight: 2 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(requirement|functional\s+requirement|non.?functional)/im, name: 'Requirements', weight: 2 },
   // Medium-weight sections (1.5 pts each)
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(scope|in.scope|out.of.scope)/im, name: 'Scope', weight: 1.5 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(stakeholder)/im, name: 'Stakeholders', weight: 1.5 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(timeline|milestone|schedule|roadmap)/im, name: 'Timeline', weight: 1 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(risk|mitigation)/im, name: 'Risks and Mitigation', weight: 1 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(scope|in.scope|out.of.scope)/im, name: 'Scope', weight: 1.5 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(stakeholder)/im, name: 'Stakeholders', weight: 1.5 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(timeline|milestone|schedule|roadmap)/im, name: 'Timeline', weight: 1 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(risk|mitigation)/im, name: 'Risks and Mitigation', weight: 1 },
   // Lower-weight sections (1 pt each)
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(traceability|requirement\s+mapping)/im, name: 'Traceability Summary', weight: 1 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(open\s+question)/im, name: 'Open Questions', weight: 1 },
-  { pattern: /^#+\s*(\d+\.?\d*\.?\s*)?(known\s+unknown|dissenting\s+opinion|unresolved)/im, name: 'Known Unknowns & Dissenting Opinions', weight: 1 }
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(traceability|requirement\s+mapping)/im, name: 'Traceability Summary', weight: 1 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(open\s+question)/im, name: 'Open Questions', weight: 1 },
+  { pattern: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(known\s+unknown|dissenting\s+opinion|unresolved)/im, name: 'Known Unknowns & Dissenting Opinions', weight: 1 }
 ];
 
 // Total section weight: 20 pts (matching Document Structure max)
@@ -85,7 +88,8 @@ const PRIORITIZATION_PATTERNS = {
   numbered: /\b(priority|pri|importance):\s*\d/gi,
   tiered: /\b(tier\s*[1-3]|phase\s*[1-3]|wave\s*[1-3]|mvp|v1|v2)\b/gi,
   // Section detection: explicit priority sections OR MoSCoW-style headers
-  section: /^#+\s*(\d+\.?\d*\.?\s*)?(priority|priorities|prioritization|must\s+have|should\s+have|could\s+have|won't\s+have)/im
+  // Uses optional ^(#+\s*)? for Word/Google Docs compatibility
+  section: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(priority|priorities|prioritization|must\s+have|should\s+have|could\s+have|won't\s+have)/im
 };
 
 // Customer evidence detection patterns
@@ -106,8 +110,9 @@ const SCOPE_PATTERNS = {
 };
 
 // Value Proposition detection patterns
+// Uses optional ^(#+\s*)? for Word/Google Docs compatibility
 const VALUE_PROPOSITION_PATTERNS = {
-  section: /^#+\s*(\d+\.?\d*\.?\s*)?(value\s+proposition|value\s+to\s+customer|value\s+to\s+partner|value\s+to\s+company|customer\s+value|business\s+value)/im,
+  section: /^(#+\s*)?(\d+\.?\d*\.?\s*)?(value\s+proposition|value\s+to\s+customer|value\s+to\s+partner|value\s+to\s+company|customer\s+value|business\s+value)/im,
   customerValue: /\b(value\s+to\s+(customer|partner|user|client)|customer\s+benefit|partner\s+benefit|user\s+benefit)\b/gi,
   companyValue: /\b(value\s+to\s+(company|business|organization)|business\s+value|revenue\s+impact|cost\s+saving|strategic\s+value)\b/gi,
   quantifiedBenefit: /\b(\d+%|\$\d+|\d+\s*(hours?|days?|minutes?|weeks?)\s*(saved|reduced|faster)|reduce[ds]?\s+from\s+\d+|increase[ds]?\s+from\s+\d+)\b/gi,
