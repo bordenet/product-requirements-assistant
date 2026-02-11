@@ -99,6 +99,15 @@ function replaceTemplateVars(template, vars) {
     const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
     result = result.replace(regex, value || '');
   }
+
+  // Safety check: detect and remove any remaining placeholders
+  // This prevents unsubstituted {{PLACEHOLDER}} from reaching the LLM
+  const remaining = result.match(/\{\{[A-Z_]+\}\}/g);
+  if (remaining) {
+    console.warn('[prompts] Unsubstituted placeholders detected:', remaining);
+    result = result.replace(/\{\{[A-Z_]+\}\}/g, '');
+  }
+
   return result;
 }
 
