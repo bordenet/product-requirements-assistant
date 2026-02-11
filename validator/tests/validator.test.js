@@ -20,7 +20,8 @@ import {
   detectPrioritization,
   detectCustomerEvidence,
   detectScopeBoundaries,
-  detectValueProposition
+  detectValueProposition,
+  detectSections
 } from '../js/validator.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -429,5 +430,63 @@ Cost savings increased from 100K to 500K.
     expect(result.hasVagueValue).toBe(true);
     expect(result.hasBothPerspectives).toBe(false);
     expect(result.hasQuantification).toBe(false);
+  });
+});
+
+// ============================================================================
+// detectSections - Plain Text Heading Detection tests
+// ============================================================================
+describe('detectSections - Plain Text Heading Detection', () => {
+  // Tests for ^(#+\s*)? regex pattern that allows plain text headings (Word/Google Docs imports)
+
+  test('detects Executive Summary section without markdown prefix', () => {
+    const text = 'Executive Summary\nThis document outlines the product requirements.';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Executive Summary')).toBe(true);
+  });
+
+  test('detects Problem Statement section without markdown prefix', () => {
+    const text = 'Problem Statement\nCustomers are struggling with X.';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Problem Statement')).toBe(true);
+  });
+
+  test('detects Value Proposition section without markdown prefix', () => {
+    const text = 'Value Proposition\nThis solution will save 20% of time.';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Value Proposition')).toBe(true);
+  });
+
+  test('detects Goals section without markdown prefix', () => {
+    const text = 'Goals and Objectives\n- Increase revenue by 15%\n- Reduce support tickets by 30%';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Goals and Objectives')).toBe(true);
+  });
+
+  test('handles mixed markdown and plain text headings', () => {
+    const text = '# Executive Summary\nOverview here.\n\nProblem Statement\nThe problem is X.';
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Executive Summary')).toBe(true);
+    expect(result.found.some((s) => s.name === 'Problem Statement')).toBe(true);
+  });
+
+  test('handles Word/Google Docs pasted content without markdown', () => {
+    const text = `Executive Summary
+This PRD describes the new feature.
+
+Problem Statement
+Users cannot easily find the settings page.
+
+Value Proposition
+Reducing time-to-setting by 50%.
+
+Goals and Objectives
+- Improve discoverability
+- Reduce support tickets`;
+    const result = detectSections(text);
+    expect(result.found.some((s) => s.name === 'Executive Summary')).toBe(true);
+    expect(result.found.some((s) => s.name === 'Problem Statement')).toBe(true);
+    expect(result.found.some((s) => s.name === 'Value Proposition')).toBe(true);
+    expect(result.found.some((s) => s.name === 'Goals and Objectives')).toBe(true);
   });
 });

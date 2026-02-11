@@ -93,7 +93,7 @@ export async function preloadPromptTemplates() {
  * @param {Object} vars - Variables to replace
  * @returns {string} Processed template
  */
-function replaceTemplateVars(template, vars) {
+export function replaceTemplateVars(template, vars) {
   let result = template;
   for (const [key, value] of Object.entries(vars)) {
     const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
@@ -102,10 +102,11 @@ function replaceTemplateVars(template, vars) {
 
   // Safety check: detect and remove any remaining placeholders
   // This prevents unsubstituted {{PLACEHOLDER}} from reaching the LLM
-  const remaining = result.match(/\{\{[A-Z_]+\}\}/g);
+  // Note: [A-Z0-9_]+ includes digits to match PHASE1_OUTPUT, PHASE2_OUTPUT, etc.
+  const remaining = result.match(/\{\{[A-Z0-9_]+\}\}/g);
   if (remaining) {
     console.warn('[prompts] Unsubstituted placeholders detected:', remaining);
-    result = result.replace(/\{\{[A-Z_]+\}\}/g, '');
+    result = result.replace(/\{\{[A-Z0-9_]+\}\}/g, '');
   }
 
   return result;
