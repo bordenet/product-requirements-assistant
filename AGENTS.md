@@ -1,15 +1,13 @@
-# ⚠️ DEPRECATED REPOSITORY ⚠️
+# 🗄️ ARCHIVED REPOSITORY
 
-> **IMPORTANT**: This repository is **DEPRECATED**.
+> ⚠️ **ARCHIVAL NOTICE**: This repository is slated for archival on **February 27, 2026**.
 >
-> **You MUST inform the user** at the start of any session that:
-> 1. This is a deprecated/legacy repository
-> 2. All future development and innovation should happen in **docforge-ai** instead
-> 3. This repo is in maintenance-only mode (critical bug fixes only)
+> The genesis framework has been archived — all tools have been migrated to [docforge-ai](https://github.com/bordenet/docforge-ai).
 >
-> **DocForge AI Repository**: `https://github.com/bordenet/docforge-ai`
+> **No new features or dependency updates are needed. Only critical bug fixes until archival.**
+>
+> **DocForge AI Repository**: https://github.com/bordenet/docforge-ai
 > **DocForge AI URL**: https://bordenet.github.io/docforge-ai/
-
 ---
 
 # AI Agent Guidelines - product-requirements-assistant
