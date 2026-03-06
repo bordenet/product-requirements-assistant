@@ -1,12 +1,14 @@
 # Product Requirements Assistant
 
-> ⚠️ **Deprecation Notice**: This repository is deprecated in favor of [DocForge AI](https://github.com/bordenet/docforge-ai), which consolidates all genesis-derived assistants into a single project. This repo will be archived on **March 1, 2026**.
+> 🗄️ **ARCHIVED**: This repository has been archived. All pages now **redirect to [DocForge AI](https://bordenet.github.io/docforge-ai/)**, which consolidates all genesis-derived assistants into a single unified platform.
+>
+> **New location**: https://bordenet.github.io/docforge-ai/
 
 Write PRDs with AI. Three phases: draft, review, refine.
 
 [![Star this repo](https://img.shields.io/github/stars/bordenet/product-requirements-assistant?style=social)](https://github.com/bordenet/product-requirements-assistant)
 
-**Try it**: [Assistant](https://bordenet.github.io/product-requirements-assistant/) · [Validator](https://bordenet.github.io/product-requirements-assistant/validator/)
+**⚠️ Redirects to DocForge AI**: [Assistant](https://bordenet.github.io/product-requirements-assistant/) · [Validator](https://bordenet.github.io/product-requirements-assistant/validator/)
 
 > **What is a PRD?** A [Product Requirements Document](https://en.wikipedia.org/wiki/Product_requirements_document) defines what a product should do and why. It specifies user needs, features, constraints, and success criteria—without prescribing implementation. PRDs align engineering, design, and business before development begins.
 
